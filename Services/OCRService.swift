@@ -1,0 +1,232 @@
+import UIKit
+import Vision
+import PDFKit
+import CoreImage
+import ImageIO
+
+protocol OCRServicing {
+    func recognizeText(from image: UIImage) async throws -> OCRExtractionResult
+    func extractText(fromPDFAt url: URL) async throws -> OCRExtractionResult
+}
+
+struct OCRService: OCRServicing {
+    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+
+    func recognizeText(from image: UIImage) async throws -> OCRExtractionResult {
+        guard let baseCGImage = image.cgImage else {
+            throw OCRError.invalidImage
+        }
+        let orientation = cgImageOrientation(for: image.imageOrientation)
+
+        var variants: [(name: String, image: CGImage)] = [("Original", baseCGImage)]
+        if let enhanced = makeEnhancedOCRImage(from: baseCGImage, strong: false) {
+            variants.append(("Enhanced", enhanced))
+        }
+        if let strong = makeEnhancedOCRImage(from: baseCGImage, strong: true) {
+            variants.append(("HighContrast", strong))
+        }
+
+        var best: OCRCandidate?
+        var lastError: Error?
+        var attempted: [OCRCandidate] = []
+
+        for variant in variants {
+            do {
+                let candidate = try await recognizeText(from: variant.image, orientation: orientation, variantName: variant.name)
+                attempted.append(candidate)
+                if best == nil || candidate.score > best!.score {
+                    best = candidate
+                }
+            } catch {
+                lastError = error
+            }
+        }
+
+        if let best {
+            let ranked = attempted.sorted { $0.score > $1.score }
+            let topDebug = ranked.prefix(3).map {
+                "\($0.variantName): score \(String(format: "%.2f", $0.score)), conf \(String(format: "%.2f", $0.meanConfidence)), lines \($0.lineCount)"
+            }.joined(separator: " | ")
+            let summary = "OCR gewählt: \(best.variantName) (score \(String(format: "%.2f", best.score)))" + (topDebug.isEmpty ? "" : "\n\(topDebug)")
+            return OCRExtractionResult(text: best.text, debugSummary: summary)
+        }
+        throw lastError ?? OCRError.invalidImage
+    }
+
+    func extractText(fromPDFAt url: URL) async throws -> OCRExtractionResult {
+        guard let document = PDFDocument(url: url) else {
+            throw OCRError.invalidPDF
+        }
+
+        var chunks: [String] = []
+        var hasDigitalText = false
+        for pageIndex in 0..<document.pageCount {
+            guard let page = document.page(at: pageIndex) else { continue }
+            let text = page.string?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !text.isEmpty {
+                hasDigitalText = true
+                chunks.append(text)
+            }
+        }
+
+        // For image-based PDFs, fall back to OCR on rendered page images.
+        if !hasDigitalText {
+            var debugLines: [String] = []
+            for pageIndex in 0..<document.pageCount {
+                guard let page = document.page(at: pageIndex),
+                      let image = renderImage(for: page) else { continue }
+                let ocr = try await recognizeText(from: image)
+                let trimmed = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    chunks.append(trimmed)
+                }
+                if let debug = ocr.debugSummary {
+                    debugLines.append("Seite \(pageIndex + 1): \(debug)")
+                }
+            }
+            return OCRExtractionResult(text: chunks.joined(separator: "\n"), debugSummary: debugLines.joined(separator: "\n"))
+        }
+
+        return OCRExtractionResult(text: chunks.joined(separator: "\n"), debugSummary: "PDF enthält digitalen Text (kein Vision-OCR verwendet)")
+    }
+
+    private func renderImage(for page: PDFPage) -> UIImage? {
+        let bounds = page.bounds(for: .mediaBox)
+        guard bounds.width > 0, bounds.height > 0 else { return nil }
+
+        let maxSide: CGFloat = 2200
+        let scale = min(maxSide / max(bounds.width, bounds.height), 2.0)
+        let size = CGSize(width: bounds.width * scale, height: bounds.height * scale)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
+            UIColor.white.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            context.cgContext.saveGState()
+            context.cgContext.scaleBy(x: scale, y: scale)
+            page.draw(with: .mediaBox, to: context.cgContext)
+            context.cgContext.restoreGState()
+        }
+        return image
+    }
+
+    private func recognizeText(from cgImage: CGImage, orientation: CGImagePropertyOrientation, variantName: String) async throws -> OCRCandidate {
+        try await withCheckedThrowingContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                let observations = (request.results as? [VNRecognizedTextObservation]) ?? []
+                let topCandidates = observations.compactMap { $0.topCandidates(1).first }
+                let lines = topCandidates.map(\.string)
+                let text = lines.joined(separator: "\n")
+                let meanConfidence = topCandidates.isEmpty ? 0 : topCandidates.map(\.confidence).reduce(0, +) / Float(topCandidates.count)
+                let score = scoreOCR(text: text, meanConfidence: meanConfidence)
+                continuation.resume(returning: OCRCandidate(
+                    variantName: variantName,
+                    text: text,
+                    score: score,
+                    meanConfidence: meanConfidence,
+                    lineCount: lines.count
+                ))
+            }
+            request.recognitionLanguages = ["de-DE", "en-US"]
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+
+            do {
+                let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation)
+                try handler.perform([request])
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
+    }
+
+    private func makeEnhancedOCRImage(from cgImage: CGImage, strong: Bool) -> CGImage? {
+        let input = CIImage(cgImage: cgImage)
+
+        guard let colorControls = CIFilter(name: "CIColorControls") else { return nil }
+        colorControls.setValue(input, forKey: kCIInputImageKey)
+        colorControls.setValue(0.0, forKey: kCIInputSaturationKey)
+        colorControls.setValue(strong ? 1.85 : 1.35, forKey: kCIInputContrastKey)
+        colorControls.setValue(strong ? 0.03 : 0.01, forKey: kCIInputBrightnessKey)
+        guard let colorAdjusted = colorControls.outputImage else { return nil }
+
+        guard let sharpen = CIFilter(name: "CISharpenLuminance") else {
+            return ciContext.createCGImage(colorAdjusted, from: colorAdjusted.extent)
+        }
+        sharpen.setValue(colorAdjusted, forKey: kCIInputImageKey)
+        sharpen.setValue(strong ? 1.2 : 0.6, forKey: kCIInputSharpnessKey)
+        guard let output = sharpen.outputImage else {
+            return ciContext.createCGImage(colorAdjusted, from: colorAdjusted.extent)
+        }
+        return ciContext.createCGImage(output, from: output.extent)
+    }
+
+    private func scoreOCR(text: String, meanConfidence: Float) -> Double {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return 0 }
+
+        let lower = trimmed.lowercased()
+        let chars = Double(trimmed.count)
+        let lines = Double(trimmed.split(separator: "\n").count)
+        let keywordHits = ["rechnung", "betrag", "gesamt", "eur", "€", "iban", "rechnungsnummer"]
+            .reduce(0) { $0 + (lower.contains($1) ? 1 : 0) }
+        let dateHits = lower.matches(for: #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#).count
+        let amountHits = lower.matches(for: #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#).count
+
+        return chars * 0.004
+            + lines * 0.15
+            + Double(keywordHits) * 1.8
+            + Double(dateHits) * 0.8
+            + Double(amountHits) * 0.5
+            + Double(meanConfidence) * 6.0
+    }
+
+    private func cgImageOrientation(for orientation: UIImage.Orientation) -> CGImagePropertyOrientation {
+        switch orientation {
+        case .up: return .up
+        case .down: return .down
+        case .left: return .left
+        case .right: return .right
+        case .upMirrored: return .upMirrored
+        case .downMirrored: return .downMirrored
+        case .leftMirrored: return .leftMirrored
+        case .rightMirrored: return .rightMirrored
+        @unknown default: return .up
+        }
+    }
+}
+
+enum OCRError: Error {
+    case invalidImage
+    case invalidPDF
+}
+
+private struct OCRCandidate {
+    let variantName: String
+    let text: String
+    let score: Double
+    let meanConfidence: Float
+    let lineCount: Int
+}
+
+struct OCRExtractionResult {
+    let text: String
+    let debugSummary: String?
+}
+
+private extension String {
+    func matches(for pattern: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let nsRange = NSRange(startIndex..<endIndex, in: self)
+        return regex.matches(in: self, range: nsRange).compactMap { result in
+            guard let range = Range(result.range, in: self) else { return nil }
+            return String(self[range])
+        }
+    }
+}

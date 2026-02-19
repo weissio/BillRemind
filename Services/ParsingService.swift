@@ -1,0 +1,289 @@
+import Foundation
+
+struct ParsedInvoiceData {
+    var vendorName: String = "Unbekannt"
+    var paymentRecipient: String = "Unbekannt"
+    var category: String = "Sonstiges"
+    var amount: Decimal?
+    var dueDate: Date?
+    var invoiceNumber: String?
+    var iban: String?
+    var note: String?
+    var extractedText: String
+    var ocrConfidence: Double?
+    var vendorConfidence: Double?
+    var amountConfidence: Double?
+    var dueDateConfidence: Double?
+    var invoiceNumberConfidence: Double?
+    var ibanConfidence: Double?
+    var reviewHint: String?
+}
+
+struct ParsingService {
+    private let calendar = Calendar.current
+
+    func parse(text: String) -> ParsedInvoiceData {
+        let lines = text
+            .split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
+        return ParsedInvoiceData(
+            vendorName: extractVendorName(from: lines),
+            paymentRecipient: extractPaymentRecipient(from: lines),
+            category: extractCategory(from: lines),
+            amount: extractAmount(from: lines),
+            dueDate: extractDueDate(from: lines),
+            invoiceNumber: extractInvoiceNumber(from: lines),
+            iban: extractIBAN(from: text),
+            note: nil,
+            extractedText: text
+        )
+    }
+
+    func extractIBAN(from text: String) -> String? {
+        let pattern = #"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){10,30}\b"#
+        let upper = text.uppercased()
+        guard let range = upper.range(of: pattern, options: .regularExpression) else { return nil }
+        let raw = String(upper[range])
+        return raw.replacingOccurrences(of: " ", with: "")
+    }
+
+    func extractAmount(from lines: [String]) -> Decimal? {
+        let priorityKeywords = ["gesamt", "betrag", "summe", "total", "zu zahlen"]
+        var candidates: [(score: Int, amount: Decimal)] = []
+
+        for line in lines {
+            let lower = line.lowercased()
+            let score = priorityKeywords.reduce(0) { partial, keyword in
+                partial + (lower.contains(keyword) ? 2 : 0)
+            } + ((lower.contains("€") || lower.contains("eur")) ? 1 : 0)
+
+            let amounts = extractAmounts(from: line)
+            for amount in amounts where amount > 0 && amount < 1_000_000 {
+                candidates.append((score: score, amount: amount))
+            }
+        }
+
+        return candidates
+            .sorted { lhs, rhs in
+                if lhs.score == rhs.score { return lhs.amount > rhs.amount }
+                return lhs.score > rhs.score
+            }
+            .first?.amount
+    }
+
+    private func extractAmounts(from text: String) -> [Decimal] {
+        let pattern = #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#
+        let matches = text.matches(for: pattern)
+        return matches.compactMap { raw in
+            let normalized = raw
+                .replacingOccurrences(of: " ", with: "")
+                .replacingOccurrences(of: ".", with: "")
+                .replacingOccurrences(of: ",", with: ".")
+            return Decimal(string: normalized)
+        }
+    }
+
+    func extractDueDate(from lines: [String]) -> Date? {
+        let keywords = ["zahlbar bis", "fällig am", "fällig", "zahlungsziel", "due", "due date"]
+        let formats = ["dd.MM.yyyy", "dd.MM.yy", "yyyy-MM-dd"]
+        let datePattern = #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "de_DE")
+
+        let keywordLines = lines.filter { line in
+            let lower = line.lowercased()
+            return keywords.contains { lower.contains($0) }
+        }
+        // Do not guess a due date from order/invoice dates if no payment-due cue exists.
+        guard !keywordLines.isEmpty else { return nil }
+
+        for line in keywordLines {
+            let candidates = line.matches(for: datePattern)
+            for format in formats {
+                dateFormatter.dateFormat = format
+                for token in candidates {
+                    if let date = dateFormatter.date(from: token) {
+                        return calendar.startOfDay(for: date)
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
+    func extractInvoiceNumber(from lines: [String]) -> String? {
+        let joined = lines.joined(separator: " ")
+        let strictPatterns = [
+            #"\bDE-\d{4}-\d-\d+\b"#,
+            #"\b[A-Z]{2,5}-\d{4}-[A-Z0-9\-]{4,}\b"#
+        ]
+        for pattern in strictPatterns {
+            if let range = joined.range(of: pattern, options: .regularExpression) {
+                return String(joined[range])
+            }
+        }
+
+        let pattern = #"(?i)(?:rechnungs?(?:nr|nummer)|rg\.?\s*nr\.?|invoice\s*(?:no|nr|number)|belegnr\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/]+)"#
+        for line in lines {
+            if let match = line.firstCaptureGroup(for: pattern) {
+                let lower = match.lowercased()
+                if lower.contains("referenz") || lower.contains("versand") || lower.contains("rechnung") {
+                    continue
+                }
+                return match
+            }
+        }
+        return nil
+    }
+
+    func extractVendorName(from lines: [String]) -> String {
+        if let teamVendor = extractTeamVendor(from: lines) {
+            return teamVendor
+        }
+
+        if let legalEntity = extractLegalEntityLine(from: lines) {
+            return legalEntity
+        }
+
+        for line in lines {
+            let cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if cleaned.isEmpty { continue }
+            let lower = cleaned.lowercased()
+            if isLikelyCustomerLine(lower) { continue }
+            if containsCompanyMarker(lower) {
+                return cleaned
+            }
+        }
+
+        let ignoreFragments = [
+            "rechnung", "invoice", "rechnungsnr", "rechnungsnummer", "zahlbar", "fällig",
+            "iban", "kunde", "rechnung an", "bestelldatum", "rechnungsdatum", "versanddatum",
+            "ust-id", "hrb"
+        ]
+        for line in lines.prefix(10) {
+            let lower = line.lowercased()
+            if ignoreFragments.contains(where: { lower.contains($0) }) { continue }
+            if isLikelyCustomerLine(lower) { continue }
+            if line.count < 3 { continue }
+            return line
+        }
+        return "Unbekannt"
+    }
+
+    private func extractPaymentRecipient(from lines: [String]) -> String {
+        if let legalEntity = extractLegalEntityLine(from: lines) {
+            return legalEntity
+        }
+
+        for line in lines {
+            let cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if cleaned.isEmpty { continue }
+            let lower = cleaned.lowercased()
+            if isLikelyCustomerLine(lower) { continue }
+            if containsCompanyMarker(lower) {
+                return cleaned
+            }
+        }
+        return extractVendorName(from: lines)
+    }
+
+    private func extractLegalEntityLine(from lines: [String]) -> String? {
+        for line in lines {
+            let cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if cleaned.isEmpty { continue }
+            let lower = cleaned.lowercased()
+            if isLikelyCustomerLine(lower) { continue }
+            if hasLegalEntitySuffix(lower) {
+                return cleaned
+            }
+        }
+        return nil
+    }
+
+    private func extractTeamVendor(from lines: [String]) -> String? {
+        for line in lines {
+            let lower = line.lowercased()
+            if let range = lower.range(of: #"dein\s+([a-z0-9&\-\.\s]+)\s+team"#, options: .regularExpression) {
+                let fragment = String(line[range])
+                let stripped = fragment
+                    .replacingOccurrences(of: "(?i)^dein\\s+", with: "", options: .regularExpression)
+                    .replacingOccurrences(of: "(?i)\\s+team$", with: "", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !stripped.isEmpty { return stripped }
+            }
+            if lower.contains("medimops") {
+                return "medimops"
+            }
+        }
+        return nil
+    }
+
+    private func containsCompanyMarker(_ lower: String) -> Bool {
+        let brandMarkers = [" momox", " medimops"]
+        return hasLegalEntitySuffix(lower) || brandMarkers.contains { lower.contains($0) }
+    }
+
+    private func hasLegalEntitySuffix(_ lower: String) -> Bool {
+        lower.range(of: #"\b(gmbh|ag|se|kg|ug|ltd|llc|inc)\b"#, options: .regularExpression) != nil
+    }
+
+    private func isLikelyCustomerLine(_ lower: String) -> Bool {
+        if hasLegalEntitySuffix(lower) || lower.contains("momox") || lower.contains("medimops") {
+            return false
+        }
+        let customerMarkers = [
+            "bestelldatum", "rechnungsdatum", "versanddatum", "rechnung für deine bestellung",
+            "hallo ", "deine bestellung", "seite ", "tel.:", "fax:", "email:", "ust-id", "hrb"
+        ]
+        if customerMarkers.contains(where: { lower.contains($0) }) {
+            return true
+        }
+        // Typical personal/address line at top (street + house number pattern).
+        if lower.range(of: #"[a-zäöüß]+\s*(straße|str\.?|weg|platz)\s+\d+"#, options: .regularExpression) != nil {
+            return true
+        }
+        return false
+    }
+
+    private func extractCategory(from lines: [String]) -> String {
+        let text = lines.joined(separator: " ").lowercased()
+        if containsAny(in: text, keywords: ["miete", "vermieter", "warmmiete", "kaltmiete"]) { return "Wohnen" }
+        if containsAny(in: text, keywords: ["strom", "gas", "wasser", "energie", "heizung"]) { return "Wohnen" }
+        if containsAny(in: text, keywords: ["supermarkt", "lebensmittel", "rewe", "edeka", "lidl", "aldi"]) { return "Lebensmittel" }
+        if containsAny(in: text, keywords: ["versicherung", "haftpflicht", "kasko", "krankenversicherung"]) { return "Versicherung" }
+        if containsAny(in: text, keywords: ["telekom", "internet", "mobilfunk", "dsl", "vodafone", "o2"]) { return "Telefon & Internet" }
+        if containsAny(in: text, keywords: ["abo", "subscription", "netflix", "spotify", "apple.com/bill"]) { return "Abos" }
+        if containsAny(in: text, keywords: ["steuer", "finanzamt"]) { return "Steuern" }
+        if containsAny(in: text, keywords: ["bahn", "ticket", "parken", "tankstelle", "shell", "aral"]) { return "Mobilität" }
+        return "Sonstiges"
+    }
+
+    private func containsAny(in text: String, keywords: [String]) -> Bool {
+        keywords.contains { text.contains($0) }
+    }
+}
+
+private extension String {
+    func matches(for pattern: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let nsRange = NSRange(startIndex..<endIndex, in: self)
+        return regex.matches(in: self, range: nsRange).compactMap { result in
+            guard let range = Range(result.range, in: self) else { return nil }
+            return String(self[range])
+        }
+    }
+
+    func firstCaptureGroup(for pattern: String) -> String? {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        let nsRange = NSRange(startIndex..<endIndex, in: self)
+        guard let match = regex.firstMatch(in: self, range: nsRange),
+              match.numberOfRanges > 1,
+              let range = Range(match.range(at: 1), in: self) else {
+            return nil
+        }
+        return String(self[range])
+    }
+}

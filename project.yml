@@ -1,0 +1,48 @@
+name: BillRemind
+options:
+  bundleIdPrefix: com.jonasweiss
+  deploymentTarget:
+    iOS: 17.0
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    SWIFT_VERSION: 5.9
+    PRODUCT_NAME: BillRemind
+targets:
+  BillRemind:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Models
+      - path: Services
+      - path: ViewModels
+      - path: Views
+      - path: Resources
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDisplayName: BillRemind
+        NSCameraUsageDescription: BillRemind benötigt Zugriff auf die Kamera, um Rechnungen zu scannen.
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jonasweiss.BillRemind
+        TARGETED_DEVICE_FAMILY: 1
+    dependencies: []
+  BillRemindTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/BillRemindTests
+    settings:
+      base:
+        PRODUCT_NAME: BillRemindTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.jonasweiss.BillRemindTests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: BillRemind
