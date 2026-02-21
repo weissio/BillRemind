@@ -1,0 +1,15 @@
+{
+  "document_type": "receipt",
+  "source_file": "02_aral_kassenbon.pdf",
+  "expected": {
+    "vendor_name": "ARAL TANKSTELLE",
+    "payment_recipient": "ARAL TANKSTELLE",
+    "amount_value": 64.12,
+    "category": "Mobilität",
+    "due_date": null,
+    "status_suggestion": "paid",
+    "invoice_number": null,
+    "iban": null
+  }
+}
+

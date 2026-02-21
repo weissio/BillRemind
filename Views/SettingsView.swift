@@ -13,56 +13,65 @@ struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @AppStorage(AppSettings.exportFormatKey) private var exportFormat: String = AppSettings.exportFormat
     @AppStorage(AppSettings.ocrDebugVisibleKey) private var ocrDebugVisible: Bool = AppSettings.ocrDebugVisible
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @State private var backupURL: URL?
     @State private var showRestoreImporter = false
     @State private var infoMessage: String?
 
     var body: some View {
         Form {
-            Section("Datenschutz") {
-                Text("Alle Daten bleiben lokal auf deinem Gerät.")
+            Section(isEnglish ? "Language" : "Sprache") {
+                Picker(isEnglish ? "App language" : "App-Sprache", selection: $appLanguageCode) {
+                    Text("Deutsch").tag("de")
+                    Text("English").tag("en")
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section(L10n.t("Datenschutz", "Privacy")) {
+                Text(L10n.t("Alle Daten bleiben lokal auf deinem Gerät.", "All data stays local on your device."))
                     .font(.subheadline)
             }
 
-            Section("Standard-Reminder") {
-                Picker("Tage vor Fälligkeit", selection: $viewModel.reminderOffsetDays) {
+            Section(L10n.t("Standard-Reminder", "Default reminder")) {
+                Picker(L10n.t("Tage vor Fälligkeit", "Days before due date"), selection: $viewModel.reminderOffsetDays) {
                     ForEach(viewModel.offsetOptions, id: \.self) { value in
-                        Text("\(value) Tage")
+                        Text(isEnglish ? "\(value) days" : "\(value) Tage")
                     }
                 }
             }
 
-            Section("Sicherheit") {
-                Toggle("App-Sperre mit Face ID / Touch ID", isOn: $viewModel.biometricLockEnabled)
+            Section(L10n.t("Sicherheit", "Security")) {
+                Toggle(L10n.t("App-Sperre mit Face ID / Touch ID", "App lock with Face ID / Touch ID"), isOn: $viewModel.biometricLockEnabled)
             }
 
-            Section("Cashflow-Warnung") {
-                Toggle("Mitteilung bei negativem Cashflow", isOn: $viewModel.negativeCashflowAlertEnabled)
+            Section(L10n.t("Cashflow-Warnung", "Cashflow alert")) {
+                Toggle(L10n.t("Mitteilung bei negativem Cashflow", "Notify on negative cashflow"), isOn: $viewModel.negativeCashflowAlertEnabled)
                 if viewModel.negativeCashflowAlertEnabled {
-                    Picker("Zeitraum", selection: $viewModel.negativeCashflowAlertWeeks) {
+                    Picker(L10n.t("Zeitraum", "Range"), selection: $viewModel.negativeCashflowAlertWeeks) {
                         ForEach(viewModel.cashflowWeeksOptions, id: \.self) { value in
-                            Text("\(value) Wochen")
+                            Text(isEnglish ? "\(value) weeks" : "\(value) Wochen")
                         }
                     }
                 }
             }
 
-            Section("OCR & Priorität") {
-                Picker("Bald fällig ab", selection: $viewModel.urgencySoonDays) {
+            Section(L10n.t("OCR & Priorität", "OCR & priority")) {
+                Picker(L10n.t("Bald fällig ab", "Due soon threshold"), selection: $viewModel.urgencySoonDays) {
                     ForEach(viewModel.urgencySoonDaysOptions, id: \.self) { value in
-                        Text("\(value) Tage")
+                        Text(isEnglish ? "\(value) days" : "\(value) Tage")
                     }
                 }
-                Picker("OCR-Prüfgrenze", selection: $viewModel.reviewConfidencePercent) {
+                Picker(L10n.t("OCR-Prüfgrenze", "OCR confidence threshold"), selection: $viewModel.reviewConfidencePercent) {
                     ForEach(viewModel.reviewConfidenceOptions, id: \.self) { value in
                         Text("\(value)%")
                     }
                 }
-                Toggle("OCR-Debug in Review anzeigen", isOn: $ocrDebugVisible)
+                Toggle(L10n.t("OCR-Debug in Review anzeigen", "Show OCR debug in review"), isOn: $ocrDebugVisible)
             }
 
-            Section("Export") {
-                Picker("Standardformat", selection: $exportFormat) {
+            Section(L10n.t("Export", "Export")) {
+                Picker(L10n.t("Standardformat", "Default format"), selection: $exportFormat) {
                     Text("Excel (.xlsx)").tag("xlsx")
                     Text("CSV (.csv)").tag("csv")
                     Text("XML (.xml)").tag("xml")
@@ -70,18 +79,18 @@ struct SettingsView: View {
                 .pickerStyle(.menu)
             }
 
-            Section("Backup & Restore") {
-                Button("Backup erstellen") {
+            Section(L10n.t("Backup & Restore", "Backup & restore")) {
+                Button(L10n.t("Backup erstellen", "Create backup")) {
                     createBackup()
                 }
                 .buttonStyle(.borderedProminent)
                 if let backupURL {
                     ShareLink(item: backupURL) {
-                        Text("Backup teilen")
+                        Text(L10n.t("Backup teilen", "Share backup"))
                             .fontWeight(.medium)
                     }
                 }
-                Button("Backup wiederherstellen") {
+                Button(L10n.t("Backup wiederherstellen", "Restore backup")) {
                     showRestoreImporter = true
                 }
             }
@@ -94,7 +103,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("Einstellungen")
+        .navigationTitle(isEnglish ? "Settings" : "Einstellungen")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
@@ -109,7 +118,7 @@ struct SettingsView: View {
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zurück") {
+                Button(isEnglish ? "Back" : "Zurück") {
                     dismiss()
                 }
             }
@@ -124,7 +133,7 @@ struct SettingsView: View {
                 guard let url = urls.first else { return }
                 restoreBackup(from: url)
             case .failure:
-                infoMessage = "Restore abgebrochen."
+                infoMessage = L10n.t("Restore abgebrochen.", "Restore cancelled.")
             }
         }
     }
@@ -143,9 +152,9 @@ struct SettingsView: View {
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
             try data.write(to: url)
             backupURL = url
-            infoMessage = "Backup erstellt."
+            infoMessage = L10n.t("Backup erstellt.", "Backup created.")
         } catch {
-            infoMessage = "Backup fehlgeschlagen."
+            infoMessage = L10n.t("Backup fehlgeschlagen.", "Backup failed.")
         }
     }
 
@@ -181,10 +190,14 @@ struct SettingsView: View {
             }
 
             try modelContext.save()
-            infoMessage = "Backup wiederhergestellt."
+            infoMessage = L10n.t("Backup wiederhergestellt.", "Backup restored.")
         } catch {
-            infoMessage = "Restore fehlgeschlagen."
+            infoMessage = L10n.t("Restore fehlgeschlagen.", "Restore failed.")
         }
+    }
+
+    private var isEnglish: Bool {
+        appLanguageCode == "en"
     }
 }
 
@@ -194,21 +207,22 @@ struct FeedbackView: View {
     @State private var feedbackCategory: FeedbackCategory = .bug
     @State private var feedbackText: String = ""
     @State private var infoMessage: String?
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     var body: some View {
         Form {
-            Section("Feedback") {
-                Picker("Kategorie", selection: $feedbackCategory) {
+            Section(L10n.t("Feedback", "Feedback")) {
+                Picker(L10n.t("Kategorie", "Category"), selection: $feedbackCategory) {
                     ForEach(FeedbackCategory.allCases) { category in
-                        Text(category.rawValue).tag(category)
+                        Text(category.title).tag(category)
                     }
                 }
                 .pickerStyle(.menu)
 
-                TextField("Kurzbeschreibung", text: $feedbackText, axis: .vertical)
+                TextField(L10n.t("Kurzbeschreibung", "Short description"), text: $feedbackText, axis: .vertical)
                     .font(.body)
 
-                Button("Feedback senden") {
+                Button(L10n.t("Feedback senden", "Send feedback")) {
                     sendFeedbackMail()
                 }
                 .buttonStyle(.borderedProminent)
@@ -221,7 +235,7 @@ struct FeedbackView: View {
                 }
             }
         }
-        .navigationTitle("Feedback")
+        .navigationTitle(L10n.t("Feedback", "Feedback"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
@@ -236,7 +250,7 @@ struct FeedbackView: View {
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zurück") {
+                Button(L10n.t("Zurück", "Back")) {
                     dismiss()
                 }
             }
@@ -247,12 +261,14 @@ struct FeedbackView: View {
         let bodyText = feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        let subject = "BillRemind Feedback [\(feedbackCategory.rawValue)]"
+        let subject = appLanguageCode == "en"
+            ? "BillRemind Feedback [\(feedbackCategory.rawValue)]"
+            : "BillRemind Feedback [\(feedbackCategory.rawValue)]"
         let body = """
-        Kategorie: \(feedbackCategory.rawValue)
-        Nachricht: \(bodyText.isEmpty ? "(bitte ausfüllen)" : bodyText)
+        \(L10n.t("Kategorie", "Category")): \(feedbackCategory.rawValue)
+        \(L10n.t("Nachricht", "Message")): \(bodyText.isEmpty ? L10n.t("(bitte ausfüllen)", "(please fill in)") : bodyText)
 
-        App-Version: \(version) (\(build))
+        \(L10n.t("App-Version", "App version")): \(version) (\(build))
         iOS: \(UIDevice.current.systemVersion)
         """
 
@@ -262,10 +278,76 @@ struct FeedbackView: View {
             let bodyEscaped = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
             let url = URL(string: "mailto:\(recipient)?subject=\(subjectEscaped)&body=\(bodyEscaped)")
         else {
-            infoMessage = "Feedback-Mail konnte nicht vorbereitet werden."
+            infoMessage = L10n.t("Feedback-Mail konnte nicht vorbereitet werden.", "Could not prepare feedback email.")
             return
         }
         openURL(url)
+    }
+}
+
+struct HelpView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Form {
+            Section(L10n.t("Schnellstart", "Quick start")) {
+                helpLine(L10n.t("1. Starte mit Scan und erfasse eine Rechnung oder einen Kassenbon.", "1. Start with Scan and capture an invoice or a receipt."))
+                helpLine(L10n.t("2. Prüfe im Review die erkannten Felder und passe sie bei Bedarf kurz an.", "2. Check detected fields in Review and adjust them if needed."))
+                helpLine(L10n.t("3. Speichern und danach in Ausgaben oder Auswertung den aktuellen Stand sehen.", "3. Save, then check your current status in Expenses or Analytics."))
+            }
+
+            Section(L10n.t("Scan & Import", "Scan & import")) {
+                helpLine(L10n.t("Scan Rechnung setzt den Status standardmäßig auf Offen.", "Scan invoice sets the status to Open by default."))
+                helpLine(L10n.t("Scan Kassenbon setzt den Status automatisch auf Bezahlt.", "Scan receipt sets the status to Paid automatically."))
+                helpLine(L10n.t("Bei +7 / +14 / +30 Tagen wird vom Eingangsdatum aus gerechnet.", "+7 / +14 / +30 days are calculated from the received date."))
+                helpLine(L10n.t("Zusätzlich kannst du Rechnungen per PDF importieren oder manuell erfassen.", "You can also import invoices via PDF or enter them manually."))
+            }
+
+            Section(L10n.t("Fixkosten & Kredite", "Fixed costs & loans")) {
+                helpLine(L10n.t("In Ausgaben kannst du Fixkosten und Kredite getrennt erfassen.", "In Expenses, you can track fixed costs and loans separately."))
+                helpLine(L10n.t("Zins und Anfangsschuld sind nur bei Krediten relevant.", "Interest and initial principal are only relevant for loans."))
+                helpLine(L10n.t("Sondertilgungen fügst du direkt im Dialog Kredit bearbeiten hinzu.", "You can add special repayments directly in the Edit loan dialog."))
+            }
+
+            Section(L10n.t("Backup & Restore", "Backup & restore")) {
+                helpLine(L10n.t("Erstelle regelmäßig ein Backup in den Settings.", "Create backups regularly in Settings."))
+                helpLine(L10n.t("Wiederherstellen funktioniert in derselben Ansicht mit der JSON-Datei.", "Restore works from the same screen using the JSON file."))
+                helpLine(L10n.t("Für den Desktop-Import wird diese JSON-Backup-Datei verwendet.", "The same JSON backup file is used for desktop import."))
+            }
+
+            Section(L10n.t("Hinweise", "Notes")) {
+                helpLine(L10n.t("Alle Daten bleiben lokal auf deinem Gerät.", "All data stays local on your device."))
+                helpLine(L10n.t("Wenn OCR unsicher ist, korrigiere die Felder einfach im Review.", "If OCR confidence is low, simply correct the fields in Review."))
+                helpLine(L10n.t("Tipp: Lieber kurz prüfen als später falsche Werte in der Auswertung haben.", "Tip: A quick check now avoids wrong values in analytics later."))
+            }
+        }
+        .navigationTitle(L10n.t("Anleitung", "Guide"))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .scrollContentBackground(.hidden)
+        .background(
+            LinearGradient(
+                colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+        )
+        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(L10n.t("Zurück", "Back")) {
+                    dismiss()
+                }
+            }
+        }
+    }
+
+    private func helpLine(_ text: String) -> some View {
+        Text(text)
+            .font(.body)
+            .foregroundStyle(.primary)
+            .padding(.vertical, 2)
     }
 }
 
@@ -278,6 +360,17 @@ private enum FeedbackCategory: String, CaseIterable, Identifiable {
     case wish = "Wunsch"
 
     var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .ocr: return "OCR"
+        case .ui: return "UI"
+        case .export: return L10n.t("Export", "Export")
+        case .fixedCosts: return L10n.t("Fixkosten", "Fixed costs")
+        case .bug: return L10n.t("Bug", "Bug")
+        case .wish: return L10n.t("Wunsch", "Feature request")
+        }
+    }
 }
 
 private struct BackupPayload: Codable {
@@ -457,6 +550,7 @@ private struct IncomeEntrySnapshot: Codable {
 
 private struct InstallmentPlanSnapshot: Codable {
     let id: UUID
+    let kindRaw: String?
     let name: String
     let monthlyPayment: Decimal
     let monthlyInterest: Decimal
@@ -469,6 +563,7 @@ private struct InstallmentPlanSnapshot: Codable {
 
     init(from model: InstallmentPlan) {
         id = model.id
+        kindRaw = model.kindRaw
         name = model.name
         monthlyPayment = model.monthlyPayment
         monthlyInterest = model.monthlyInterest
@@ -483,6 +578,7 @@ private struct InstallmentPlanSnapshot: Codable {
     func makeModel() -> InstallmentPlan {
         InstallmentPlan(
             id: id,
+            kind: InstallmentPlan.Kind(rawValue: kindRaw ?? "") ?? .fixedCost,
             name: name,
             monthlyPayment: monthlyPayment,
             monthlyInterest: monthlyInterest,

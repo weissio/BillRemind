@@ -1,0 +1,35 @@
+name: OCR Corpus Check
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "Services/ParsingService.swift"
+      - "tools/ocr_corpus_check.swift"
+      - "Testdaten/OCR-Korpus/**"
+      - "Makefile"
+      - ".github/workflows/ocr-corpus-check.yml"
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "Services/ParsingService.swift"
+      - "tools/ocr_corpus_check.swift"
+      - "Testdaten/OCR-Korpus/**"
+      - "Makefile"
+      - ".github/workflows/ocr-corpus-check.yml"
+
+jobs:
+  ocr-check:
+    name: Run OCR Corpus Validation
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run OCR corpus check
+        run: make ocr-check

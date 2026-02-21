@@ -1,0 +1,29 @@
+NORDSCHUTZ Versicherung AG
+Policenring 8
+50667 Koeln
+
+RECHNUNG / BEITRAGSRECHNUNG
+
+Rechnungsnummer: VS-2026-1148
+Rechnungsdatum: 20.02.2026
+Versicherungsschein: 91-338-22017
+
+Versicherungsnehmer: Max Mustermann
+Vertragsart: Hausratversicherung
+Abrechnungszeitraum: 01.03.2026 - 31.03.2026
+
+Positionen:
+- Monatsbeitrag Hausrat                    28,90 EUR
+- Zusatzbaustein Elementar                  6,10 EUR
+
+Gesamtbetrag: 35,00 EUR
+
+Faellig am: 01.03.2026
+Status: Offen
+
+Zahlungsempfaenger: NORDSCHUTZ Versicherung AG
+IBAN: DE11 3704 0044 0532 0130 00
+BIC: COBADEFFXXX
+Verwendungszweck: VS-2026-1148
+
+Hinweis: Bei Rueckfragen bitte Rechnungsnummer angeben.

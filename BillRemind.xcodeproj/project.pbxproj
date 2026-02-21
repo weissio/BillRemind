@@ -12,6 +12,7 @@
 		13F53798F28DCEBC0C7BCCAA /* InvoiceDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81604466521AA1510AAEB66D /* InvoiceDetailViewModel.swift */; };
 		1677D41468AB70AA2C8C1E19 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDCC6CC21EDAC5AD87A5A5A /* NotificationService.swift */; };
 		2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */; };
+		2162ED5607C0C1A193A0A001 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2162ED5507C0C1A193A0A001 /* Localization.swift */; };
 		2310704C6DBC0E5876BED37B /* ParsingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD88E620A2B65DEC03380A10 /* ParsingService.swift */; };
 		246A6B22638CB8394E68EF00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2618E1871E20FE76E48B5FDF /* SettingsView.swift */; };
 		30F01E1C39FF5EBC0BCD69FF /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A2349042DBE16443941B61 /* Invoice.swift */; };
@@ -42,6 +43,7 @@
 
 /* Begin PBXFileReference section */
 		1A383A0637A75F95DD140569 /* ScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewModel.swift; sourceTree = "<group>"; };
+		2162ED5507C0C1A193A0A001 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		2618E1871E20FE76E48B5FDF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		28337DFDE1BBC429DD563F0D /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		2A6FE966878264CD3023BFD0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -91,6 +93,7 @@
 			children = (
 				AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */,
 				51A2349042DBE16443941B61 /* Invoice.swift */,
+				2162ED5507C0C1A193A0A001 /* Localization.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -255,6 +258,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */,
+				2162ED5607C0C1A193A0A001 /* Localization.swift in Sources */,
 				DDF56EFBBC6909F05F30702D /* BillRemindApp.swift in Sources */,
 				03084A52586F94C2AAE28A9D /* CameraPicker.swift in Sources */,
 				B893E83C70548CC6DAD24738 /* FullScreenImageView.swift in Sources */,

@@ -1,0 +1,13 @@
+LIDL VERTRIEB GMBH & CO. KG
+Filiale 889
+Hanauer Landstrasse 22
+60314 Frankfurt
+
+KASSENBON
+Backwaren             3,49
+Milch                 1,29
+Obst                  4,95
+
+SUMME EUR             9,73
+MWST                  1,55
+EC-KARTE              9,73

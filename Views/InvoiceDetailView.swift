@@ -16,12 +16,12 @@ struct InvoiceDetailView: View {
 
     var body: some View {
         Form {
-            Section("Status") {
-                LabeledContent("Aktuell", value: invoice.status == .open ? "Offen" : "Bezahlt")
+            Section(L10n.t("Status", "Status")) {
+                LabeledContent(L10n.t("Aktuell", "Current"), value: invoice.status == .open ? L10n.t("Offen", "Open") : L10n.t("Bezahlt", "Paid"))
                 if let paidAt = invoice.paidAt {
-                    LabeledContent("Bezahlt am", value: paidAt.formatted(date: .abbreviated, time: .shortened))
+                    LabeledContent(L10n.t("Bezahlt am", "Paid on"), value: paidAt.formatted(date: .abbreviated, time: .shortened))
                 }
-                Button(invoice.status == .open ? "Als bezahlt markieren" : "Als offen markieren") {
+                Button(invoice.status == .open ? L10n.t("Als bezahlt markieren", "Mark as paid") : L10n.t("Als offen markieren", "Mark as open")) {
                     if invoice.status == .open {
                         viewModel.markAsPaid(invoice)
                     } else {
@@ -31,70 +31,70 @@ struct InvoiceDetailView: View {
                 }
             }
 
-            Section("Details") {
-                DatePicker("Eingangsdatum", selection: $invoice.receivedAt, displayedComponents: .date)
-                TextField("Anbieter", text: $invoice.vendorName)
-                TextField("Zahlungsempfaenger", text: $invoice.paymentRecipient)
-                Picker("Kategorie", selection: categoryBinding) {
+            Section(L10n.t("Details", "Details")) {
+                DatePicker(L10n.t("Eingangsdatum", "Received date"), selection: $invoice.receivedAt, displayedComponents: .date)
+                TextField(L10n.t("Anbieter", "Vendor"), text: $invoice.vendorName)
+                TextField(L10n.t("Zahlungsempfaenger", "Payment recipient"), text: $invoice.paymentRecipient)
+                Picker(L10n.t("Kategorie", "Category"), selection: categoryBinding) {
                     ForEach(allCategories, id: \.self) { category in
                         Text(category).tag(category)
                     }
                 }
                 HStack(spacing: 8) {
-                    TextField("Eigene Kategorie", text: $customCategoryInput)
-                    Button("Hinzufügen") {
+                    TextField(L10n.t("Eigene Kategorie", "Custom category"), text: $customCategoryInput)
+                    Button(L10n.t("Hinzufügen", "Add")) {
                         addCustomCategory()
                     }
                     .buttonStyle(.bordered)
                 }
-                TextField("Betrag", value: $invoice.amount, format: .number)
+                TextField(L10n.t("Betrag", "Amount"), value: $invoice.amount, format: .number)
                     .keyboardType(.decimalPad)
                 HStack {
-                    Button("+7 Tage") {
+                    Button(L10n.t("+7 Tage", "+7 days")) {
                         applyDueDate(offsetDays: 7)
                     }
                     .buttonStyle(.bordered)
 
-                    Button("+14 Tage") {
+                    Button(L10n.t("+14 Tage", "+14 days")) {
                         applyDueDate(offsetDays: 14)
                     }
                     .buttonStyle(.bordered)
 
-                    Button("+30 Tage") {
+                    Button(L10n.t("+30 Tage", "+30 days")) {
                         applyDueDate(offsetDays: 30)
                     }
                     .buttonStyle(.bordered)
                 }
-                DatePicker("Fällig am", selection: dueDateBinding, displayedComponents: .date)
-                TextField("Rechnungsnummer", text: optionalBinding($invoice.invoiceNumber))
+                DatePicker(L10n.t("Fällig am", "Due date"), selection: dueDateBinding, displayedComponents: .date)
+                TextField(L10n.t("Rechnungsnummer", "Invoice number"), text: optionalBinding($invoice.invoiceNumber))
                 TextField("IBAN", text: optionalBinding($invoice.iban))
                     .textInputAutocapitalization(.characters)
                 HStack(spacing: 10) {
-                    Button("IBAN kopieren") {
+                    Button(L10n.t("IBAN kopieren", "Copy IBAN")) {
                         copyIBANToClipboard(invoice.iban)
                     }
                     .buttonStyle(.bordered)
                     if ibanCopied {
-                        Text("Kopiert")
+                        Text(L10n.t("Kopiert", "Copied"))
                             .font(.caption)
                             .foregroundStyle(.green)
                     }
                 }
-                Text("Bitte IBAN vor der Zahlung pruefen.")
+                Text(L10n.t("Bitte IBAN vor der Zahlung pruefen.", "Please verify IBAN before payment."))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                TextField("Notiz", text: optionalBinding($invoice.note), axis: .vertical)
+                TextField(L10n.t("Notiz", "Note"), text: optionalBinding($invoice.note), axis: .vertical)
             }
 
-            Section("Reminder") {
-                Toggle("Aktiv", isOn: reminderBinding)
+            Section(L10n.t("Reminder", "Reminder")) {
+                Toggle(L10n.t("Aktiv", "Active"), isOn: reminderBinding)
                 if invoice.reminderEnabled {
-                    DatePicker("Erinnern am", selection: reminderDateBinding, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker(L10n.t("Erinnern am", "Remind at"), selection: reminderDateBinding, displayedComponents: [.date, .hourAndMinute])
                 }
             }
 
             if let image = viewModel.image(for: invoice) {
-                Section("Beleg") {
+                Section(L10n.t("Beleg", "Receipt")) {
                     Button {
                         showFullScreenImage = true
                     } label: {
@@ -104,11 +104,15 @@ struct InvoiceDetailView: View {
                             .frame(maxHeight: 220)
                     }
                     .buttonStyle(.plain)
+                    Button(L10n.t("Belegbild löschen", "Delete receipt image"), role: .destructive) {
+                        viewModel.deleteImage(for: invoice)
+                        try? modelContext.save()
+                    }
                 }
             }
 
             Section {
-                Button("Löschen", role: .destructive) {
+                Button(L10n.t("Löschen", "Delete"), role: .destructive) {
                     showDeleteConfirm = true
                 }
             }
@@ -116,15 +120,15 @@ struct InvoiceDetailView: View {
             if let extractedText = invoice.extractedText, !extractedText.isEmpty {
                 Section("OCR Debug") {
                     if let confidence = invoice.ocrConfidence {
-                        Text("OCR-Sicherheit: \(Int((confidence * 100).rounded()))%")
+                        Text("\(L10n.t("OCR-Sicherheit", "OCR confidence")): \(Int((confidence * 100).rounded()))%")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
-                        confidenceRow("Anbieter", invoice.vendorConfidence)
-                        confidenceRow("Betrag", invoice.amountConfidence)
-                        confidenceRow("Fälligkeitsdatum", invoice.dueDateConfidence)
-                        confidenceRow("Rechnungsnummer", invoice.invoiceNumberConfidence)
+                        confidenceRow(L10n.t("Anbieter", "Vendor"), invoice.vendorConfidence)
+                        confidenceRow(L10n.t("Betrag", "Amount"), invoice.amountConfidence)
+                        confidenceRow(L10n.t("Fälligkeitsdatum", "Due date"), invoice.dueDateConfidence)
+                        confidenceRow(L10n.t("Rechnungsnummer", "Invoice number"), invoice.invoiceNumberConfidence)
                         confidenceRow("IBAN", invoice.ibanConfidence)
                     }
                     if invoice.needsReview == true, let hint = invoice.reviewHint, !hint.isEmpty {
@@ -139,13 +143,13 @@ struct InvoiceDetailView: View {
         }
         .navigationTitle(invoice.vendorName)
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("Rechnung löschen?", isPresented: $showDeleteConfirm) {
-            Button("Löschen", role: .destructive) {
+        .confirmationDialog(L10n.t("Rechnung löschen?", "Delete invoice?"), isPresented: $showDeleteConfirm) {
+            Button(L10n.t("Löschen", "Delete"), role: .destructive) {
                 viewModel.delete(invoice: invoice, modelContext: modelContext)
                 try? modelContext.save()
                 dismiss()
             }
-            Button("Abbrechen", role: .cancel) {}
+            Button(L10n.t("Abbrechen", "Cancel"), role: .cancel) {}
         }
         .fullScreenCover(isPresented: $showFullScreenImage) {
             FullScreenImageView(image: viewModel.image(for: invoice), isPresented: $showFullScreenImage)
@@ -210,8 +214,8 @@ struct InvoiceDetailView: View {
     }
 
     private func applyDueDate(offsetDays: Int) {
-        let base = invoice.createdAt
-        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: base) ?? Date()
+        let base = invoice.receivedAt
+        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: base) ?? base
         invoice.dueDate = due
         if invoice.reminderDate == nil || invoice.reminderEnabled {
             invoice.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: due)

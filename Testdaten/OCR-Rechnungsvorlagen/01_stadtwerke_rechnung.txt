@@ -1,0 +1,31 @@
+STADTWERKE NORD GmbH
+Energieallee 12
+22305 Hamburg
+
+RECHNUNG
+
+Rechnungsnummer: SW-2026-0301
+Rechnungsdatum: 20.02.2026
+Leistungszeitraum: 01.02.2026 - 29.02.2026
+
+Kunde: Max Mustermann
+Kundennummer: K-778231
+Lieferadresse: Hafenstrasse 45, 20095 Hamburg
+
+Positionen:
+- Strom Grundpreis Februar 2026            12,50 EUR
+- Strom Verbrauch 185 kWh                  43,79 EUR
+- Netzgebuehr                               8,30 EUR
+- MwSt 19%                                 12,27 EUR
+
+Gesamtbetrag: 76,86 EUR
+
+Faellig am: 05.03.2026
+Status: Offen
+
+Zahlungsempfaenger: STADTWERKE NORD GmbH
+IBAN: DE98 2005 0550 1122 3344 66
+BIC: HASPDEHHXXX
+Verwendungszweck: SW-2026-0301
+
+Hinweis: Bitte Rechnungsnummer im Verwendungszweck angeben.

@@ -1,6 +1,13 @@
 import Foundation
 
+enum ParsedDocumentType: String, Codable {
+    case invoice
+    case receipt
+    case unknown
+}
+
 struct ParsedInvoiceData {
+    var documentType: ParsedDocumentType = .unknown
     var vendorName: String = "Unbekannt"
     var paymentRecipient: String = "Unbekannt"
     var category: String = "Sonstiges"
@@ -27,13 +34,15 @@ struct ParsingService {
             .split(separator: "\n")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        let documentType = classifyDocumentType(from: lines)
 
         return ParsedInvoiceData(
+            documentType: documentType,
             vendorName: extractVendorName(from: lines),
             paymentRecipient: extractPaymentRecipient(from: lines),
             category: extractCategory(from: lines),
-            amount: extractAmount(from: lines),
-            dueDate: extractDueDate(from: lines),
+            amount: extractAmount(from: lines, documentType: documentType),
+            dueDate: documentType == .receipt ? nil : extractDueDate(from: lines),
             invoiceNumber: extractInvoiceNumber(from: lines),
             iban: extractIBAN(from: text),
             note: nil,
@@ -45,11 +54,21 @@ struct ParsingService {
         let pattern = #"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){10,30}\b"#
         let upper = text.uppercased()
         guard let range = upper.range(of: pattern, options: .regularExpression) else { return nil }
-        let raw = String(upper[range])
-        return raw.replacingOccurrences(of: " ", with: "")
+        let raw = String(upper[range]).replacingOccurrences(of: " ", with: "")
+        // OCR often appends neighboring tokens (for example "BIC") to IBAN.
+        // For DE IBANs we can safely normalize to the exact canonical length (22).
+        if raw.hasPrefix("DE"), raw.count > 22 {
+            let end = raw.index(raw.startIndex, offsetBy: 22)
+            return String(raw[..<end])
+        }
+        return raw
     }
 
-    func extractAmount(from lines: [String]) -> Decimal? {
+    func extractAmount(from lines: [String], documentType: ParsedDocumentType) -> Decimal? {
+        if documentType == .receipt {
+            return extractReceiptTotalAmount(from: lines)
+        }
+
         let priorityKeywords = ["gesamt", "betrag", "summe", "total", "zu zahlen"]
         var candidates: [(score: Int, amount: Decimal)] = []
 
@@ -71,6 +90,43 @@ struct ParsingService {
                 return lhs.score > rhs.score
             }
             .first?.amount
+    }
+
+    private func extractReceiptTotalAmount(from lines: [String]) -> Decimal? {
+        guard !lines.isEmpty else { return nil }
+
+        let strongKeywords = ["summe", "gesamt", "zu zahlen", "endbetrag", "zahlbetrag", "ec", "karte", "bar"]
+        let weakKeywords = ["eur", "€", "betrag"]
+        let negativeKeywords = ["mwst", "ust", "steuer", "rabatt", "gespart", "einzelpreis", "zwischensumme"]
+
+        var scored: [(score: Double, amount: Decimal)] = []
+        var lastAmount: Decimal?
+
+        for (index, line) in lines.enumerated() {
+            let lower = line.lowercased()
+            let amounts = extractAmounts(from: line).filter { $0 > 0 && $0 < 1_000_000 }
+            guard !amounts.isEmpty else { continue }
+
+            let progress = Double(index + 1) / Double(lines.count) // end-of-receipt lines usually contain final total
+            for amount in amounts {
+                var score = 0.0
+                score += Double(strongKeywords.filter { lower.contains($0) }.count) * 3.0
+                score += Double(weakKeywords.filter { lower.contains($0) }.count) * 0.8
+                score -= Double(negativeKeywords.filter { lower.contains($0) }.count) * 2.0
+                score += progress * 2.2
+                if amount >= 1 { score += 0.3 }
+                scored.append((score: score, amount: amount))
+                lastAmount = amount
+            }
+        }
+
+        if let best = scored.sorted(by: { lhs, rhs in
+            if lhs.score == rhs.score { return lhs.amount > rhs.amount }
+            return lhs.score > rhs.score
+        }).first, best.score >= 0.5 {
+            return best.amount
+        }
+        return lastAmount
     }
 
     private func extractAmounts(from text: String) -> [Decimal] {
@@ -256,9 +312,29 @@ struct ParsingService {
         if containsAny(in: text, keywords: ["versicherung", "haftpflicht", "kasko", "krankenversicherung"]) { return "Versicherung" }
         if containsAny(in: text, keywords: ["telekom", "internet", "mobilfunk", "dsl", "vodafone", "o2"]) { return "Telefon & Internet" }
         if containsAny(in: text, keywords: ["abo", "subscription", "netflix", "spotify", "apple.com/bill"]) { return "Abos" }
-        if containsAny(in: text, keywords: ["steuer", "finanzamt"]) { return "Steuern" }
+        if containsAny(in: text, keywords: ["finanzamt", "steuerbescheid"]) { return "Steuern" }
         if containsAny(in: text, keywords: ["bahn", "ticket", "parken", "tankstelle", "shell", "aral"]) { return "Mobilität" }
         return "Sonstiges"
+    }
+
+    private func classifyDocumentType(from lines: [String]) -> ParsedDocumentType {
+        let text = lines.joined(separator: " ").lowercased()
+
+        let receiptKeywords = [
+            "kassenbon", "bon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld",
+            "ust", "mwst", "summe eur", "gesamtsumme", "steuer", "filiale"
+        ]
+        let invoiceKeywords = [
+            "rechnung", "invoice", "rechnungsnummer", "rechnung nr", "zahlbar bis", "fällig", "faellig",
+            "zahlungsempfänger", "zahlungsempfaenger", "iban", "due date"
+        ]
+
+        let receiptHits = receiptKeywords.filter { text.contains($0) }.count
+        let invoiceHits = invoiceKeywords.filter { text.contains($0) }.count
+
+        if receiptHits >= 2 && invoiceHits <= 1 { return .receipt }
+        if invoiceHits >= 2 { return .invoice }
+        return .unknown
     }
 
     private func containsAny(in text: String, keywords: [String]) -> Bool {

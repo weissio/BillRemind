@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "01_stadtwerke_rechnung_style.pdf",
+  "expected": {
+    "vendor_name": "STADTWERKE MAINSTADT GMBH",
+    "payment_recipient": "Stadtwerke Mainstadt GmbH",
+    "amount_value": 162.27,
+    "category": "Wohnen",
+    "due_date": null,
+    "status_suggestion": "open",
+    "invoice_number": "SW-2026-0217",
+    "iban": "DE12500105175407324931"
+  }
+}
+

@@ -1,0 +1,14 @@
+{
+  "document_type": "receipt",
+  "source_file": "03_dm_kassenbon.txt",
+  "expected": {
+    "vendor_name": "dm-drogerie markt gmbh + co. kg",
+    "payment_recipient": "dm-drogerie markt gmbh + co. kg",
+    "amount_value": 18.46,
+    "category": "Sonstiges",
+    "due_date": null,
+    "status_suggestion": "paid",
+    "invoice_number": null,
+    "iban": null
+  }
+}

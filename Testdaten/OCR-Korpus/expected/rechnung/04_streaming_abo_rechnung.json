@@ -1,0 +1,14 @@
+{
+  "document_type": "invoice",
+  "source_file": "04_streaming_abo_rechnung.txt",
+  "expected": {
+    "vendor_name": "STREAMFLIX DIGITAL SERVICES GMBH",
+    "payment_recipient": "Streamflix Digital Services GmbH",
+    "amount_value": 15.99,
+    "category": "Abos",
+    "due_date": null,
+    "status_suggestion": "open",
+    "invoice_number": "ABO-2026-1001",
+    "iban": "DE44500105175407321122"
+  }
+}

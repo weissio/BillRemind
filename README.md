@@ -27,19 +27,37 @@ Hinweis: `project.yml` ist enthalten. Eine Regenerierung mit `xcodegen` ist opti
 - Bilder werden in der App-Sandbox gespeichert (`Documents/InvoicesImages`).
 - Kein Login, kein Backend, keine Cloud-Übertragung.
 
+## Betrieb & Support
+- Absicherung, Update-Strategie, Incident-Runbook und Übergabe:
+  - `/Users/jonasweiss/Documents/New project/BillRemind/Readme_Absicherung_und_Support.md`
+- Release-Datensicherheits-Checkliste:
+  - `/Users/jonasweiss/Documents/New project/BillRemind/docs/data-safety-release-checklist.md`
+- OCR-Hardening-Roadmap (Kassenbon + Rechnungen):
+  - `/Users/jonasweiss/Documents/New project/BillRemind/docs/ocr-hardening-plan.md`
+
 ## Tests ausführen
 1. In Xcode: `Product > Test`
 2. Oder per CLI:
    - `xcodebuild test -project BillRemind.xcodeproj -scheme BillRemind -destination 'platform=iOS Simulator,name=iPhone 15'`
+3. OCR-Korpus-Pflichtlauf (vor Merge/Release):
+   - `make ocr-check`
+   - Report liegt danach in `Testdaten/OCR-Korpus/report/latest.md`
+
+CI:
+- GitHub Actions Workflow `OCR Corpus Check` fuehrt `make ocr-check` bei Push/PR automatisch aus.
 
 ## Limitations / Next Steps
-- OCR-Heuristiken sind bewusst einfach gehalten (MVP) und nicht für alle Rechnungslayouts robust.
-- Kein PDF-Import, nur Kamera-Scan.
+- OCR ist produktiv nutzbar, aber noch nicht für alle Sonderlayouts gleich robust
+  (z. B. stark unstrukturierte Belege, sehr schwache Bildqualität, exotische Felder).
 - Keine Cloud-Synchronisation über Geräte.
-- Keine Exportfunktionen (z. B. CSV/PDF) für Freelancer/Buchhaltung.
+- Export ist vorhanden, kann aber funktional noch erweitert werden
+  (z. B. stärkere Buchhaltungs-/Steuerberater-Workflows).
 
 Empfohlene nächste Schritte:
-- PDF-Import + VisionKit `VNDocumentCameraViewController`
-- iCloud Sync (CloudKit)
-- Verbesserte NLP/Regex-Heuristiken mit Länderprofilen
-- Export/Sharing für Steuerberater
+- OCR weiter robustifizieren:
+  - Layout-Typisierung (klassische Rechnung, Kassenbon, Abo, Versicherung, Energie)
+  - Feld-Erkennung mit Prioritätsregeln je Layout-Typ
+  - Confidence-Scoring pro Feld und gezielte Review-Hinweise
+  - Ausbau von Regex/NLP-Regeln inkl. Testdatenkatalog pro Dokumenttyp
+- iCloud Sync (CloudKit) als optionaler Sync-Modus
+- Export/Sharing weiter ausbauen (z. B. Buchhaltungs-Templates, strukturierte Exporte)

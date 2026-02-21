@@ -1,0 +1,14 @@
+{
+  "document_type": "invoice",
+  "source_file": "05_apotheke_rechnung.txt",
+  "expected": {
+    "vendor_name": "APOTHEKE AM MARKT GMBH",
+    "payment_recipient": "Apotheke am Markt GmbH",
+    "amount_value": 35.4,
+    "category": "Sonstiges",
+    "due_date": null,
+    "status_suggestion": "open",
+    "invoice_number": "AP-2026-7788",
+    "iban": "DE90500105175407329876"
+  }
+}

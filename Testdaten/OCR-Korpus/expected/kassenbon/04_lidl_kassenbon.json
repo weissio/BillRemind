@@ -1,0 +1,14 @@
+{
+  "document_type": "receipt",
+  "source_file": "04_lidl_kassenbon.txt",
+  "expected": {
+    "vendor_name": "LIDL VERTRIEB GMBH & CO. KG",
+    "payment_recipient": "LIDL VERTRIEB GMBH & CO. KG",
+    "amount_value": 9.73,
+    "category": "Lebensmittel",
+    "due_date": null,
+    "status_suggestion": "paid",
+    "invoice_number": null,
+    "iban": null
+  }
+}

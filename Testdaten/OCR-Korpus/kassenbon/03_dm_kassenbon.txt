@@ -1,0 +1,13 @@
+dm-drogerie markt gmbh + co. kg
+Filiale 1123
+Berliner Strasse 14
+60311 Frankfurt
+
+KASSENBON
+Artikel 1              6,95
+Artikel 2              4,49
+Artikel 3              7,02
+
+SUMME EUR             18,46
+inkl. MwSt            2,95
+Kartenzahlung         18,46

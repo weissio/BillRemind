@@ -1,0 +1,15 @@
+{
+  "document_type": "receipt",
+  "source_file": "01_rewe_kassenbon.pdf",
+  "expected": {
+    "vendor_name": "REWE MARKT GMBH",
+    "payment_recipient": "REWE MARKT GMBH",
+    "amount_value": 27.84,
+    "category": "Lebensmittel",
+    "due_date": null,
+    "status_suggestion": "paid",
+    "invoice_number": null,
+    "iban": null
+  }
+}
+

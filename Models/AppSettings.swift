@@ -9,6 +9,7 @@ enum AppSettings {
     static let reviewConfidenceThresholdKey = "reviewConfidenceThreshold"
     static let ocrDebugVisibleKey = "ocrDebugVisible"
     static let exportFormatKey = "exportFormat"
+    static let appLanguageCodeKey = "appLanguageCode"
 
     static var defaultReminderOffsetDays: Int {
         get {
@@ -74,6 +75,17 @@ enum AppSettings {
         set {
             let sanitized = ["xlsx", "csv", "xml"].contains(newValue) ? newValue : "xlsx"
             UserDefaults.standard.set(sanitized, forKey: exportFormatKey)
+        }
+    }
+
+    static var appLanguageCode: String {
+        get {
+            let value = UserDefaults.standard.string(forKey: appLanguageCodeKey) ?? "de"
+            return ["de", "en"].contains(value) ? value : "de"
+        }
+        set {
+            let sanitized = ["de", "en"].contains(newValue) ? newValue : "de"
+            UserDefaults.standard.set(sanitized, forKey: appLanguageCodeKey)
         }
     }
 }

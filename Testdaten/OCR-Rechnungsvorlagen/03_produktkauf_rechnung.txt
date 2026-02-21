@@ -1,0 +1,32 @@
+TECHSTORE ONLINE GmbH
+Digitalpark 3
+60314 Frankfurt am Main
+
+RECHNUNG
+
+Rechnungsnummer: TS-2026-55209
+Bestellnummer: ORD-7785001
+Rechnungsdatum: 20.02.2026
+Lieferdatum: 20.02.2026
+
+Rechnungsempfaenger: Max Mustermann
+Lieferadresse: Muehlenweg 9, 60313 Frankfurt am Main
+
+Positionen:
+- USB-C Dockingstation Pro 12-in-1         129,00 EUR
+- Bluetooth Tastatur Compact                39,90 EUR
+- Versand                                   4,99 EUR
+
+Zwischensumme:                             173,89 EUR
+MwSt 19%:                                   33,04 EUR
+Gesamtbetrag:                              206,93 EUR
+
+Faellig am: 06.03.2026
+Status: Offen
+
+Zahlungsempfaenger: TECHSTORE ONLINE GmbH
+IBAN: DE33 5001 0517 5407 3249 31
+BIC: INGDDEFFXXX
+Verwendungszweck: TS-2026-55209
+
+Hinweis: Diese Rechnung wurde elektronisch erstellt.

@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "02_versicherung_rechnung_style.pdf",
+  "expected": {
+    "vendor_name": "SICHERHEIT & LEBEN VERSICHERUNG AG",
+    "payment_recipient": "Sicherheit & Leben Versicherung AG",
+    "amount_value": 50.0,
+    "category": "Versicherung",
+    "due_date": null,
+    "status_suggestion": "open",
+    "invoice_number": "VG-2026-0301",
+    "iban": "DE18700202700013441290"
+  }
+}
+

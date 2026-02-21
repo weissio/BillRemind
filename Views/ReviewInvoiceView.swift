@@ -47,131 +47,150 @@ struct ReviewInvoiceView: View {
                 }
 
                 if draft.needsReview {
-                    Section("Prüfhinweis") {
+                    Section(L10n.t("Prüfhinweis", "Review note")) {
                         if !draft.reviewHint.isEmpty {
                             Text(draft.reviewHint)
                                 .font(.subheadline)
                                 .foregroundStyle(.orange)
                         }
                         if let confidence = draft.ocrConfidence {
-                            Text("OCR-Sicherheit: \(Int((confidence * 100).rounded()))%")
+                            Text("\(L10n.t("OCR-Sicherheit", "OCR confidence")): \(Int((confidence * 100).rounded()))%")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         VStack(alignment: .leading, spacing: 4) {
-                            confidenceRow("Anbieter", draft.vendorConfidence)
-                            confidenceRow("Betrag", draft.amountConfidence)
-                            confidenceRow("Fälligkeitsdatum", draft.dueDateConfidence)
-                            confidenceRow("Rechnungsnummer", draft.invoiceNumberConfidence)
+                            confidenceRow(L10n.t("Anbieter", "Vendor"), draft.vendorConfidence)
+                            confidenceRow(L10n.t("Betrag", "Amount"), draft.amountConfidence)
+                            confidenceRow(L10n.t("Fälligkeitsdatum", "Due date"), draft.dueDateConfidence)
+                            confidenceRow(L10n.t("Rechnungsnummer", "Invoice number"), draft.invoiceNumberConfidence)
                             confidenceRow("IBAN", draft.ibanConfidence)
                         }
                     }
                 }
 
                 if let importHint = importHintText {
-                    Section("Import") {
+                    Section(L10n.t("Import", "Import")) {
                         Text(importHint)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                Section("Rechnung") {
-                    DatePicker("Eingangsdatum", selection: $draft.receivedAt, displayedComponents: .date)
-                    Picker("Status", selection: statusBinding) {
-                        Text("Offen").tag(Invoice.Status.open)
-                        Text("Bezahlt").tag(Invoice.Status.paid)
+                if let capturedImage = scanViewModel.selectedImage {
+                    Section(L10n.t("Belegfoto", "Receipt photo")) {
+                        Toggle(L10n.t("Foto speichern", "Save photo"), isOn: $draft.keepCapturedImage)
+                        if draft.keepCapturedImage {
+                            Image(uiImage: capturedImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxHeight: 220)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        } else {
+                            Text(L10n.t("Foto wird beim Speichern verworfen.", "Photo will be discarded on save."))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                Section(L10n.t("Rechnung", "Invoice")) {
+                    DatePicker(L10n.t("Eingangsdatum", "Received date"), selection: $draft.receivedAt, displayedComponents: .date)
+                    Picker(L10n.t("Status", "Status"), selection: statusBinding) {
+                        Text(L10n.t("Offen", "Open")).tag(Invoice.Status.open)
+                        Text(L10n.t("Bezahlt", "Paid")).tag(Invoice.Status.paid)
                     }
                     .pickerStyle(.segmented)
                     if draft.status == .paid {
-                        DatePicker("Bezahlt am", selection: paidAtBinding, displayedComponents: .date)
-                        Button("Als bezahlt (heute)") {
+                        DatePicker(L10n.t("Bezahlt am", "Paid on"), selection: paidAtBinding, displayedComponents: .date)
+                        Button(L10n.t("Als bezahlt (heute)", "Mark as paid (today)")) {
                             draft.status = .paid
                             draft.paidAt = Calendar.current.startOfDay(for: Date())
                         }
                         .buttonStyle(.bordered)
                     }
-                    highlightedField(title: "Anbieter", confidence: draft.vendorConfidence) {
-                        TextField("z. B. Stadtwerke", text: $draft.vendorName)
+                    highlightedField(title: L10n.t("Anbieter", "Vendor"), confidence: draft.vendorConfidence) {
+                        TextField(L10n.t("z. B. Stadtwerke", "e.g. City Utilities"), text: $draft.vendorName)
                     }
-                    highlightedField(title: "Zahlungsempfaenger", confidence: draft.vendorConfidence) {
-                        TextField("Empfaenger laut Rechnung", text: $draft.paymentRecipient)
+                    highlightedField(title: L10n.t("Zahlungsempfaenger", "Payment recipient"), confidence: draft.vendorConfidence) {
+                        TextField(L10n.t("Empfaenger laut Rechnung", "Recipient as shown on invoice"), text: $draft.paymentRecipient)
                     }
-                    Picker("Kategorie", selection: $draft.category) {
+                    Picker(L10n.t("Kategorie", "Category"), selection: $draft.category) {
                         ForEach(allCategories, id: \.self) { category in
                             Text(category).tag(category)
                         }
                     }
                     HStack(spacing: 8) {
-                        TextField("Eigene Kategorie", text: $customCategoryInput)
-                        Button("Hinzufügen") {
+                        TextField(L10n.t("Eigene Kategorie", "Custom category"), text: $customCategoryInput)
+                        Button(L10n.t("Hinzufügen", "Add")) {
                             addCustomCategory()
                         }
                         .buttonStyle(.bordered)
                     }
-                    highlightedField(title: "Betrag", confidence: draft.amountConfidence) {
-                        TextField("z. B. 49,99", value: $draft.amount, format: .number)
+                    highlightedField(title: L10n.t("Betrag", "Amount"), confidence: draft.amountConfidence) {
+                        TextField(L10n.t("z. B. 49,99", "e.g. 49.99"), value: $draft.amount, format: .number)
                             .keyboardType(.decimalPad)
                     }
-                    highlightedField(title: "Fälligkeitsdatum", confidence: draft.dueDateConfidence) {
-                        HStack {
-                            Button("+7 Tage") {
-                                applyDueDate(offsetDays: 7)
-                            }
-                            .buttonStyle(.bordered)
+                    if draft.importKind != .scanReceipt {
+                        highlightedField(title: L10n.t("Fälligkeitsdatum", "Due date"), confidence: draft.dueDateConfidence) {
+                            HStack {
+                                Button(L10n.t("+7 Tage", "+7 days")) {
+                                    applyDueDate(offsetDays: 7)
+                                }
+                                .buttonStyle(.bordered)
 
-                            Button("+14 Tage") {
-                                applyDueDate(offsetDays: 14)
-                            }
-                            .buttonStyle(.bordered)
+                                Button(L10n.t("+14 Tage", "+14 days")) {
+                                    applyDueDate(offsetDays: 14)
+                                }
+                                .buttonStyle(.bordered)
 
-                            Button("+30 Tage") {
-                                applyDueDate(offsetDays: 30)
+                                Button(L10n.t("+30 Tage", "+30 days")) {
+                                    applyDueDate(offsetDays: 30)
+                                }
+                                .buttonStyle(.bordered)
                             }
-                            .buttonStyle(.bordered)
+                            DatePicker(L10n.t("Fällig am", "Due date"), selection: dueDateBinding, displayedComponents: .date)
                         }
-                        DatePicker("Fällig am", selection: dueDateBinding, displayedComponents: .date)
                     }
-                    highlightedField(title: "Rechnungsnummer", confidence: draft.invoiceNumberConfidence) {
-                        TextField("z. B. INV-2026-001", text: $draft.invoiceNumber)
+                    highlightedField(title: L10n.t("Rechnungsnummer", "Invoice number"), confidence: draft.invoiceNumberConfidence) {
+                        TextField(L10n.t("z. B. INV-2026-001", "e.g. INV-2026-001"), text: $draft.invoiceNumber)
                     }
                     highlightedField(title: "IBAN", confidence: draft.ibanConfidence) {
                         TextField("DE89 3704 0044 0532 0130 00", text: $draft.iban)
                             .textInputAutocapitalization(.characters)
                         HStack(spacing: 10) {
-                            Button("IBAN kopieren") {
+                            Button(L10n.t("IBAN kopieren", "Copy IBAN")) {
                                 copyIBANToClipboard(draft.iban)
                             }
                             .buttonStyle(.bordered)
                             if ibanCopied {
-                                Text("Kopiert")
+                                Text(L10n.t("Kopiert", "Copied"))
                                     .font(.caption)
                                     .foregroundStyle(.green)
                             }
                         }
-                        Text("Bitte IBAN vor der Zahlung pruefen.")
+                        Text(L10n.t("Bitte IBAN vor der Zahlung pruefen.", "Please verify IBAN before payment."))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                Section("Notiz") {
+                Section(L10n.t("Notiz", "Note")) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Notiz")
+                        Text(L10n.t("Notiz", "Note"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        TextField("Optional", text: $draft.note, axis: .vertical)
+                        TextField(L10n.t("Optional", "Optional"), text: $draft.note, axis: .vertical)
                     }
                 }
 
-                Section("Reminder") {
+                Section(L10n.t("Reminder", "Reminder")) {
                     if draft.status == .open {
-                        Toggle("Erinnerung aktivieren", isOn: $draft.reminderEnabled)
+                        Toggle(L10n.t("Erinnerung aktivieren", "Enable reminder"), isOn: $draft.reminderEnabled)
                         if draft.reminderEnabled {
-                            DatePicker("Erinnerungsdatum", selection: reminderDateBinding, displayedComponents: [.date, .hourAndMinute])
+                            DatePicker(L10n.t("Erinnerungsdatum", "Reminder date"), selection: reminderDateBinding, displayedComponents: [.date, .hourAndMinute])
                         }
                     } else {
-                        Text("Für bezahlte Rechnungen sind Erinnerungen deaktiviert.")
+                        Text(L10n.t("Für bezahlte Rechnungen sind Erinnerungen deaktiviert.", "Reminders are disabled for paid invoices."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -184,7 +203,7 @@ struct ReviewInvoiceView: View {
                     }
                 }
             }
-            .navigationTitle("Review")
+            .navigationTitle(L10n.t("Review", "Review"))
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
             .background(
@@ -201,13 +220,13 @@ struct ReviewInvoiceView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") {
+                    Button(L10n.t("Abbrechen", "Cancel")) {
                         dismiss()
                     }
                     .fontWeight(.medium)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Speichern") {
+                    Button(L10n.t("Speichern", "Save")) {
                         save()
                     }
                     .fontWeight(.semibold)
@@ -218,7 +237,7 @@ struct ReviewInvoiceView: View {
 
     private var dueDateBinding: Binding<Date> {
         Binding {
-            draft.dueDate ?? Date()
+            draft.dueDate ?? draft.receivedAt
         } set: { value in
             draft.dueDate = value
             if draft.reminderDate == nil {
@@ -261,13 +280,13 @@ struct ReviewInvoiceView: View {
     private var importHintText: String? {
         switch draft.importKind {
         case .scanReceipt:
-            return "Importtyp: Kassenbon (automatisch auf Bezahlt gesetzt)"
+            return L10n.t("Importtyp: Kassenbon (automatisch auf Bezahlt gesetzt)", "Import type: receipt (automatically set to Paid)")
         case .scanInvoice:
-            return "Importtyp: Rechnungsscan"
+            return L10n.t("Importtyp: Rechnungsscan", "Import type: invoice scan")
         case .pdfImport:
-            return "Importtyp: PDF Import"
+            return L10n.t("Importtyp: PDF Import", "Import type: PDF import")
         case .manual:
-            return "Importtyp: Manuell"
+            return L10n.t("Importtyp: Manuell", "Import type: manual")
         }
     }
 
@@ -295,7 +314,7 @@ struct ReviewInvoiceView: View {
     }
 
     private func applyDueDate(offsetDays: Int) {
-        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: Date()) ?? Date()
+        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: draft.receivedAt) ?? draft.receivedAt
         draft.dueDate = due
         if draft.reminderDate == nil || draft.reminderEnabled {
             draft.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: due)
@@ -350,7 +369,7 @@ struct ReviewInvoiceView: View {
         if draft.category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || draft.category == "Sonstiges" {
             draft.category = profile.preferredCategory
         }
-        if draft.dueDate == nil, let days = profile.preferredDueOffsetDays {
+        if draft.importKind != .scanReceipt, draft.dueDate == nil, let days = profile.preferredDueOffsetDays {
             draft.dueDate = Calendar.current.date(byAdding: .day, value: days, to: draft.receivedAt)
         }
     }
@@ -381,7 +400,7 @@ struct ReviewInvoiceView: View {
                 .foregroundStyle(.secondary)
             content()
             if isUncertain {
-                Text("Unsicher erkannt - bitte manuell prüfen")
+                Text(L10n.t("Unsicher erkannt - bitte manuell prüfen", "Low confidence detected - please review manually"))
                     .font(.caption2)
                     .foregroundStyle(.orange)
             }

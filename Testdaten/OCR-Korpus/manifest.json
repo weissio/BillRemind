@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "created_at": "2026-02-21",
+  "cases": [
+    {
+      "id": "invoice_01_stadtwerke_style",
+      "document_type": "invoice",
+      "source_file": "rechnung/01_stadtwerke_rechnung_style.pdf",
+      "expected_file": "expected/rechnung/01_stadtwerke_rechnung_style.json"
+    },
+    {
+      "id": "invoice_02_versicherung_style",
+      "document_type": "invoice",
+      "source_file": "rechnung/02_versicherung_rechnung_style.pdf",
+      "expected_file": "expected/rechnung/02_versicherung_rechnung_style.json"
+    },
+    {
+      "id": "invoice_03_produktkauf_style",
+      "document_type": "invoice",
+      "source_file": "rechnung/03_produktkauf_rechnung_style.pdf",
+      "expected_file": "expected/rechnung/03_produktkauf_rechnung_style.json"
+    },
+    {
+      "id": "receipt_01_rewe",
+      "document_type": "receipt",
+      "source_file": "kassenbon/01_rewe_kassenbon.pdf",
+      "expected_file": "expected/kassenbon/01_rewe_kassenbon.json"
+    },
+    {
+      "id": "receipt_02_aral",
+      "document_type": "receipt",
+      "source_file": "kassenbon/02_aral_kassenbon.pdf",
+      "expected_file": "expected/kassenbon/02_aral_kassenbon.json"
+    },
+    {
+      "id": "invoice_04_streaming_abo_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/04_streaming_abo_rechnung.txt",
+      "expected_file": "expected/rechnung/04_streaming_abo_rechnung.json"
+    },
+    {
+      "id": "invoice_05_apotheke_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/05_apotheke_rechnung.txt",
+      "expected_file": "expected/rechnung/05_apotheke_rechnung.json"
+    },
+    {
+      "id": "receipt_03_dm_txt",
+      "document_type": "receipt",
+      "source_file": "kassenbon/03_dm_kassenbon.txt",
+      "expected_file": "expected/kassenbon/03_dm_kassenbon.json"
+    },
+    {
+      "id": "receipt_04_lidl_txt",
+      "document_type": "receipt",
+      "source_file": "kassenbon/04_lidl_kassenbon.txt",
+      "expected_file": "expected/kassenbon/04_lidl_kassenbon.json"
+    }
+  ]
+}

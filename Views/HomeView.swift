@@ -10,6 +10,7 @@ struct HomeView: View {
     @Query private var installmentPlans: [InstallmentPlan]
     @StateObject private var viewModel = HomeViewModel()
     @StateObject private var scanViewModel = ScanViewModel()
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     @State private var showScanner = false
     @State private var showReview = false
@@ -23,19 +24,19 @@ struct HomeView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         dashboardCard(
-                            title: "Fällig in 7 Tagen",
+                            title: isEnglish ? "Due in 7 days" : "Fällig in 7 Tagen",
                             value: "\(dueInNext7DaysCount)",
                             symbol: "calendar.badge.clock",
                             tint: .orange
                         )
                         dashboardCard(
-                            title: "Überfällig",
+                            title: isEnglish ? "Overdue" : "Überfällig",
                             value: "\(overdueCount)",
                             symbol: "exclamationmark.triangle.fill",
                             tint: .red
                         )
                         dashboardCard(
-                            title: "Kontostand in 30 Tagen",
+                            title: isEnglish ? "Balance in 30 days" : "Kontostand in 30 Tagen",
                             value: projectedBalance30Days.formatted(.currency(code: "EUR")),
                             symbol: "chart.line.uptrend.xyaxis",
                             tint: .blue
@@ -47,7 +48,7 @@ struct HomeView: View {
 
                 Picker("Filter", selection: $viewModel.filter) {
                     ForEach(InvoiceFilter.allCases) { filter in
-                        Text(filter.rawValue).tag(filter)
+                        Text(filter.title).tag(filter)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -56,9 +57,9 @@ struct HomeView: View {
                 let filtered = viewModel.filtered(invoices)
                 if filtered.isEmpty {
                     ContentUnavailableView(
-                        "Noch keine Rechnungen",
+                        isEnglish ? "No invoices yet" : "Noch keine Rechnungen",
                         systemImage: "doc.text.viewfinder",
-                        description: Text("Tippe auf Scannen, fotografiere eine Rechnung und prüfe die erkannten Felder.")
+                        description: Text(isEnglish ? "Tap Scan, take a photo of an invoice, and review the detected fields." : "Tippe auf Scannen, fotografiere eine Rechnung und prüfe die erkannten Felder.")
                     )
                 } else {
                     List(filtered) { invoice in
@@ -78,29 +79,32 @@ struct HomeView: View {
                 }
             }
             .background(warmBackground.ignoresSafeArea())
-            .navigationTitle("Rechnungen")
+            .navigationTitle(isEnglish ? "Invoices" : "Rechnungen")
             .navigationBarTitleDisplayMode(.inline)
             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
-                    Text("Rechnungen")
+                    Text(isEnglish ? "Invoices" : "Rechnungen")
                         .fontWeight(.semibold)
-                    NavigationLink("Ausgaben") {
+                    NavigationLink(isEnglish ? "Expenses" : "Ausgaben") {
                         StatsView(mode: .expenses)
                     }
-                    NavigationLink("Auswertung") {
+                    NavigationLink(isEnglish ? "Analytics" : "Auswertung") {
                         StatsView(mode: .reports)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        NavigationLink("Einnahmen") {
+                        NavigationLink(isEnglish ? "Income" : "Einnahmen") {
                             IncomeManagementView()
+                        }
+                        NavigationLink(isEnglish ? "Guide" : "Anleitung") {
+                            HelpView()
                         }
                         NavigationLink("Settings") {
                             SettingsView()
                         }
-                        NavigationLink("Feedback") {
+                        NavigationLink(isEnglish ? "Feedback" : "Feedback") {
                             FeedbackView()
                         }
                     } label: {
@@ -111,12 +115,12 @@ struct HomeView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 HStack(spacing: 12) {
-                    Button("Scan") {
+                    Button(isEnglish ? "Scan" : "Scan") {
                         showQuickScanOptions = true
                     }
                     .buttonStyle(WarmPrimaryButtonStyle(background: Color(red: 0.31, green: 0.42, blue: 0.56), foreground: .white))
 
-                    Button("Manuell") {
+                    Button(isEnglish ? "Manual" : "Manuell") {
                         scanViewModel.prepareManualEntry()
                         showReview = true
                     }
@@ -127,19 +131,19 @@ struct HomeView: View {
                 .padding(.bottom, 10)
                 .background(.ultraThinMaterial.opacity(0.001))
             }
-            .confirmationDialog("Scan wählen", isPresented: $showQuickScanOptions) {
-                Button("Scan Rechnung") {
+            .confirmationDialog(isEnglish ? "Choose scan type" : "Scan wählen", isPresented: $showQuickScanOptions) {
+                Button(isEnglish ? "Scan invoice" : "Scan Rechnung") {
                     scanCaptureMode = .invoice
                     showScanner = true
                 }
-                Button("Scan Kassenbon") {
+                Button(isEnglish ? "Scan receipt" : "Scan Kassenbon") {
                     scanCaptureMode = .receipt
                     showScanner = true
                 }
-                Button("PDF Import") {
+                Button(isEnglish ? "Import PDF" : "PDF Import") {
                     showPDFImporter = true
                 }
-                Button("Abbrechen", role: .cancel) {}
+                Button(isEnglish ? "Cancel" : "Abbrechen", role: .cancel) {}
             }
             .sheet(isPresented: $showScanner) {
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -152,7 +156,7 @@ struct HomeView: View {
                     }
                     .ignoresSafeArea()
                 } else {
-                    ContentUnavailableView("Kamera nicht verfügbar", systemImage: "camera.fill")
+                    ContentUnavailableView(isEnglish ? "Camera unavailable" : "Kamera nicht verfügbar", systemImage: "camera.fill")
                 }
             }
             .sheet(isPresented: $showReview) {
@@ -181,6 +185,10 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    private var isEnglish: Bool {
+        appLanguageCode == "en"
     }
 
     private var warmBackground: some View {
@@ -386,40 +394,62 @@ private struct StatsView: View {
         case reports
     }
 
-    enum DataScope: String, CaseIterable, Identifiable {
-        case open = "Nur offen"
-        case all = "Alle"
+    enum DataScope: CaseIterable, Identifiable {
+        case open
+        case all
 
-        var id: String { rawValue }
+        var id: String { title }
+
+        var title: String {
+            switch self {
+            case .open: return L10n.t("Nur offen", "Open only")
+            case .all: return L10n.t("Alle", "All")
+            }
+        }
     }
 
-    enum StatsTab: String, CaseIterable, Identifiable {
-        case analysis = "Übersicht"
-        case fixedCosts = "Fixkosten"
+    enum StatsTab: CaseIterable, Identifiable {
+        case analysis
+        case fixedCosts
 
-        var id: String { rawValue }
+        var id: String { title }
+
+        var title: String {
+            switch self {
+            case .analysis: return L10n.t("Übersicht", "Overview")
+            case .fixedCosts: return L10n.t("Fixkosten", "Fixed costs")
+            }
+        }
     }
 
-    enum ReportsTab: String, CaseIterable, Identifiable {
-        case total = "Gesamt"
-        case invoices = "Rechnungen"
+    enum ReportsTab: CaseIterable, Identifiable {
+        case total
+        case invoices
 
-        var id: String { rawValue }
+        var id: String { title }
+
+        var title: String {
+            switch self {
+            case .total: return L10n.t("Gesamt", "Total")
+            case .invoices: return L10n.t("Rechnungen", "Invoices")
+            }
+        }
     }
 
-    enum ReportInvoiceStatusScope: String, CaseIterable, Identifiable {
-        case open = "Offen"
-        case paid = "Bezahlt"
-        case all = "Alle"
+    enum ReportInvoiceStatusScope: CaseIterable, Identifiable {
+        case open
+        case paid
+        case all
 
-        var id: String { rawValue }
-    }
+        var id: String { title }
 
-    enum FixedCostsTab: String, CaseIterable, Identifiable {
-        case installments = "Raten"
-        case debt = "Restschuld"
-
-        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .open: return L10n.t("Offen", "Open")
+            case .paid: return L10n.t("Bezahlt", "Paid")
+            case .all: return L10n.t("Alle", "All")
+            }
+        }
     }
 
     @Query private var invoices: [Invoice]
@@ -429,7 +459,6 @@ private struct StatsView: View {
     @State private var mode: Mode = .reports
     @State private var selectedTab: StatsTab = .analysis
     @State private var selectedReportsTab: ReportsTab = .total
-    @State private var selectedFixedCostsTab: FixedCostsTab = .installments
     @State private var selectedMonth: Date = Date()
     @State private var dataScope: DataScope = .open
     @State private var reportInvoiceStatusScope: ReportInvoiceStatusScope = .all
@@ -442,6 +471,7 @@ private struct StatsView: View {
     @State private var exportURL: URL?
     @State private var exportStatusMessage: String?
     @State private var installmentName: String = ""
+    @State private var installmentKind: InstallmentPlan.Kind = .fixedCost
     @State private var installmentMonthlyPayment: Decimal?
     @State private var installmentMonthlyInterest: Decimal?
     @State private var installmentAnnualInterestRate: Decimal?
@@ -450,12 +480,10 @@ private struct StatsView: View {
     @State private var installmentHasEndDate: Bool = false
     @State private var installmentEndDate: Date = Date()
     @State private var installmentPaymentDay: Int = 1
-    @State private var selectedRepaymentPlanID: UUID?
-    @State private var specialRepaymentAmount: Decimal?
-    @State private var specialRepaymentDate: Date = Date()
     @State private var editingInstallmentPlan: InstallmentPlan?
     @State private var isShowingEditInstallmentSheet = false
     @State private var editInstallmentName: String = ""
+    @State private var editInstallmentKind: InstallmentPlan.Kind = .fixedCost
     @State private var editInstallmentMonthlyPayment: Decimal?
     @State private var editInstallmentMonthlyInterest: Decimal?
     @State private var editInstallmentAnnualInterestRate: Decimal?
@@ -464,6 +492,8 @@ private struct StatsView: View {
     @State private var editInstallmentHasEndDate: Bool = false
     @State private var editInstallmentEndDate: Date = Date()
     @State private var editInstallmentPaymentDay: Int = 1
+    @State private var editSpecialRepaymentAmount: Decimal?
+    @State private var editSpecialRepaymentDate: Date = Date()
     @State private var planningWeeks: Int = 12
     @State private var selectedWeekStart: Date?
     private let notificationService = NotificationService()
@@ -482,18 +512,18 @@ private struct StatsView: View {
 
     var body: some View {
         Form {
-            Section("Bereich") {
+            Section(L10n.t("Bereich", "Area")) {
                 if mode == .expenses {
-                    Picker("Bereich", selection: $selectedTab) {
+                    Picker(L10n.t("Bereich", "Area"), selection: $selectedTab) {
                         ForEach(StatsTab.allCases) { tab in
-                            Text(tab.rawValue).tag(tab)
+                            Text(tab.title).tag(tab)
                         }
                     }
                     .pickerStyle(.segmented)
                 } else {
-                    Picker("Bereich", selection: $selectedReportsTab) {
+                    Picker(L10n.t("Bereich", "Area"), selection: $selectedReportsTab) {
                         ForEach(ReportsTab.allCases) { tab in
-                            Text(tab.rawValue).tag(tab)
+                            Text(tab.title).tag(tab)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -501,8 +531,8 @@ private struct StatsView: View {
             }
 
             if !(mode == .expenses && selectedTab == .fixedCosts) {
-                Section("Monat") {
-                    Picker("Monat", selection: $selectedMonth) {
+                Section(L10n.t("Monat", "Month")) {
+                    Picker(L10n.t("Monat", "Month"), selection: $selectedMonth) {
                         ForEach(availableMonths, id: \.self) { month in
                             Text(monthLabel(for: month)).tag(month)
                         }
@@ -510,16 +540,16 @@ private struct StatsView: View {
                     .pickerStyle(.menu)
 
                     if mode == .expenses {
-                        Picker("Datenbasis", selection: $dataScope) {
+                        Picker(L10n.t("Datenbasis", "Data scope"), selection: $dataScope) {
                             ForEach(DataScope.allCases) { scope in
-                                Text(scope.rawValue).tag(scope)
+                                Text(scope.title).tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
                     } else if selectedReportsTab == .invoices {
-                        Picker("Status", selection: $reportInvoiceStatusScope) {
+                        Picker(L10n.t("Status", "Status"), selection: $reportInvoiceStatusScope) {
                             ForEach(ReportInvoiceStatusScope.allCases) { scope in
-                                Text(scope.rawValue).tag(scope)
+                                Text(scope.title).tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
@@ -533,41 +563,41 @@ private struct StatsView: View {
                     if mode == .expenses {
                         if dataScope == .open {
                             metricsCard(rows: [
-                                ("Anzahl Rechnungen", "\(monthlyOpenInvoiceCount)", true),
-                                ("Betrag Rechnungen", monthlyOpenInvoiceAmount.formatted(.currency(code: "EUR")), true),
-                                ("Fixkosten offen", monthlyOpenFixedCostAmount.formatted(.currency(code: "EUR")), false),
-                                ("Gesamt offen", monthlyTotalOpenAmount.formatted(.currency(code: "EUR")), true),
+                                (L10n.t("Anzahl Rechnungen", "Number of invoices"), "\(monthlyOpenInvoiceCount)", true),
+                                (L10n.t("Betrag Rechnungen", "Invoice amount"), monthlyOpenInvoiceAmount.formatted(.currency(code: "EUR")), true),
+                                (L10n.t("Fixkosten offen", "Open fixed costs"), monthlyOpenFixedCostAmount.formatted(.currency(code: "EUR")), false),
+                                (L10n.t("Gesamt offen", "Open total"), monthlyTotalOpenAmount.formatted(.currency(code: "EUR")), true),
                             ])
                         } else {
                             metricsCard(rows: [
-                                ("Anzahl Rechnungen", "\(monthlyInvoiceCountAll)", true),
-                                ("Betrag Rechnungen", monthlyInvoiceAmountAll.formatted(.currency(code: "EUR")), true),
-                                ("Davon offen", "\(monthlyOpenInvoiceCount) · \(monthlyOpenInvoiceAmount.formatted(.currency(code: "EUR")))", false),
-                                ("Davon bezahlt", "\(monthlyPaidInvoiceCount) · \(monthlyPaidInvoiceAmount.formatted(.currency(code: "EUR")))", false),
-                                ("Fixkosten offen", "\(monthlyOpenFixedCostCount) · \(monthlyOpenFixedCostAmount.formatted(.currency(code: "EUR")))", false),
-                                ("Fixkosten bezahlt", "\(monthlyPaidFixedCostCount) · \(monthlyPaidFixedCostAmount.formatted(.currency(code: "EUR")))", false),
-                                ("Gesamt offen", monthlyTotalOpenAmount.formatted(.currency(code: "EUR")), false),
-                                ("Gesamt bezahlt", monthlyTotalPaidAmount.formatted(.currency(code: "EUR")), false),
-                                ("Gesamt", monthlyTotalAmount.formatted(.currency(code: "EUR")), true),
+                                (L10n.t("Anzahl Rechnungen", "Number of invoices"), "\(monthlyInvoiceCountAll)", true),
+                                (L10n.t("Betrag Rechnungen", "Invoice amount"), monthlyInvoiceAmountAll.formatted(.currency(code: "EUR")), true),
+                                (L10n.t("Davon offen", "Open part"), "\(monthlyOpenInvoiceCount) · \(monthlyOpenInvoiceAmount.formatted(.currency(code: "EUR")))", false),
+                                (L10n.t("Davon bezahlt", "Paid part"), "\(monthlyPaidInvoiceCount) · \(monthlyPaidInvoiceAmount.formatted(.currency(code: "EUR")))", false),
+                                (L10n.t("Fixkosten offen", "Open fixed costs"), "\(monthlyOpenFixedCostCount) · \(monthlyOpenFixedCostAmount.formatted(.currency(code: "EUR")))", false),
+                                (L10n.t("Fixkosten bezahlt", "Paid fixed costs"), "\(monthlyPaidFixedCostCount) · \(monthlyPaidFixedCostAmount.formatted(.currency(code: "EUR")))", false),
+                                (L10n.t("Gesamt offen", "Open total"), monthlyTotalOpenAmount.formatted(.currency(code: "EUR")), false),
+                                (L10n.t("Gesamt bezahlt", "Paid total"), monthlyTotalPaidAmount.formatted(.currency(code: "EUR")), false),
+                                (L10n.t("Gesamt", "Total"), monthlyTotalAmount.formatted(.currency(code: "EUR")), true),
                             ])
                         }
                     } else {
                         metricsCard(rows: [
-                            ("Einnahmen", reportActualIncome.formatted(.currency(code: "EUR")), true),
-                            ("Ausgaben", reportActualExpenses.formatted(.currency(code: "EUR")), true),
-                            ("Differenz", reportActualDifference.formatted(.currency(code: "EUR")), true),
-                            ("Noch fällig Einnahmen", reportPendingIncome.formatted(.currency(code: "EUR")), false),
-                            ("Noch fällig Ausgaben", reportPendingExpenses.formatted(.currency(code: "EUR")), false),
-                            ("Noch fällige Differenz", reportPendingDifference.formatted(.currency(code: "EUR")), false),
-                            ("Differenz Monatsende", reportPlannedMonthEndDifference.formatted(.currency(code: "EUR")), true),
+                            (L10n.t("Einnahmen", "Income"), reportActualIncome.formatted(.currency(code: "EUR")), true),
+                            (L10n.t("Ausgaben", "Expenses"), reportActualExpenses.formatted(.currency(code: "EUR")), true),
+                            (L10n.t("Differenz", "Difference"), reportActualDifference.formatted(.currency(code: "EUR")), true),
+                            (L10n.t("Noch fällig Einnahmen", "Pending income"), reportPendingIncome.formatted(.currency(code: "EUR")), false),
+                            (L10n.t("Noch fällig Ausgaben", "Pending expenses"), reportPendingExpenses.formatted(.currency(code: "EUR")), false),
+                            (L10n.t("Noch fällige Differenz", "Pending difference"), reportPendingDifference.formatted(.currency(code: "EUR")), false),
+                            (L10n.t("Differenz Monatsende", "Month-end difference"), reportPlannedMonthEndDifference.formatted(.currency(code: "EUR")), true),
                         ])
                     }
                 } header: {
                     HStack {
-                        Text("Übersicht")
+                        Text(L10n.t("Übersicht", "Overview"))
                         Spacer()
                         if mode == .reports {
-                            Text("Stand \(reportAsOfDateText)")
+                            Text("\(L10n.t("Stand", "As of")) \(reportAsOfDateText)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -581,7 +611,7 @@ private struct StatsView: View {
 
             fixedCostSections
         }
-        .navigationTitle(mode == .expenses ? "Ausgaben" : "Auswertung")
+        .navigationTitle(mode == .expenses ? L10n.t("Ausgaben", "Expenses") : L10n.t("Auswertung", "Analytics"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
@@ -596,24 +626,24 @@ private struct StatsView: View {
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zurück") {
+                Button(L10n.t("Zurück", "Back")) {
                     dismiss()
                 }
             }
             if mode == .reports {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Export erstellen") {
+                    Button(L10n.t("Export erstellen", "Create export")) {
                         if refreshExportFile() {
-                            exportStatusMessage = "Export erstellt. Jetzt auf 'Teilen' tippen."
+                            exportStatusMessage = L10n.t("Export erstellt. Jetzt auf 'Teilen' tippen.", "Export created. Tap 'Share' now.")
                         } else {
-                            exportStatusMessage = "Export fehlgeschlagen. Bitte Format auf CSV stellen und erneut versuchen."
+                            exportStatusMessage = L10n.t("Export fehlgeschlagen. Bitte Format auf CSV stellen und erneut versuchen.", "Export failed. Set format to CSV and try again.")
                         }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if let exportURL {
                         ShareLink(item: exportURL) {
-                            Text("Teilen")
+                            Text(L10n.t("Teilen", "Share"))
                         }
                     }
                 }
@@ -643,56 +673,107 @@ private struct StatsView: View {
             NavigationStack {
                 Form {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Bezeichnung")
+                        Text(L10n.t("Bezeichnung", "Name"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("z. B. Auto Leasing", text: $editInstallmentName)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Monatliche Rate")
+                        Text(L10n.t("Monatliche Rate", "Monthly payment"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("z. B. 420,00", value: $editInstallmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Sollzins p.a. (%)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("optional, z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
-                            .keyboardType(.decimalPad)
+                    Picker(L10n.t("Typ", "Type"), selection: $editInstallmentKind) {
+                        ForEach(InstallmentPlan.Kind.allCases) { kind in
+                            Text(kind.title).tag(kind)
+                        }
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Zinsanteil pro Monat")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("optional, falls kein Sollzins", value: $editInstallmentMonthlyInterest, format: .number.precision(.fractionLength(2)))
-                            .keyboardType(.decimalPad)
+                    .pickerStyle(.segmented)
+
+                    if editInstallmentKind == .loan {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(L10n.t("Sollzins p.a. (%)", "Nominal interest p.a. (%)"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("optional, z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
+                                .keyboardType(.decimalPad)
+                        }
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(L10n.t("Zinsanteil pro Monat", "Interest amount per month"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("optional, falls kein Sollzins", value: $editInstallmentMonthlyInterest, format: .number.precision(.fractionLength(2)))
+                                .keyboardType(.decimalPad)
+                        }
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(L10n.t("Anfangsschuld", "Initial principal"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("optional, z. B. 18000,00", value: $editInstallmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
+                                .keyboardType(.decimalPad)
+                        }
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Anfangsschuld")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("optional, z. B. 18000,00", value: $editInstallmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
-                            .keyboardType(.decimalPad)
-                    }
-                    DatePicker("Startdatum", selection: $editInstallmentStartDate, displayedComponents: .date)
-                    Stepper("Fälligkeitstag: \(editInstallmentPaymentDay).", value: $editInstallmentPaymentDay, in: 1...28)
-                    Toggle("Enddatum setzen", isOn: $editInstallmentHasEndDate)
+                    DatePicker(L10n.t("Startdatum", "Start date"), selection: $editInstallmentStartDate, displayedComponents: .date)
+                    Stepper("\(L10n.t("Fälligkeitstag", "Due day")): \(editInstallmentPaymentDay).", value: $editInstallmentPaymentDay, in: 1...28)
+                    Toggle(L10n.t("Enddatum setzen", "Set end date"), isOn: $editInstallmentHasEndDate)
                     if editInstallmentHasEndDate {
-                        DatePicker("Enddatum", selection: $editInstallmentEndDate, displayedComponents: .date)
+                        DatePicker(L10n.t("Enddatum", "End date"), selection: $editInstallmentEndDate, displayedComponents: .date)
+                    }
+
+                    if editInstallmentKind == .loan, let plan = editingInstallmentPlan {
+                        Section(L10n.t("Sondertilgung", "Special repayment")) {
+                            DatePicker(L10n.t("Datum", "Date"), selection: $editSpecialRepaymentDate, displayedComponents: .date)
+                            TextField(L10n.t("Betrag in EUR", "Amount in EUR"), value: $editSpecialRepaymentAmount, format: .number.precision(.fractionLength(2)))
+                                .keyboardType(.decimalPad)
+
+                            Button(L10n.t("Sondertilgung hinzufügen", "Add special repayment")) {
+                                addSpecialRepayment(to: plan)
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            let planRepayments = specialRepayments
+                                .filter { $0.planID == plan.id }
+                                .sorted { $0.repaymentDate > $1.repaymentDate }
+
+                            if planRepayments.isEmpty {
+                                Text(L10n.t("Noch keine Sondertilgungen erfasst.", "No special repayments added yet."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                ForEach(planRepayments) { repayment in
+                                    HStack {
+                                        Text(repayment.repaymentDate.formatted(date: .abbreviated, time: .omitted))
+                                        Spacer()
+                                        Text(repayment.amount.formatted(.currency(code: "EUR")))
+                                            .fontWeight(.medium)
+                                            .monospacedDigit()
+                                    }
+                                    .swipeActions {
+                                        Button(role: .destructive) {
+                                            modelContext.delete(repayment)
+                                            try? modelContext.save()
+                                            refreshExportFile()
+                                        } label: {
+                                            Text(L10n.t("Löschen", "Delete"))
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                .navigationTitle("Kredit bearbeiten")
+                .navigationTitle(editInstallmentKind == .loan ? L10n.t("Kredit bearbeiten", "Edit loan") : L10n.t("Fixkosten bearbeiten", "Edit fixed cost"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Abbrechen") {
+                        Button(L10n.t("Abbrechen", "Cancel")) {
                             isShowingEditInstallmentSheet = false
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Speichern") {
+                        Button(L10n.t("Speichern", "Save")) {
                             saveEditedInstallmentPlan()
                         }
                     }
@@ -704,25 +785,25 @@ private struct StatsView: View {
     @ViewBuilder
     private var reportsPlanningSections: some View {
         if mode == .reports {
-            Section("Liquiditätsplanung (\(planningWeeks) Wochen)") {
-                Picker("Zeitraum", selection: $planningWeeks) {
+            Section("\(L10n.t("Liquiditätsplanung", "Liquidity planning")) (\(planningWeeks) \(L10n.t("Wochen", "weeks")))") {
+                Picker(L10n.t("Zeitraum", "Range"), selection: $planningWeeks) {
                     Text("6").tag(6)
                     Text("12").tag(12)
                     Text("24").tag(24)
                 }
                 .pickerStyle(.segmented)
 
-                Toggle("Aktuellen Kontostand verwenden", isOn: $useCurrentBalance)
+                Toggle(L10n.t("Aktuellen Kontostand verwenden", "Use current account balance"), isOn: $useCurrentBalance)
                 if useCurrentBalance {
-                    TextField("Aktueller Kontostand", value: $currentBalance, format: .number.precision(.fractionLength(2)))
+                    TextField(L10n.t("Aktueller Kontostand", "Current balance"), value: $currentBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
                 } else {
-                    TextField("Startbestand", value: $startBalance, format: .number.precision(.fractionLength(2)))
+                    TextField(L10n.t("Startbestand", "Starting balance"), value: $startBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
                 }
 
                 if !effectiveUseCurrentBalance && overdueOpenAmount > 0 {
-                    LabeledContent("Überfällig/sofort", value: overdueOpenAmount.formatted(.currency(code: "EUR")))
+                    LabeledContent(L10n.t("Überfällig/sofort", "Overdue/immediate"), value: overdueOpenAmount.formatted(.currency(code: "EUR")))
                         .foregroundStyle(.red)
                 }
 
@@ -737,13 +818,13 @@ private struct StatsView: View {
                                 .monospacedDigit()
                         }
                         HStack {
-                            Text("Rechnung \(row.invoiceOutgoing.formatted(.currency(code: "EUR"))) · Raten \(row.installmentOutgoing.formatted(.currency(code: "EUR")))")
+                            Text("\(L10n.t("Rechnung", "Invoice")) \(row.invoiceOutgoing.formatted(.currency(code: "EUR"))) · \(L10n.t("Fixkosten/Kredite", "Fixed costs/Loans")) \(row.installmentOutgoing.formatted(.currency(code: "EUR")))")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                             Spacer()
                         }
                         HStack {
-                            Text("Prognose")
+                            Text(L10n.t("Prognose", "Forecast"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -761,7 +842,7 @@ private struct StatsView: View {
                 }
             }
 
-            Section("Chart (\(planningWeeks) Wochen)") {
+            Section("Chart (\(planningWeeks) \(L10n.t("Wochen", "weeks")))") {
                 Chart {
                     ForEach(weeklyPlanRows) { row in
                         BarMark(
@@ -822,16 +903,16 @@ private struct StatsView: View {
                 }
             }
 
-            Section("Wochen-Details") {
+            Section(L10n.t("Wochen-Details", "Weekly details")) {
                 ForEach(weeklyDetailRows) { row in
                     DisclosureGroup {
                         if row.totalOutgoing <= 0 {
-                            Text("Keine Ausgaben in dieser Woche.")
+                            Text(L10n.t("Keine Ausgaben in dieser Woche.", "No expenses in this week."))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         } else {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Nach Empfänger")
+                                Text(L10n.t("Nach Empfänger", "By recipient"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 ForEach(row.recipientBreakdown) { item in
@@ -845,7 +926,7 @@ private struct StatsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Ratenzahlungen")
+                                Text(L10n.t("Fixkosten/Kredite", "Fixed costs/Loans"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 Text(row.installmentOutgoing.formatted(.currency(code: "EUR")))
@@ -853,7 +934,7 @@ private struct StatsView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Nach Kategorie")
+                                Text(L10n.t("Nach Kategorie", "By category"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 ForEach(row.categoryBreakdown) { item in
@@ -871,7 +952,7 @@ private struct StatsView: View {
                             Text(row.label)
                                 .font(.subheadline.weight(.semibold))
                             if selectedWeekStart == row.weekStart {
-                                Text("Ausgewählt")
+                                Text(L10n.t("Ausgewählt", "Selected"))
                                     .font(.caption2)
                                     .foregroundStyle(Color(red: 0.54, green: 0.35, blue: 0.25))
                             }
@@ -889,16 +970,16 @@ private struct StatsView: View {
     @ViewBuilder
     private var reportsInvoiceSections: some View {
         if mode == .reports && selectedReportsTab == .invoices {
-            Section("Nach Kategorie") {
+            Section(L10n.t("Nach Kategorie", "By category")) {
                 if categoryRows.isEmpty {
-                    ContentUnavailableView("Keine Daten", systemImage: "chart.pie")
+                    ContentUnavailableView(L10n.t("Keine Daten", "No data"), systemImage: "chart.pie")
                 } else {
                     ForEach(categoryRows) { row in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(row.name)
                                     .font(.headline.weight(.semibold))
-                                Text("\(row.count) Rechnung(en)")
+                                Text(L10n.isEnglish ? "\(row.count) invoice(s)" : "\(row.count) Rechnung(en)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -911,16 +992,16 @@ private struct StatsView: View {
                 }
             }
 
-            Section("Nach Anbieter") {
+            Section(L10n.t("Nach Anbieter", "By vendor")) {
                 if vendorRows.isEmpty {
-                    ContentUnavailableView("Keine Daten", systemImage: "building.2")
+                    ContentUnavailableView(L10n.t("Keine Daten", "No data"), systemImage: "building.2")
                 } else {
                     ForEach(vendorRows) { row in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(row.vendor)
                                     .font(.headline.weight(.semibold))
-                                Text("\(row.count) Rechnung(en)")
+                                Text(L10n.isEnglish ? "\(row.count) invoice(s)" : "\(row.count) Rechnung(en)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -933,16 +1014,16 @@ private struct StatsView: View {
                 }
             }
 
-            Section("Nach Zahlungsempfänger") {
+            Section(L10n.t("Nach Zahlungsempfänger", "By payment recipient")) {
                 if recipientRows.isEmpty {
-                    ContentUnavailableView("Keine Daten", systemImage: "chart.bar")
+                    ContentUnavailableView(L10n.t("Keine Daten", "No data"), systemImage: "chart.bar")
                 } else {
                     ForEach(recipientRows) { row in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(row.recipient)
                                     .font(.headline.weight(.semibold))
-                                Text("\(row.count) Rechnung(en)")
+                                Text(L10n.isEnglish ? "\(row.count) invoice(s)" : "\(row.count) Rechnung(en)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -991,152 +1072,124 @@ private struct StatsView: View {
     @ViewBuilder
     private var fixedCostSections: some View {
         if mode == .expenses && selectedTab == .fixedCosts {
-            Section("Fixkosten-Bereich") {
-                Picker("Ansicht", selection: $selectedFixedCostsTab) {
-                    ForEach(FixedCostsTab.allCases) { tab in
-                        Text(tab.rawValue).tag(tab)
+            Section(L10n.t("Fixkosten/Kredit erfassen", "Create fixed cost/loan")) {
+                Picker(L10n.t("Typ", "Type"), selection: $installmentKind) {
+                    ForEach(InstallmentPlan.Kind.allCases) { kind in
+                        Text(kind.title).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
-            }
 
-            if selectedFixedCostsTab == .installments {
-                Section("Ratenzahlungen") {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.t("Bezeichnung", "Name"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("z. B. Auto Leasing", text: $installmentName)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.t("Monatliche Rate", "Monthly payment"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("z. B. 420,00", value: $installmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
+                        .keyboardType(.decimalPad)
+                }
+
+                if installmentKind == .loan {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Bezeichnung")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("z. B. Auto Leasing", text: $installmentName)
-                    }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Monatliche Rate")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        TextField("z. B. 420,00", value: $installmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
-                            .keyboardType(.decimalPad)
-                    }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Sollzins p.a. (%)")
+                        Text(L10n.t("Sollzins p.a. (%)", "Nominal interest p.a. (%)"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("optional, z. B. 5,49", value: $installmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                             .keyboardType(.decimalPad)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Zinsanteil pro Monat")
+                        Text(L10n.t("Zinsanteil pro Monat", "Interest amount per month"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("optional, falls kein Sollzins", value: $installmentMonthlyInterest, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Anfangsschuld")
+                        Text(L10n.t("Anfangsschuld", "Initial principal"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         TextField("optional, z. B. 18000,00", value: $installmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     }
-                    DatePicker("Startdatum", selection: $installmentStartDate, displayedComponents: .date)
-                    Stepper("Fälligkeitstag: \(installmentPaymentDay).", value: $installmentPaymentDay, in: 1...28)
-                    Toggle("Enddatum setzen", isOn: $installmentHasEndDate)
-                    if installmentHasEndDate {
-                        DatePicker("Enddatum", selection: $installmentEndDate, displayedComponents: .date)
-                    }
-                    Button("Rate speichern") {
-                        addInstallmentPlan()
-                    }
-                    .buttonStyle(.borderedProminent)
+                }
+                DatePicker(L10n.t("Startdatum", "Start date"), selection: $installmentStartDate, displayedComponents: .date)
+                Stepper("\(L10n.t("Fälligkeitstag", "Due day")): \(installmentPaymentDay).", value: $installmentPaymentDay, in: 1...28)
+                Toggle(L10n.t("Enddatum setzen", "Set end date"), isOn: $installmentHasEndDate)
+                if installmentHasEndDate {
+                    DatePicker(L10n.t("Enddatum", "End date"), selection: $installmentEndDate, displayedComponents: .date)
+                }
+                Button(installmentKind == .loan ? L10n.t("Kredit speichern", "Save loan") : L10n.t("Fixkosten speichern", "Save fixed cost")) {
+                    addInstallmentPlan()
+                }
+                .buttonStyle(.borderedProminent)
+            }
 
-                    if sortedInstallmentPlans.isEmpty {
-                        Text("Keine Ratenpläne hinterlegt.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(sortedInstallmentPlans) { plan in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
+            Section(L10n.t("Übersicht", "Overview")) {
+                if sortedInstallmentPlans.isEmpty {
+                    Text(L10n.t("Keine Fixkosten/Kredite hinterlegt.", "No fixed costs/loans added."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(sortedInstallmentPlans) { plan in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 8) {
                                     Text(plan.name)
-                                    Text(rateSubtitle(plan))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                    Text(plan.kind.title)
+                                        .font(.caption2.weight(.semibold))
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(
+                                            plan.kind == .loan
+                                                ? Color(red: 0.95, green: 0.80, blue: 0.62)
+                                                : Color(red: 0.84, green: 0.87, blue: 0.92)
+                                        )
+                                        .foregroundStyle(
+                                            plan.kind == .loan
+                                                ? Color(red: 0.36, green: 0.20, blue: 0.09)
+                                                : Color(red: 0.18, green: 0.24, blue: 0.35)
+                                        )
+                                        .clipShape(Capsule())
                                 }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text(plan.monthlyPayment.formatted(.currency(code: "EUR")))
-                                        .fontWeight(.semibold)
-                                        .monospacedDigit()
-                                    Text("Zins \(currentInstallmentSplit(for: plan).interest.formatted(.currency(code: "EUR"))) · Tilgung \(currentInstallmentSplit(for: plan).principal.formatted(.currency(code: "EUR")))")
+                                Text(rateSubtitle(plan))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(plan.monthlyPayment.formatted(.currency(code: "EUR")))
+                                    .fontWeight(.semibold)
+                                    .monospacedDigit()
+                                if plan.kind == .loan {
+                                    Text("\(L10n.t("Zins", "Interest")) \(currentInstallmentSplit(for: plan).interest.formatted(.currency(code: "EUR"))) · \(L10n.t("Tilgung", "Principal")) \(currentInstallmentSplit(for: plan).principal.formatted(.currency(code: "EUR")))")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
                                     if let remainingNow = remainingPrincipalAfterSpecialRepayments(of: plan, at: Date()) {
-                                        Text("Restschuld heute \(remainingNow.formatted(.currency(code: "EUR")))")
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    if let remaining12m = remainingPrincipalAfterSpecialRepayments(of: plan, at: calendar.date(byAdding: .month, value: 12, to: Date()) ?? Date()) {
-                                        Text("Restschuld in 12M \(remaining12m.formatted(.currency(code: "EUR")))")
+                                        Text("\(L10n.t("Restschuld heute", "Remaining principal today")) \(remainingNow.formatted(.currency(code: "EUR")))")
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
                                 }
                             }
-                            .swipeActions {
-                                Button {
-                                    beginEditingInstallmentPlan(plan)
-                                } label: {
-                                    Text("Bearbeiten")
-                                }
-                                .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
-                                Button(role: .destructive) {
-                                    modelContext.delete(plan)
-                                    try? modelContext.save()
-                                    refreshExportFile()
-                                } label: {
-                                    Text("Löschen")
-                                }
+                        }
+                        .swipeActions {
+                            Button {
+                                beginEditingInstallmentPlan(plan)
+                            } label: {
+                                Text(L10n.t("Bearbeiten", "Edit"))
                             }
-                        }
-                    }
-                }
-            } else {
-                Section("Sondertilgung erfassen") {
-                    Picker("Kredit", selection: $selectedRepaymentPlanID) {
-                        Text("Bitte wählen").tag(Optional<UUID>.none)
-                        ForEach(sortedInstallmentPlans) { plan in
-                            Text(plan.name).tag(Optional(plan.id))
-                        }
-                    }
-                    .pickerStyle(.menu)
-
-                    DatePicker("Datum", selection: $specialRepaymentDate, displayedComponents: .date)
-                    TextField("Sondertilgung in EUR", value: $specialRepaymentAmount, format: .number.precision(.fractionLength(2)))
-                        .keyboardType(.decimalPad)
-
-                    Button("Sondertilgung geleistet") {
-                        addSpecialRepayment()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-
-                Section("Restschuld (Stand heute)") {
-                    if sortedInstallmentPlans.isEmpty {
-                        Text("Keine Kredite/Fixkosten hinterlegt.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(sortedInstallmentPlans) { plan in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(plan.name)
-                                        .font(.headline.weight(.semibold))
-                                    Text("Sondertilgung gesamt: \(specialRepaymentTotal(for: plan, upTo: Date()).formatted(.currency(code: "EUR")))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Text((remainingPrincipalAfterSpecialRepayments(of: plan, at: Date()) ?? 0).formatted(.currency(code: "EUR")))
-                                    .fontWeight(.semibold)
-                                    .monospacedDigit()
+                            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+                            Button(role: .destructive) {
+                                modelContext.delete(plan)
+                                try? modelContext.save()
+                                refreshExportFile()
+                            } label: {
+                                Text(L10n.t("Löschen", "Delete"))
                             }
                         }
                     }
@@ -1554,6 +1607,10 @@ private struct StatsView: View {
         }
     }
 
+    private var sortedLoanPlans: [InstallmentPlan] {
+        sortedInstallmentPlans.filter { $0.kind == .loan }
+    }
+
     private func targetDate(for invoice: Invoice) -> Date {
         invoice.dueDate ?? invoice.receivedAt
     }
@@ -1695,7 +1752,7 @@ private struct StatsView: View {
         let monthMetaRows: [[String]] = {
             let baseRows = [
                 ["Monat", monthLabel(for: selectedMonth)],
-                ["Datenbasis", dataScope.rawValue],
+                [L10n.t("Datenbasis", "Data scope"), dataScope.title],
                 ["Liquiditäts-Basis", effectiveUseCurrentBalance ? "Aktueller Kontostand" : "Startbestand"],
                 ["Basiswert", numberString(planningBaseBalance)]
             ]
@@ -1815,6 +1872,7 @@ private struct StatsView: View {
             let split = currentInstallmentSplit(for: plan)
             return [
                 plan.name,
+                plan.kind.title,
                 dateString(plan.startDate),
                 plan.endDate.map(dateString) ?? "",
                 "\(plan.paymentDay).",
@@ -1825,7 +1883,7 @@ private struct StatsView: View {
                 decimalString(split.principal)
             ]
         }
-        let debtRows = sortedInstallmentPlans.map { plan in
+        let debtRows = sortedLoanPlans.map { plan in
             [
                 plan.name,
                 decimalString(plan.initialPrincipal ?? 0),
@@ -1883,7 +1941,7 @@ private struct StatsView: View {
         ]
 
         let installmentsSheetRows: [[String]] =
-            [["Bezeichnung", "Start", "Ende", "Tag", "Aktiv", "Rate", "Sollzins_pa", "Zins_aktuell", "Tilgung_aktuell"]]
+            [["Bezeichnung", "Typ", "Start", "Ende", "Tag", "Aktiv", "Rate", "Sollzins_pa", "Zins_aktuell", "Tilgung_aktuell"]]
             + installmentRows
             + [installmentSumRow]
 
@@ -1894,9 +1952,9 @@ private struct StatsView: View {
             ("Empfänger_nach_Name", [["Empfänger", "Anzahl", "Betrag"]] + recipientsByName + [recipientSumRow]),
             ("Kategorien_nach_Betrag", [["Kategorie", "Anzahl", "Betrag"]] + categoriesByAmount + [categorySumRow]),
             ("Kategorien_nach_Name", [["Kategorie", "Anzahl", "Betrag"]] + categoriesByName + [categorySumRow]),
-            ("Liquidität", [["Woche", "Rechnung", "Raten", "Ausgaben_total", "Einnahmen", "Prognose"]] + liquidityRows + [liquiditySumRow]),
+            ("Liquidität", [["Woche", "Rechnung", "Fixkosten_Kredite", "Ausgaben_total", "Einnahmen", "Prognose"]] + liquidityRows + [liquiditySumRow]),
             ("Chart_Daten", [["Woche_Start", "Woche_Label", "Einnahmen", "Ausgaben", "Kontostand"]] + chartRows),
-            ("Ratenzahlungen", installmentsSheetRows),
+            ("Fixkosten_Kredite", installmentsSheetRows),
             ("Sondertilgungen", [["Kredit", "Datum", "Betrag"]] + specialRepaymentRows + [specialRepaymentSumRow]),
             ("Restschuld", [["Bezeichnung", "Anfangsschuld", "Restschuld_heute", "Restschuld_12M", "Tilgung_monat"]] + debtRows),
             ("Einnahmen", [["Bezeichnung", "Typ", "Start", "Aktiv", "Betrag"]] + incomesRows + [incomesSumAll, incomesSumActive])
@@ -2304,15 +2362,16 @@ private struct StatsView: View {
     private func addInstallmentPlan() {
         let trimmed = installmentName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, let payment = installmentMonthlyPayment, payment > 0 else { return }
-        let interest = installmentMonthlyInterest ?? Decimal.zero
+        let interest = installmentKind == .loan ? (installmentMonthlyInterest ?? Decimal.zero) : Decimal.zero
         let endDate = installmentHasEndDate ? installmentEndDate : nil
 
         let plan = InstallmentPlan(
+            kind: installmentKind,
             name: trimmed,
             monthlyPayment: payment,
             monthlyInterest: max(Decimal.zero, interest),
-            annualInterestRatePercent: installmentAnnualInterestRate,
-            initialPrincipal: installmentInitialPrincipal,
+            annualInterestRatePercent: installmentKind == .loan ? installmentAnnualInterestRate : nil,
+            initialPrincipal: installmentKind == .loan ? installmentInitialPrincipal : nil,
             startDate: installmentStartDate,
             endDate: endDate,
             paymentDay: installmentPaymentDay,
@@ -2322,6 +2381,7 @@ private struct StatsView: View {
         try? modelContext.save()
 
         installmentName = ""
+        installmentKind = .fixedCost
         installmentMonthlyPayment = nil
         installmentMonthlyInterest = nil
         installmentAnnualInterestRate = nil
@@ -2336,6 +2396,7 @@ private struct StatsView: View {
     private func beginEditingInstallmentPlan(_ plan: InstallmentPlan) {
         editingInstallmentPlan = plan
         editInstallmentName = plan.name
+        editInstallmentKind = plan.kind
         editInstallmentMonthlyPayment = plan.monthlyPayment
         editInstallmentMonthlyInterest = plan.monthlyInterest
         editInstallmentAnnualInterestRate = plan.annualInterestRatePercent
@@ -2349,6 +2410,8 @@ private struct StatsView: View {
             editInstallmentEndDate = Date()
         }
         editInstallmentPaymentDay = plan.paymentDay
+        editSpecialRepaymentAmount = nil
+        editSpecialRepaymentDate = Date()
         isShowingEditInstallmentSheet = true
     }
 
@@ -2361,10 +2424,17 @@ private struct StatsView: View {
         else { return }
 
         plan.name = trimmed
+        plan.kind = editInstallmentKind
         plan.monthlyPayment = payment
-        plan.monthlyInterest = max(0, editInstallmentMonthlyInterest ?? 0)
-        plan.annualInterestRatePercent = editInstallmentAnnualInterestRate
-        plan.initialPrincipal = editInstallmentInitialPrincipal
+        if editInstallmentKind == .loan {
+            plan.monthlyInterest = max(0, editInstallmentMonthlyInterest ?? 0)
+            plan.annualInterestRatePercent = editInstallmentAnnualInterestRate
+            plan.initialPrincipal = editInstallmentInitialPrincipal
+        } else {
+            plan.monthlyInterest = 0
+            plan.annualInterestRatePercent = nil
+            plan.initialPrincipal = nil
+        }
         plan.startDate = editInstallmentStartDate
         plan.endDate = editInstallmentHasEndDate ? editInstallmentEndDate : nil
         plan.paymentDay = min(max(editInstallmentPaymentDay, 1), 28)
@@ -2377,11 +2447,15 @@ private struct StatsView: View {
     private func rateSubtitle(_ plan: InstallmentPlan) -> String {
         let start = dateString(plan.startDate)
         let end = plan.endDate.map(dateString) ?? "offen"
+        if plan.kind == .fixedCost {
+            return "ab \(start), Ende \(end), am \(plan.paymentDay)."
+        }
         let rateText = plan.annualInterestRatePercent.map { "Sollzins \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? "ohne Sollzins"
         return "ab \(start), Ende \(end), am \(plan.paymentDay). · \(rateText)"
     }
 
     private func remainingPrincipal(of plan: InstallmentPlan, at referenceDate: Date) -> Decimal? {
+        guard plan.kind == .loan else { return nil }
         guard let initial = plan.initialPrincipal else { return nil }
         var remaining = NSDecimalNumber(decimal: initial).doubleValue
         for dueDate in installmentDueDates(for: plan, upTo: referenceDate) {
@@ -2421,6 +2495,9 @@ private struct StatsView: View {
 
     private func installmentSplit(plan: InstallmentPlan, remainingBefore: Double?) -> (interest: Double, principal: Double) {
         let payment = NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
+        guard plan.kind == .loan else {
+            return (0, max(0, payment))
+        }
         let manualInterest = NSDecimalNumber(decimal: plan.monthlyInterest).doubleValue
         let computedInterest: Double = {
             if let rate = plan.annualInterestRatePercentValue, let remainingBefore {
@@ -2452,22 +2529,22 @@ private struct StatsView: View {
         return max(adjusted, 0)
     }
 
-    private func addSpecialRepayment() {
-        guard let planID = selectedRepaymentPlanID,
-              let amount = specialRepaymentAmount,
+    private func addSpecialRepayment(to plan: InstallmentPlan) {
+        guard plan.kind == .loan,
+              let amount = editSpecialRepaymentAmount,
               amount > 0
         else { return }
 
         let repayment = InstallmentSpecialRepayment(
-            planID: planID,
+            planID: plan.id,
             amount: amount,
-            repaymentDate: specialRepaymentDate
+            repaymentDate: editSpecialRepaymentDate
         )
         modelContext.insert(repayment)
         try? modelContext.save()
 
-        specialRepaymentAmount = nil
-        specialRepaymentDate = Date()
+        editSpecialRepaymentAmount = nil
+        editSpecialRepaymentDate = Date()
         refreshExportFile()
     }
 }
@@ -2490,36 +2567,36 @@ private struct IncomeManagementView: View {
 
     var body: some View {
         Form {
-            Section("Neue Einnahme") {
+            Section(L10n.t("Neue Einnahme", "New income")) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Bezeichnung")
+                    Text(L10n.t("Bezeichnung", "Name"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    TextField("z. B. Gehalt", text: $incomeName)
+                    TextField(L10n.t("z. B. Gehalt", "e.g. Salary"), text: $incomeName)
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Betrag")
+                    Text(L10n.t("Betrag", "Amount"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    TextField("z. B. 2800,00", value: $incomeAmount, format: .number.precision(.fractionLength(2)))
+                    TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $incomeAmount, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
                 }
-                Picker("Typ", selection: $incomeKind) {
+                Picker(L10n.t("Typ", "Type"), selection: $incomeKind) {
                     ForEach(IncomeEntry.Kind.allCases) { kind in
                         Text(kind.title).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
-                DatePicker(incomeKind == .monthlyFixed ? "Ab (Monatstag wird übernommen)" : "Datum", selection: $incomeStartDate, displayedComponents: .date)
-                Button("Einnahme speichern") {
+                DatePicker(incomeKind == .monthlyFixed ? L10n.t("Ab (Monatstag wird übernommen)", "From (day of month will be used)") : L10n.t("Datum", "Date"), selection: $incomeStartDate, displayedComponents: .date)
+                Button(L10n.t("Einnahme speichern", "Save income")) {
                     addIncomeEntry()
                 }
                 .buttonStyle(.borderedProminent)
             }
 
-            Section("Einnahmen (Fix + Variabel)") {
+            Section(L10n.t("Einnahmen (Fix + Variabel)", "Income (fixed + variable)")) {
                 if sortedIncomeEntries.isEmpty {
-                    Text("Keine Einnahmen hinterlegt.")
+                    Text(L10n.t("Keine Einnahmen hinterlegt.", "No income entries added."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -2528,7 +2605,7 @@ private struct IncomeManagementView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(income.name)
                                     .font(.headline.weight(.semibold))
-                                Text("\(income.kind.title) · ab \(income.startDate.formatted(.dateTime.day().month().year()))")
+                                Text(L10n.isEnglish ? "\(income.kind.title) · from \(income.startDate.formatted(.dateTime.day().month().year()))" : "\(income.kind.title) · ab \(income.startDate.formatted(.dateTime.day().month().year()))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -2541,21 +2618,21 @@ private struct IncomeManagementView: View {
                             Button {
                                 beginEditingIncome(income)
                             } label: {
-                                Text("Bearbeiten")
+                                Text(L10n.t("Bearbeiten", "Edit"))
                             }
                             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
                             Button(role: .destructive) {
                                 modelContext.delete(income)
                                 try? modelContext.save()
                             } label: {
-                                Text("Löschen")
+                                Text(L10n.t("Löschen", "Delete"))
                             }
                         }
                     }
                 }
             }
         }
-        .navigationTitle("Einnahmen")
+        .navigationTitle(L10n.t("Einnahmen", "Income"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
@@ -2570,7 +2647,7 @@ private struct IncomeManagementView: View {
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Zurück") {
+                Button(L10n.t("Zurück", "Back")) {
                     dismiss()
                 }
             }
@@ -2579,36 +2656,36 @@ private struct IncomeManagementView: View {
             NavigationStack {
                 Form {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Bezeichnung")
+                        Text(L10n.t("Bezeichnung", "Name"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
-                        TextField("z. B. Gehalt", text: $editIncomeName)
+                        TextField(L10n.t("z. B. Gehalt", "e.g. Salary"), text: $editIncomeName)
                     }
-                    Picker("Typ", selection: $editIncomeKind) {
+                    Picker(L10n.t("Typ", "Type"), selection: $editIncomeKind) {
                         ForEach(IncomeEntry.Kind.allCases) { kind in
                             Text(kind.title).tag(kind)
                         }
                     }
                     .pickerStyle(.segmented)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Betrag")
+                        Text(L10n.t("Betrag", "Amount"))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
-                        TextField("z. B. 2800,00", value: $editIncomeAmount, format: .number.precision(.fractionLength(2)))
+                        TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $editIncomeAmount, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
                     }
                     DatePicker(editIncomeDateLabel, selection: $editIncomeStartDate, displayedComponents: .date)
                 }
-                .navigationTitle("Einnahme bearbeiten")
+                .navigationTitle(L10n.t("Einnahme bearbeiten", "Edit income"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Abbrechen") {
+                        Button(L10n.t("Abbrechen", "Cancel")) {
                             isShowingEditIncomeSheet = false
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Speichern") {
+                        Button(L10n.t("Speichern", "Save")) {
                             saveEditedIncome()
                         }
                     }
@@ -2658,9 +2735,9 @@ private struct IncomeManagementView: View {
 
     private var editIncomeDateLabel: String {
         if editIncomeKind == .monthlyFixed {
-            return "Ab (Monatstag wird übernommen)"
+            return L10n.t("Ab (Monatstag wird übernommen)", "From (day of month will be used)")
         }
-        return "Datum"
+        return L10n.t("Datum", "Date")
     }
 
     private func beginEditingIncome(_ income: IncomeEntry) {

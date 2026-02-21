@@ -185,8 +185,8 @@ final class IncomeEntry {
 
         var title: String {
             switch self {
-            case .monthlyFixed: return "Fix monatlich"
-            case .oneTime: return "Einmalig"
+            case .monthlyFixed: return L10n.t("Fix monatlich", "Monthly fixed")
+            case .oneTime: return L10n.t("Einmalig", "One-time")
             }
         }
     }
@@ -227,7 +227,22 @@ final class IncomeEntry {
 
 @Model
 final class InstallmentPlan {
+    enum Kind: String, Codable, CaseIterable, Identifiable {
+        case fixedCost
+        case loan
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .fixedCost: return L10n.t("Fixkosten", "Fixed cost")
+            case .loan: return L10n.t("Kredit", "Loan")
+            }
+        }
+    }
+
     @Attribute(.unique) var id: UUID
+    var kindRaw: String = ""
     var name: String
     var monthlyPaymentValue: Double
     var monthlyInterestValue: Double
@@ -240,6 +255,7 @@ final class InstallmentPlan {
 
     init(
         id: UUID = UUID(),
+        kind: Kind = .fixedCost,
         name: String,
         monthlyPayment: Decimal,
         monthlyInterest: Decimal = 0,
@@ -251,6 +267,7 @@ final class InstallmentPlan {
         isActive: Bool = true
     ) {
         self.id = id
+        self.kindRaw = kind.rawValue
         self.name = name
         self.monthlyPaymentValue = NSDecimalNumber(decimal: monthlyPayment).doubleValue
         self.monthlyInterestValue = NSDecimalNumber(decimal: monthlyInterest).doubleValue
@@ -265,6 +282,21 @@ final class InstallmentPlan {
     var monthlyPayment: Decimal {
         get { Decimal(monthlyPaymentValue) }
         set { monthlyPaymentValue = NSDecimalNumber(decimal: newValue).doubleValue }
+    }
+
+    var kind: Kind {
+        get {
+            if let parsed = Kind(rawValue: kindRaw) {
+                return parsed
+            }
+            if initialPrincipal != nil || annualInterestRatePercent != nil || monthlyInterest > 0 {
+                return .loan
+            }
+            return .fixedCost
+        }
+        set {
+            kindRaw = newValue.rawValue
+        }
     }
 
     var monthlyInterest: Decimal {

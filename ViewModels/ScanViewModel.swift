@@ -137,7 +137,8 @@ final class ScanViewModel: ObservableObject {
             reviewHint: draft.reviewHint
         )
 
-        if let selectedImage {
+        let shouldPersistImage = draft.keepCapturedImage
+        if shouldPersistImage, let selectedImage {
             let fileName = try imageStore.save(image: selectedImage, id: invoice.id)
             invoice.imageFileName = fileName
         }
@@ -185,22 +186,25 @@ final class ScanViewModel: ObservableObject {
     }
 
     private func applyQualityIndicators(to parsed: inout ParsedInvoiceData) {
+        let isReceipt = parsed.documentType == .receipt
         let text = parsed.extractedText
         let vendorEvidence = hasVendorEvidence(vendor: parsed.vendorName, text: text)
         let amountEvidence = hasAmountEvidence(amount: parsed.amount, text: text)
-        let dueDateEvidence = hasDueDateEvidence(dueDate: parsed.dueDate, text: text)
+        let dueDateEvidence = isReceipt ? true : hasDueDateEvidence(dueDate: parsed.dueDate, text: text)
         let numberEvidence = hasInvoiceNumberEvidence(invoiceNumber: parsed.invoiceNumber, text: text)
         let ibanEvidence = hasIBANEvidence(iban: parsed.iban, text: text)
 
         var vendorConfidence = qualityForVendor(parsed.vendorName)
         var amountConfidence = parsed.amount == nil ? 0.05 : 0.75
-        var dueDateConfidence = parsed.dueDate == nil ? 0.05 : 0.75
+        var dueDateConfidence = isReceipt ? 0.95 : (parsed.dueDate == nil ? 0.05 : 0.75)
         var numberConfidence = qualityForInvoiceNumber(parsed.invoiceNumber)
         var ibanConfidence = qualityForIBAN(parsed.iban)
 
         vendorConfidence = vendorEvidence ? min(0.95, vendorConfidence + 0.1) : max(0.05, vendorConfidence * 0.45)
         amountConfidence = amountEvidence ? min(0.95, amountConfidence + 0.15) : max(0.05, amountConfidence * 0.45)
-        dueDateConfidence = dueDateEvidence ? min(0.95, dueDateConfidence + 0.15) : max(0.05, dueDateConfidence * 0.45)
+        if !isReceipt {
+            dueDateConfidence = dueDateEvidence ? min(0.95, dueDateConfidence + 0.15) : max(0.05, dueDateConfidence * 0.45)
+        }
         numberConfidence = numberEvidence ? min(0.95, numberConfidence + 0.15) : max(0.05, numberConfidence * 0.45)
         ibanConfidence = ibanEvidence ? min(0.95, ibanConfidence + 0.15) : max(0.05, ibanConfidence * 0.45)
 
@@ -233,7 +237,7 @@ final class ScanViewModel: ObservableObject {
         var low: [String] = []
         if vendorConfidence < 0.7 { low.append("Anbieter") }
         if amountConfidence < 0.7 { low.append("Betrag") }
-        if dueDateConfidence < 0.7 { low.append("Fälligkeitsdatum") }
+        if !isReceipt && dueDateConfidence < 0.7 { low.append("Fälligkeitsdatum") }
         if numberConfidence < 0.7 { low.append("Rechnungsnummer") }
         if ibanConfidence < 0.7 { low.append("IBAN") }
         parsed.reviewHint = low.isEmpty ? nil : "Bitte prüfen: \(low.joined(separator: ", "))"
@@ -326,6 +330,7 @@ struct InvoiceDraft {
     var iban: String = ""
     var note: String = ""
     var importKind: InvoiceImportKind = .manual
+    var keepCapturedImage: Bool = false
     var status: Invoice.Status = .open
     var paidAt: Date?
     var reminderEnabled: Bool = false
@@ -342,6 +347,7 @@ struct InvoiceDraft {
 
     init(parsed: ParsedInvoiceData? = nil, captureMode: ScanCaptureMode = .invoice, importKind: InvoiceImportKind? = nil) {
         self.importKind = importKind ?? (captureMode == .receipt ? .scanReceipt : .scanInvoice)
+        keepCapturedImage = (self.importKind == .scanInvoice || self.importKind == .scanReceipt)
         guard let parsed else {
             return
         }
@@ -371,6 +377,16 @@ struct InvoiceDraft {
         if captureMode == .receipt || shouldSuggestPaidStatus(from: parsed.extractedText) {
             status = .paid
             paidAt = receivedAt
+            dueDate = nil
+            dueDateConfidence = nil
+            reminderEnabled = false
+            reminderDate = nil
+        }
+        if parsed.documentType == .receipt {
+            status = .paid
+            paidAt = receivedAt
+            dueDate = nil
+            dueDateConfidence = nil
             reminderEnabled = false
             reminderDate = nil
         }

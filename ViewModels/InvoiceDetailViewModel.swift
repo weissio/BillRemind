@@ -63,6 +63,11 @@ final class InvoiceDetailViewModel: ObservableObject {
         modelContext.delete(invoice)
     }
 
+    func deleteImage(for invoice: Invoice) {
+        imageStore.deleteImage(fileName: invoice.imageFileName)
+        invoice.imageFileName = nil
+    }
+
     func rescheduleIfNeeded(_ invoice: Invoice) async {
         guard invoice.reminderEnabled else { return }
         await notificationService.scheduleReminder(for: invoice)

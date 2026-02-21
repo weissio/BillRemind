@@ -17,7 +17,7 @@ struct FullScreenImageView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Schließen") {
+                    Button(L10n.t("Schließen", "Close")) {
                         isPresented = false
                     }
                     .foregroundStyle(.white)

@@ -1,11 +1,22 @@
 import Foundation
 
-enum InvoiceFilter: String, CaseIterable, Identifiable {
-    case open = "Offen"
-    case paid = "Bezahlt"
-    case all = "Alle"
+enum InvoiceFilter: CaseIterable, Identifiable {
+    case open
+    case paid
+    case all
 
-    var id: String { rawValue }
+    var id: String { title }
+
+    var title: String {
+        switch self {
+        case .open:
+            return L10n.t("Offen", "Open")
+        case .paid:
+            return L10n.t("Bezahlt", "Paid")
+        case .all:
+            return L10n.t("Alle", "All")
+        }
+    }
 }
 
 @MainActor

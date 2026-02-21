@@ -20,23 +20,23 @@ struct InvoiceRowView: View {
                         .monospacedDigit()
                 }
                 if let dueDate = invoice.dueDate {
-                    Text("Fällig: \(dueDate.formatted(date: .abbreviated, time: .omitted))")
+                    Text("\(L10n.t("Fällig", "Due")): \(dueDate.formatted(date: .abbreviated, time: .omitted))")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color(red: 0.39, green: 0.47, blue: 0.58))
                 } else if invoice.status == .paid, let paidAt = invoice.paidAt {
-                    Text("Bezahlt: \(paidAt.formatted(date: .abbreviated, time: .omitted))")
+                    Text("\(L10n.t("Bezahlt", "Paid")): \(paidAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color(red: 0.39, green: 0.47, blue: 0.58))
                 }
                 if isLikelyDuplicate {
-                    Text("Mögliche Dublette")
+                    Text(L10n.t("Mögliche Dublette", "Possible duplicate"))
                         .font(.caption2.weight(.semibold))
                         .foregroundStyle(Color(red: 0.72, green: 0.24, blue: 0.24))
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 6) {
-                Text(invoice.status == .open ? "Offen" : "Bezahlt")
+                Text(invoice.status == .open ? L10n.t("Offen", "Open") : L10n.t("Bezahlt", "Paid"))
                     .font(.caption.bold())
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
@@ -72,27 +72,27 @@ struct InvoiceRowView: View {
         let today = calendar.startOfDay(for: Date())
         let due = calendar.startOfDay(for: dueDate)
         let days = calendar.dateComponents([.day], from: today, to: due).day ?? 0
-        if days < 0 { return "Überfällig" }
-        if days <= urgencySoonDays { return "Bald fällig" }
+        if days < 0 { return L10n.t("Überfällig", "Overdue") }
+        if days <= urgencySoonDays { return L10n.t("Bald fällig", "Due soon") }
         return nil
     }
 
     private var statusBackgroundColor: Color {
         if invoice.status != .open { return Color(red: 0.84, green: 0.93, blue: 0.86) }
-        if urgencyText == "Überfällig" { return Color(red: 0.97, green: 0.83, blue: 0.82) }
-        if urgencyText == "Bald fällig" { return Color(red: 0.93, green: 0.89, blue: 0.79) }
+        if urgencyText == L10n.t("Überfällig", "Overdue") { return Color(red: 0.97, green: 0.83, blue: 0.82) }
+        if urgencyText == L10n.t("Bald fällig", "Due soon") { return Color(red: 0.93, green: 0.89, blue: 0.79) }
         return Color(red: 0.87, green: 0.92, blue: 0.97)
     }
 
     private var statusTextColor: Color {
         if invoice.status != .open { return Color(red: 0.13, green: 0.37, blue: 0.20) }
-        if urgencyText == "Überfällig" { return Color(red: 0.58, green: 0.20, blue: 0.20) }
-        if urgencyText == "Bald fällig" { return Color(red: 0.44, green: 0.31, blue: 0.18) }
+        if urgencyText == L10n.t("Überfällig", "Overdue") { return Color(red: 0.58, green: 0.20, blue: 0.20) }
+        if urgencyText == L10n.t("Bald fällig", "Due soon") { return Color(red: 0.44, green: 0.31, blue: 0.18) }
         return Color(red: 0.16, green: 0.33, blue: 0.50)
     }
 
     private var statusAccentColor: Color {
-        if urgencyText == "Überfällig" { return .red }
+        if urgencyText == L10n.t("Überfällig", "Overdue") { return .red }
         return .orange
     }
 }
