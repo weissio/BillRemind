@@ -6,6 +6,7 @@ struct InvoiceDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = InvoiceDetailViewModel()
+    @Query private var existingInvoices: [Invoice]
 
     @Bindable var invoice: Invoice
     @State private var showDeleteConfirm = false
@@ -32,6 +33,7 @@ struct InvoiceDetailView: View {
             }
 
             Section(L10n.t("Details", "Details")) {
+                DatePicker(L10n.t("Rechnungsdatum", "Invoice date"), selection: invoiceDateBinding, displayedComponents: .date)
                 DatePicker(L10n.t("Eingangsdatum", "Received date"), selection: $invoice.receivedAt, displayedComponents: .date)
                 TextField(L10n.t("Anbieter", "Vendor"), text: $invoice.vendorName)
                 TextField(L10n.t("Zahlungsempfaenger", "Payment recipient"), text: $invoice.paymentRecipient)
@@ -84,6 +86,14 @@ struct InvoiceDetailView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 TextField(L10n.t("Notiz", "Note"), text: optionalBinding($invoice.note), axis: .vertical)
+            }
+
+            if let duplicateHint = duplicateWarningMessage() {
+                Section(L10n.t("Mögliche Dublette", "Possible duplicate")) {
+                    Text(duplicateHint)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             }
 
             Section(L10n.t("Reminder", "Reminder")) {
@@ -158,7 +168,7 @@ struct InvoiceDetailView: View {
             await viewModel.rescheduleIfNeeded(invoice)
         }
         .onDisappear {
-            invoice.iban = invoice.iban?.replacingOccurrences(of: " ", with: "").uppercased()
+            invoice.iban = ParsingService.normalizeIBANValue(invoice.iban)
             upsertVendorProfile(from: invoice)
             try? modelContext.save()
         }
@@ -166,12 +176,20 @@ struct InvoiceDetailView: View {
 
     private var dueDateBinding: Binding<Date> {
         Binding {
-            invoice.dueDate ?? Date()
+            invoice.dueDate ?? invoice.invoiceDate ?? invoice.receivedAt
         } set: { value in
             invoice.dueDate = value
             if invoice.reminderDate == nil {
                 invoice.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: value)
             }
+        }
+    }
+
+    private var invoiceDateBinding: Binding<Date> {
+        Binding {
+            invoice.invoiceDate ?? invoice.receivedAt
+        } set: { value in
+            invoice.invoiceDate = value
         }
     }
 
@@ -214,7 +232,7 @@ struct InvoiceDetailView: View {
     }
 
     private func applyDueDate(offsetDays: Int) {
-        let base = invoice.receivedAt
+        let base = invoice.invoiceDate ?? invoice.receivedAt
         let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: base) ?? base
         invoice.dueDate = due
         if invoice.reminderDate == nil || invoice.reminderEnabled {
@@ -223,13 +241,49 @@ struct InvoiceDetailView: View {
     }
 
     private func copyIBANToClipboard(_ iban: String?) {
-        let normalized = (iban ?? "").replacingOccurrences(of: " ", with: "").uppercased()
+        let normalized = ParsingService.normalizeIBANValue(iban) ?? ""
         guard !normalized.isEmpty else { return }
         UIPasteboard.general.string = normalized
         ibanCopied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             ibanCopied = false
         }
+    }
+
+    private func duplicateWarningMessage() -> String? {
+        let vendor = normalized(invoice.vendorName)
+        let number = normalized(invoice.invoiceNumber)
+        let amount = invoice.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0
+
+        let exactMatch = existingInvoices.first { other in
+            guard other.id != invoice.id else { return false }
+            let sameVendor = normalized(other.vendorName) == vendor
+            let sameNumber = !number.isEmpty && normalized(other.invoiceNumber) == number
+            let sameAmount = abs((other.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0) - amount) < 0.01
+            return sameVendor && sameNumber && sameAmount
+        }
+        if let exactMatch {
+            let amountText = exactMatch.amount?.formatted(.currency(code: "EUR")) ?? "-"
+            return L10n.t("Ähnliche Rechnung gefunden: \(exactMatch.vendorName), \(amountText).", "Similar invoice found: \(exactMatch.vendorName), \(amountText).")
+        }
+
+        let looseMatch = existingInvoices.first { other in
+            guard other.id != invoice.id else { return false }
+            let sameVendor = normalized(other.vendorName) == vendor
+            let sameAmount = abs((other.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0) - amount) < 0.01
+            return sameVendor && sameAmount
+        }
+        if let looseMatch {
+            return L10n.t("Mögliche Dublette: gleicher Anbieter und gleicher Betrag (\(looseMatch.vendorName)).", "Possible duplicate: same vendor and same amount (\(looseMatch.vendorName)).")
+        }
+
+        return nil
+    }
+
+    private func normalized(_ value: String?) -> String {
+        (value ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
     }
 
     private var allCategories: [String] {
@@ -270,9 +324,9 @@ struct InvoiceDetailView: View {
 
         let dueOffsetDays: Int? = {
             guard let dueDate = invoice.dueDate else { return nil }
-            let received = Calendar.current.startOfDay(for: invoice.receivedAt)
+            let invoiceDate = Calendar.current.startOfDay(for: invoice.invoiceDate ?? invoice.receivedAt)
             let due = Calendar.current.startOfDay(for: dueDate)
-            return Calendar.current.dateComponents([.day], from: received, to: due).day
+            return Calendar.current.dateComponents([.day], from: invoiceDate, to: due).day
         }()
 
         if let existing = try? modelContext.fetch(descriptor).first {

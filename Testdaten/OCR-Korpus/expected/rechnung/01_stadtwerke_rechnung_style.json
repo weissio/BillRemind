@@ -7,9 +7,9 @@
     "amount_value": 162.27,
     "category": "Wohnen",
     "due_date": null,
+    "due_offset_days_hint": 30,
     "status_suggestion": "open",
     "invoice_number": "SW-2026-0217",
     "iban": "DE12500105175407324931"
   }
 }
-

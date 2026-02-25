@@ -7,9 +7,9 @@
     "amount_value": 148.5,
     "category": "Sonstiges",
     "due_date": null,
+    "due_offset_days_hint": 30,
     "status_suggestion": "open",
     "invoice_number": "PK-2026-1884",
     "iban": "DE77860555921012334455"
   }
 }
-

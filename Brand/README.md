@@ -33,8 +33,14 @@ Pfad: `icon-only/`
 
 ## App Store
 Pfad: `app-store/`
-- mnemor-appicon-1024.png
-- mnemor-appicon-ios-set/ (Asset-Catalog Export)
+- variant-a/DE/6.5
+- variant-a/DE/6.7
+- variant-a/EN/6.5
+- variant-a/EN/6.7
+- variant-b/DE/6.5
+- variant-b/DE/6.7
+- variant-b/EN/6.5
+- variant-b/EN/6.7
 
 ## Favicon Web
 Pfad: `favicon/`

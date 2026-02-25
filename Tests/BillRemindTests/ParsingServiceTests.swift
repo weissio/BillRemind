@@ -13,8 +13,13 @@ final class ParsingServiceTests: XCTestCase {
         let lines = ParserFixtures.germanInvoice
             .split(separator: "\n")
             .map(String.init)
-        let amount = service.extractAmount(from: lines)
+        let amount = service.extractAmount(from: lines, documentType: .invoice)
         XCTAssertEqual(amount, Decimal(string: "1234.56"))
+    }
+
+    func testIBANNormalizationRemovesTrailingBICNoise() {
+        let iban = service.extractIBAN(from: "IBAN: DE12 5001 0517 5407 3249 31 BIC: INGDDEFFXXX")
+        XCTAssertEqual(iban, "DE12500105175407324931")
     }
 
     func testExtractsDueDateFromDifferentFormats() {

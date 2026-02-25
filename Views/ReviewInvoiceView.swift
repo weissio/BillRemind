@@ -5,12 +5,16 @@ import UIKit
 struct ReviewInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query private var existingInvoices: [Invoice]
     @Query private var vendorProfiles: [VendorProfile]
+    @Query private var ocrLearningProfiles: [OCRLearningProfile]
     @StateObject var scanViewModel: ScanViewModel
     let onSaved: () -> Void
 
     @State private var draft: InvoiceDraft
     @State private var saveError: String?
+    @State private var showDuplicateAlert = false
+    @State private var duplicateHintText = ""
     @State private var ibanCopied = false
     @State private var customCategoryInput = ""
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
@@ -94,7 +98,11 @@ struct ReviewInvoiceView: View {
                 }
 
                 Section(L10n.t("Rechnung", "Invoice")) {
+                    DatePicker(L10n.t("Rechnungsdatum", "Invoice date"), selection: $draft.invoiceDate, displayedComponents: .date)
                     DatePicker(L10n.t("Eingangsdatum", "Received date"), selection: $draft.receivedAt, displayedComponents: .date)
+                    Text(L10n.t("Rechnungsdatum steuert Fälligkeit (+7/+14/+30).", "Invoice date controls due date (+7/+14/+30)."))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                     Picker(L10n.t("Status", "Status"), selection: statusBinding) {
                         Text(L10n.t("Offen", "Open")).tag(Invoice.Status.open)
                         Text(L10n.t("Bezahlt", "Paid")).tag(Invoice.Status.paid)
@@ -114,6 +122,9 @@ struct ReviewInvoiceView: View {
                     highlightedField(title: L10n.t("Zahlungsempfaenger", "Payment recipient"), confidence: draft.vendorConfidence) {
                         TextField(L10n.t("Empfaenger laut Rechnung", "Recipient as shown on invoice"), text: $draft.paymentRecipient)
                     }
+                    Text(L10n.t("Tipp: Hier den exakten Zahlungsempfänger von der Rechnung eintragen.", "Tip: Enter the exact payment recipient from the invoice here."))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                     Picker(L10n.t("Kategorie", "Category"), selection: $draft.category) {
                         ForEach(allCategories, id: \.self) { category in
                             Text(category).tag(category)
@@ -137,16 +148,19 @@ struct ReviewInvoiceView: View {
                                     applyDueDate(offsetDays: 7)
                                 }
                                 .buttonStyle(.bordered)
+                                .tint(isDuePresetSelected(7) ? Color.accentColor : Color.secondary)
 
                                 Button(L10n.t("+14 Tage", "+14 days")) {
                                     applyDueDate(offsetDays: 14)
                                 }
                                 .buttonStyle(.bordered)
+                                .tint(isDuePresetSelected(14) ? Color.accentColor : Color.secondary)
 
                                 Button(L10n.t("+30 Tage", "+30 days")) {
                                     applyDueDate(offsetDays: 30)
                                 }
                                 .buttonStyle(.bordered)
+                                .tint(isDuePresetSelected(30) ? Color.accentColor : Color.secondary)
                             }
                             DatePicker(L10n.t("Fällig am", "Due date"), selection: dueDateBinding, displayedComponents: .date)
                         }
@@ -172,6 +186,9 @@ struct ReviewInvoiceView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
+                    Text(L10n.t("Beim Speichern prüfen wir automatisch auf mögliche Duplikate.", "On save, we automatically check for possible duplicates."))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section(L10n.t("Notiz", "Note")) {
@@ -218,6 +235,10 @@ struct ReviewInvoiceView: View {
             .onAppear {
                 applyLearnedDefaultsIfAvailable()
             }
+            .onChange(of: draft.invoiceDate) { value in
+                guard let offset = draft.dueOffsetDaysHint else { return }
+                draft.dueDate = Calendar.current.date(byAdding: .day, value: offset, to: value)
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Abbrechen", "Cancel")) {
@@ -232,14 +253,23 @@ struct ReviewInvoiceView: View {
                     .fontWeight(.semibold)
                 }
             }
+            .alert(L10n.t("Mögliche Dublette", "Possible duplicate"), isPresented: $showDuplicateAlert) {
+                Button(L10n.t("Trotzdem speichern", "Save anyway")) {
+                    saveDirectly()
+                }
+                Button(L10n.t("Prüfen", "Review"), role: .cancel) {}
+            } message: {
+                Text(duplicateHintText)
+            }
         }
     }
 
     private var dueDateBinding: Binding<Date> {
         Binding {
-            draft.dueDate ?? draft.receivedAt
+            draft.dueDate ?? draft.invoiceDate
         } set: { value in
             draft.dueDate = value
+            draft.dueOffsetDaysHint = nil
             if draft.reminderDate == nil {
                 draft.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: value)
             }
@@ -291,8 +321,18 @@ struct ReviewInvoiceView: View {
     }
 
     private func save() {
-        draft.iban = draft.iban.replacingOccurrences(of: " ", with: "").uppercased()
+        if let duplicateMessage = duplicateWarningMessage() {
+            duplicateHintText = duplicateMessage
+            showDuplicateAlert = true
+            return
+        }
+        saveDirectly()
+    }
+
+    private func saveDirectly() {
+        draft.iban = ParsingService.normalizeIBANValue(draft.iban) ?? ""
         draft.needsReview = (draft.ocrConfidence ?? 0) < 0.8 || !draft.reviewHint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        persistOCRLearningFromReview()
         do {
             let invoice = try scanViewModel.createInvoice(from: draft, modelContext: modelContext)
             if invoice.reminderEnabled {
@@ -313,16 +353,61 @@ struct ReviewInvoiceView: View {
         }
     }
 
+    private func duplicateWarningMessage() -> String? {
+        let vendor = normalized(draft.vendorName)
+        let number = normalized(draft.invoiceNumber)
+        let amount = draft.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0
+
+        let exactMatch = existingInvoices.first { invoice in
+            guard invoice.id != draft.id else { return false }
+            let sameVendor = normalized(invoice.vendorName) == vendor
+            let sameNumber = !number.isEmpty && normalized(invoice.invoiceNumber) == number
+            let sameAmount = abs((invoice.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0) - amount) < 0.01
+            return sameVendor && sameNumber && sameAmount
+        }
+        if let exactMatch {
+            let amountText = exactMatch.amount?.formatted(.currency(code: "EUR")) ?? "-"
+            return L10n.t("Eine ähnliche Rechnung ist bereits vorhanden (\(exactMatch.vendorName), \(amountText)).", "A similar invoice already exists (\(exactMatch.vendorName), \(amountText)).")
+        }
+
+        let looseMatch = existingInvoices.first { invoice in
+            guard invoice.id != draft.id else { return false }
+            let sameVendor = normalized(invoice.vendorName) == vendor
+            let sameAmount = abs((invoice.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0) - amount) < 0.01
+            return sameVendor && sameAmount
+        }
+        if let looseMatch {
+            return L10n.t("Mögliche Dublette erkannt (\(looseMatch.vendorName), gleicher Betrag). Bitte kurz prüfen.", "Possible duplicate detected (\(looseMatch.vendorName), same amount). Please review briefly.")
+        }
+        return nil
+    }
+
+    private func normalized(_ value: String?) -> String {
+        (value ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+    }
+
     private func applyDueDate(offsetDays: Int) {
-        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: draft.receivedAt) ?? draft.receivedAt
+        let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: draft.invoiceDate) ?? draft.invoiceDate
         draft.dueDate = due
+        draft.dueOffsetDaysHint = offsetDays
         if draft.reminderDate == nil || draft.reminderEnabled {
             draft.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: due)
         }
     }
 
+    private func isDuePresetSelected(_ offsetDays: Int) -> Bool {
+        if draft.dueOffsetDaysHint == offsetDays { return true }
+        guard let dueDate = draft.dueDate else { return false }
+        let invoiceDay = Calendar.current.startOfDay(for: draft.invoiceDate)
+        let dueDay = Calendar.current.startOfDay(for: dueDate)
+        let diff = Calendar.current.dateComponents([.day], from: invoiceDay, to: dueDay).day
+        return diff == offsetDays
+    }
+
     private func copyIBANToClipboard(_ iban: String) {
-        let normalized = iban.replacingOccurrences(of: " ", with: "").uppercased()
+        let normalized = ParsingService.normalizeIBANValue(iban) ?? ""
         guard !normalized.isEmpty else { return }
         UIPasteboard.general.string = normalized
         ibanCopied = true
@@ -370,8 +455,102 @@ struct ReviewInvoiceView: View {
             draft.category = profile.preferredCategory
         }
         if draft.importKind != .scanReceipt, draft.dueDate == nil, let days = profile.preferredDueOffsetDays {
-            draft.dueDate = Calendar.current.date(byAdding: .day, value: days, to: draft.receivedAt)
+            draft.dueDate = Calendar.current.date(byAdding: .day, value: days, to: draft.invoiceDate)
         }
+
+        if let categoryLearning = learningProfile(for: key, field: .category),
+           categoryLearning.correctionRate >= 0.6,
+           let learnedCategory = categoryLearning.lastFinalValue,
+           (draft.category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || draft.category == "Sonstiges") {
+            draft.category = learnedCategory
+        }
+
+        if let recipientLearning = learningProfile(for: key, field: .paymentRecipient),
+           recipientLearning.correctionRate >= 0.6,
+           let learnedRecipient = recipientLearning.lastFinalValue,
+           draft.paymentRecipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            draft.paymentRecipient = learnedRecipient
+        }
+    }
+
+    private func learningProfile(for vendorID: String, field: OCRLearningProfile.Field) -> OCRLearningProfile? {
+        let id = OCRLearningProfile.profileID(vendorID: vendorID, field: field)
+        return ocrLearningProfiles.first(where: { $0.id == id })
+    }
+
+    private func persistOCRLearningFromReview() {
+        let vendorKeySource = draft.vendorName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !vendorKeySource.isEmpty else { return }
+
+        let vendorID = VendorProfile.profileID(from: vendorKeySource)
+        guard !vendorID.isEmpty else { return }
+
+        updateLearning(vendorID: vendorID, field: .vendor, suggested: draft.ocrOriginalVendorName, final: draft.vendorName)
+        updateLearning(vendorID: vendorID, field: .paymentRecipient, suggested: draft.ocrOriginalPaymentRecipient, final: draft.paymentRecipient)
+        updateLearning(vendorID: vendorID, field: .category, suggested: draft.ocrOriginalCategory, final: draft.category)
+        updateLearning(vendorID: vendorID, field: .amount, suggested: decimalText(draft.ocrOriginalAmount), final: decimalText(draft.amount))
+        updateLearning(vendorID: vendorID, field: .dueDate, suggested: isoDate(draft.ocrOriginalDueDate), final: isoDate(draft.dueDate))
+        updateLearning(vendorID: vendorID, field: .invoiceNumber, suggested: draft.ocrOriginalInvoiceNumber, final: draft.invoiceNumber)
+        updateLearning(vendorID: vendorID, field: .iban, suggested: normalizedIbanText(draft.ocrOriginalIBAN), final: normalizedIbanText(draft.iban))
+    }
+
+    private func updateLearning(vendorID: String, field: OCRLearningProfile.Field, suggested: String?, final: String?) {
+        let normalizedSuggested = canonicalLearningValue(suggested)
+        let normalizedFinal = canonicalLearningValue(final)
+        guard normalizedSuggested != nil || normalizedFinal != nil else { return }
+
+        let id = OCRLearningProfile.profileID(vendorID: vendorID, field: field)
+        let changed = normalizedSuggested != normalizedFinal
+
+        if let existing = ocrLearningProfiles.first(where: { $0.id == id }) {
+            existing.sampleCount += 1
+            if changed {
+                existing.correctionCount += 1
+            }
+            existing.lastSuggestedValue = normalizedSuggested
+            existing.lastFinalValue = normalizedFinal
+            existing.updatedAt = .now
+        } else {
+            let profile = OCRLearningProfile(
+                id: id,
+                vendorID: vendorID,
+                field: field,
+                sampleCount: 1,
+                correctionCount: changed ? 1 : 0,
+                lastSuggestedValue: normalizedSuggested,
+                lastFinalValue: normalizedFinal
+            )
+            modelContext.insert(profile)
+        }
+    }
+
+    private func canonicalLearningValue(_ value: String?) -> String? {
+        let trimmed = (value ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return trimmed
+            .replacingOccurrences(of: "\u{00a0}", with: " ")
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .lowercased()
+    }
+
+    private func decimalText(_ value: Decimal?) -> String? {
+        guard let value else { return nil }
+        return value.formatted(.number.precision(.fractionLength(2)))
+    }
+
+    private func isoDate(_ date: Date?) -> String? {
+        guard let date else { return nil }
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+    private func normalizedIbanText(_ iban: String?) -> String? {
+        let normalized = ParsingService.normalizeIBANValue(iban) ?? ""
+        return normalized.isEmpty ? nil : normalized
     }
 
     @ViewBuilder
@@ -380,15 +559,27 @@ struct ReviewInvoiceView: View {
             Text(title)
             Spacer()
             if let value {
-                Text("\(Int((value * 100).rounded()))%")
+                Text("\(Int((value * 100).rounded()))% · \(confidenceLevelLabel(for: value))")
                     .monospacedDigit()
-                    .foregroundStyle(value < reviewConfidenceThreshold ? .orange : .secondary)
+                    .foregroundStyle(confidenceLevelColor(for: value))
             } else {
                 Text("-")
                     .foregroundStyle(.secondary)
             }
         }
         .font(.caption)
+    }
+
+    private func confidenceLevelLabel(for value: Double) -> String {
+        if value >= 0.85 { return L10n.t("hoch", "high") }
+        if value >= 0.65 { return L10n.t("mittel", "medium") }
+        return L10n.t("prüfen", "review")
+    }
+
+    private func confidenceLevelColor(for value: Double) -> Color {
+        if value >= 0.85 { return .green }
+        if value >= 0.65 { return .orange }
+        return .red
     }
 
     @ViewBuilder

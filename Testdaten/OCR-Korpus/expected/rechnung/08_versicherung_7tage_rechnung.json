@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "08_versicherung_7tage_rechnung.txt",
+  "expected": {
+    "vendor_name": "SICHERHEIT DIREKT AG",
+    "payment_recipient": "SICHERHEIT DIREKT AG",
+    "amount_value": 24.5,
+    "category": "Versicherung",
+    "due_date": null,
+    "due_offset_days_hint": 7,
+    "status_suggestion": "open",
+    "invoice_number": "SD-2026-0707",
+    "iban": "DE47500105175407324931"
+  }
+}

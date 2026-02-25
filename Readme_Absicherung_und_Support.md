@@ -62,6 +62,7 @@ Hinweis zum Parent-Ordner:
 Persistente SwiftData-Modelle:
 - `Invoice`
 - `VendorProfile`
+- `OCRLearningProfile`
 - `IncomeEntry`
 - `InstallmentPlan`
 - `InstallmentSpecialRepayment`
@@ -206,3 +207,106 @@ Wenn der bisherige Hauptverantwortliche ausfaellt, ist folgende Reihenfolge fuer
 5. Nur risikoarme Aenderungen zuerst ausrollen.
 
 Damit bleibt der Betrieb auch unter Zeitdruck kontrollierbar und daten-sicher.
+
+## 13. Launch-Readiness Nachweis (aktuell geprueft)
+
+Folgende Punkte wurden als Basis fuer den ersten Launch-Modus geprueft:
+
+### 13.1 Stabilitaet und Build
+- Swift-Parse-Checks fuer geaenderte Kern-Dateien erfolgreich:
+  - `App/BillRemindApp.swift`
+  - `Models/Invoice.swift`
+  - `ViewModels/ScanViewModel.swift`
+  - `Views/ReviewInvoiceView.swift`
+  - `Views/SettingsView.swift`
+- Hinweis: Wenn lokal `xcodebuild` durch einen macOS-Simulatordienst (z. B. `simdiskimaged`) blockiert ist, gilt das nicht automatisch als App-Fehler. In dem Fall:
+  - Parse-Checks als Mindestnachweis dokumentieren.
+  - Danach Build/Run auf realem iPhone als Pflichtnachweis.
+
+### 13.2 OCR-Qualitaet
+- OCR-Korpuslauf erfolgreich (`make ocr-check`):
+  - Cases: `9/9`
+  - Felder: `81/81`
+- Reports:
+  - `Testdaten/OCR-Korpus/report/latest.json`
+  - `Testdaten/OCR-Korpus/report/latest.md`
+
+### 13.3 Datenpersistenz und Update-Sicherheit
+- Persistenter SwiftData-Container ohne In-Memory-Fallback in Produktion.
+- Datenmodelle im aktiven Schema enthalten, inkl.:
+  - `OCRLearningProfile` (lokales Lernmodell fuer OCR-Korrekturen).
+- Backup/Restore deckt alle Kernbereiche ab:
+  - Rechnungen
+  - Anbieterprofile
+  - OCR-Lernprofile
+  - Einnahmen
+  - Fixkosten/Kredite
+  - Sondertilgungen
+
+### 13.4 Produktverhalten (relevant fuer Support)
+- Sondertilgung ist direkt am Kredit-Row erreichbar (nicht nur ueber Bearbeiten-Form).
+- Kassenbon-Import kann standardmaessig auf `Bezahlt` laufen.
+- OCR-Confidence wird in Review verstaendlich angezeigt (`hoch / mittel / pruefen`).
+- OCR-Korrekturen aus Review werden lokal gelernt (anbieterbezogen).
+
+## 14. Bug-Handling Schema (verbindlicher Ablauf)
+
+Dieses Schema ist bei jedem gemeldeten Bug zu verwenden, damit Support, Entwicklung und Release gleich ablaufen.
+Verpflichtendes Ticket-Template:
+- `/Users/jonasweiss/Documents/New project/BillRemind/docs/templates/bug-report.md`
+
+### 14.1 Ticket aufnehmen (Pflichtdaten)
+- App-Version + Buildnummer
+- iOS-Version + Geraetemodell
+- Betroffener Bereich (Scan, Review, Ausgaben, Auswertung, Settings, Export, Backup/Restore)
+- Reproduktionsschritte (nummeriert)
+- Erwartetes Verhalten vs. Ist-Verhalten
+- Screenshots/Video falls vorhanden
+- Datensicherheitsrisiko: `hoch / mittel / niedrig`
+
+### 14.2 Triage (Priorisierung)
+- P0: Datenverlust, App startet nicht, Restore unbrauchbar
+- P1: Kernfunktion kaputt (Speichern/Scannen/Auswertung)
+- P2: Wichtiger Logikfehler mit Workaround
+- P3: UI/Komfort
+
+Regel:
+- Erst P0/P1, dann P2/P3.
+
+### 14.3 Reproduktion und Eingrenzung
+- Bug lokal reproduzieren.
+- Scope bestimmen:
+  - Datenmodell
+  - UI-State
+  - Parsing/OCR
+  - Export/Restore
+- Minimalen reproduzierbaren Fall dokumentieren.
+
+### 14.4 Fix-Umsetzung
+- Kleine, isolierte Aenderung statt grosser Umbauten.
+- Bei Datenmodellthemen nur additive Aenderungen oder klare Migration planen.
+- Keine destruktiven Notfallmassnahmen (kein Daten-Reset als Schnellfix).
+
+### 14.5 Verifikation nach Fix
+- Parse/Build erfolgreich.
+- Betroffener Use-Case manuell durchtesten.
+- Relevante Nachbarfaelle pruefen (Regression):
+  - Speichern
+  - Anzeigen in Listen/Details
+  - Auswertung
+  - Export
+  - Backup/Restore (bei persistenznahen Fixes)
+
+### 14.6 Release-Entscheidung
+- P0/P1 nur mit verifiziertem Fix in TestFlight.
+- Beobachtung nach Rollout:
+  - Erste 24h: engmaschig
+  - 48h: Abschlussbewertung
+
+### 14.7 Dokumentation (Pflicht)
+- Release-Notiz unter `docs/releases/<version>.md` ergaenzen mit:
+  - Problem
+  - Ursache
+  - Fix
+  - Testnachweis
+  - Restrisiko

@@ -22,6 +22,7 @@ final class Invoice {
     @Attribute(.unique) var id: UUID
     var createdAt: Date
     var receivedAt: Date = Date()
+    var invoiceDate: Date?
     var vendorName: String
     var paymentRecipient: String = ""
     var amountValue: Double?
@@ -49,6 +50,7 @@ final class Invoice {
         id: UUID = UUID(),
         createdAt: Date = .now,
         receivedAt: Date = .now,
+        invoiceDate: Date? = nil,
         vendorName: String = "Unbekannt",
         paymentRecipient: String? = nil,
         amount: Decimal? = nil,
@@ -75,6 +77,7 @@ final class Invoice {
         self.id = id
         self.createdAt = createdAt
         self.receivedAt = receivedAt
+        self.invoiceDate = invoiceDate ?? receivedAt
         self.vendorName = vendorName
         self.paymentRecipient = paymentRecipient ?? vendorName
         self.amountValue = amount.map { NSDecimalNumber(decimal: $0).doubleValue }
@@ -176,6 +179,64 @@ final class VendorProfile {
 }
 
 @Model
+final class OCRLearningProfile {
+    enum Field: String, Codable, CaseIterable, Identifiable {
+        case vendor
+        case paymentRecipient
+        case category
+        case amount
+        case dueDate
+        case invoiceNumber
+        case iban
+
+        var id: String { rawValue }
+    }
+
+    @Attribute(.unique) var id: String
+    var vendorID: String
+    var fieldRaw: String
+    var sampleCount: Int
+    var correctionCount: Int
+    var lastSuggestedValue: String?
+    var lastFinalValue: String?
+    var updatedAt: Date
+
+    init(
+        id: String,
+        vendorID: String,
+        field: Field,
+        sampleCount: Int = 0,
+        correctionCount: Int = 0,
+        lastSuggestedValue: String? = nil,
+        lastFinalValue: String? = nil,
+        updatedAt: Date = .now
+    ) {
+        self.id = id
+        self.vendorID = vendorID
+        self.fieldRaw = field.rawValue
+        self.sampleCount = sampleCount
+        self.correctionCount = correctionCount
+        self.lastSuggestedValue = lastSuggestedValue
+        self.lastFinalValue = lastFinalValue
+        self.updatedAt = updatedAt
+    }
+
+    var field: Field {
+        get { Field(rawValue: fieldRaw) ?? .vendor }
+        set { fieldRaw = newValue.rawValue }
+    }
+
+    var correctionRate: Double {
+        guard sampleCount > 0 else { return 0 }
+        return Double(correctionCount) / Double(sampleCount)
+    }
+
+    static func profileID(vendorID: String, field: Field) -> String {
+        "\(vendorID)|\(field.rawValue)"
+    }
+}
+
+@Model
 final class IncomeEntry {
     enum Kind: String, Codable, CaseIterable, Identifiable {
         case monthlyFixed
@@ -241,13 +302,29 @@ final class InstallmentPlan {
         }
     }
 
+    enum LoanRepaymentMode: String, Codable, CaseIterable, Identifiable {
+        case annuity
+        case fixedPrincipal
+
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .annuity: return L10n.t("Annuitaet", "Annuity")
+            case .fixedPrincipal: return L10n.t("Feste Tilgung", "Fixed principal")
+            }
+        }
+    }
+
     @Attribute(.unique) var id: UUID
+    var isLoanFlag: Bool?
     var kindRaw: String = ""
     var name: String
     var monthlyPaymentValue: Double
     var monthlyInterestValue: Double
     var annualInterestRatePercentValue: Double?
     var initialPrincipalValue: Double?
+    var loanRepaymentModeRaw: String?
     var startDate: Date
     var endDate: Date?
     var paymentDay: Int
@@ -261,18 +338,21 @@ final class InstallmentPlan {
         monthlyInterest: Decimal = 0,
         annualInterestRatePercent: Decimal? = nil,
         initialPrincipal: Decimal? = nil,
+        loanRepaymentMode: LoanRepaymentMode = .annuity,
         startDate: Date,
         endDate: Date? = nil,
         paymentDay: Int = 1,
         isActive: Bool = true
     ) {
         self.id = id
+        self.isLoanFlag = (kind == .loan)
         self.kindRaw = kind.rawValue
         self.name = name
         self.monthlyPaymentValue = NSDecimalNumber(decimal: monthlyPayment).doubleValue
         self.monthlyInterestValue = NSDecimalNumber(decimal: monthlyInterest).doubleValue
         self.annualInterestRatePercentValue = annualInterestRatePercent.map { NSDecimalNumber(decimal: $0).doubleValue }
         self.initialPrincipalValue = initialPrincipal.map { NSDecimalNumber(decimal: $0).doubleValue }
+        self.loanRepaymentModeRaw = kind == .loan ? loanRepaymentMode.rawValue : nil
         self.startDate = startDate
         self.endDate = endDate
         self.paymentDay = min(max(paymentDay, 1), 28)
@@ -286,8 +366,14 @@ final class InstallmentPlan {
 
     var kind: Kind {
         get {
+            if let isLoanFlag {
+                return isLoanFlag ? .loan : .fixedCost
+            }
             if let parsed = Kind(rawValue: kindRaw) {
                 return parsed
+            }
+            if let raw = loanRepaymentModeRaw, LoanRepaymentMode(rawValue: raw) != nil {
+                return .loan
             }
             if initialPrincipal != nil || annualInterestRatePercent != nil || monthlyInterest > 0 {
                 return .loan
@@ -295,7 +381,13 @@ final class InstallmentPlan {
             return .fixedCost
         }
         set {
+            isLoanFlag = (newValue == .loan)
             kindRaw = newValue.rawValue
+            if newValue == .fixedCost {
+                loanRepaymentModeRaw = nil
+            } else if loanRepaymentModeRaw == nil {
+                loanRepaymentModeRaw = LoanRepaymentMode.annuity.rawValue
+            }
         }
     }
 
@@ -314,8 +406,24 @@ final class InstallmentPlan {
         }
     }
 
+    var loanRepaymentMode: LoanRepaymentMode {
+        get {
+            guard kind == .loan else { return .annuity }
+            if let raw = loanRepaymentModeRaw, let parsed = LoanRepaymentMode(rawValue: raw) {
+                return parsed
+            }
+            return .annuity
+        }
+        set {
+            loanRepaymentModeRaw = newValue.rawValue
+        }
+    }
+
     var monthlyPrincipal: Decimal {
-        max(monthlyPayment - monthlyInterest, 0)
+        if kind == .loan, loanRepaymentMode == .fixedPrincipal {
+            return max(monthlyPayment, 0)
+        }
+        return max(monthlyPayment - monthlyInterest, 0)
     }
 
     var initialPrincipal: Decimal? {

@@ -10,12 +10,19 @@ struct BillRemindApp: App {
     @State private var showingLockError = false
 
     private var sharedModelContainer: ModelContainer? = {
-        let schema = Schema([Invoice.self, VendorProfile.self, IncomeEntry.self, InstallmentPlan.self, InstallmentSpecialRepayment.self])
+        let schema = Schema([
+            Invoice.self,
+            VendorProfile.self,
+            OCRLearningProfile.self,
+            IncomeEntry.self,
+            InstallmentPlan.self,
+            InstallmentSpecialRepayment.self
+        ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            NSLog("BillRemind: persistent store initialization failed: \(error.localizedDescription)")
+            NSLog("Mnemor: persistent store initialization failed: \(error.localizedDescription)")
             return nil
         }
     }()
@@ -91,7 +98,7 @@ struct BillRemindApp: App {
 
         context.evaluatePolicy(
             .deviceOwnerAuthentication,
-            localizedReason: appLanguageCode == "en" ? "Unlock BillRemind" : "BillRemind entsperren"
+            localizedReason: appLanguageCode == "en" ? "Unlock Mnemor" : "Mnemor entsperren"
         ) { success, _ in
             DispatchQueue.main.async {
                 isUnlocked = success

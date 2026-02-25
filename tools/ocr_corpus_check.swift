@@ -21,6 +21,7 @@ struct ExpectedEnvelope: Decodable {
         let amount_value: Double?
         let category: String?
         let due_date: String?
+        let due_offset_days_hint: Int?
         let status_suggestion: String?
         let invoice_number: String?
         let iban: String?
@@ -129,6 +130,11 @@ struct OCRCorpusCheck {
                     field: "due_date",
                     expected: expectedEnvelope.expected.due_date,
                     actual: parsed.dueDate
+                ))
+                checks.append(compareInt(
+                    field: "due_offset_days_hint",
+                    expected: expectedEnvelope.expected.due_offset_days_hint,
+                    actual: parsed.dueOffsetDaysHint
                 ))
 
                 let statusSuggestion = (parsed.documentType == .receipt) ? "paid" : "open"
@@ -248,6 +254,20 @@ struct OCRCorpusCheck {
         return CheckResult.FieldResult(field: field, expected: e, actual: a, ok: e == a, note: nil)
     }
 
+    private static func compareInt(field: String, expected: Int?, actual: Int?) -> CheckResult.FieldResult {
+        if expected == nil && actual == nil {
+            return .init(field: field, expected: nil, actual: nil, ok: true, note: nil)
+        }
+        let ok = expected == actual
+        return .init(
+            field: field,
+            expected: expected.map(String.init),
+            actual: actual.map(String.init),
+            ok: ok,
+            note: ok ? nil : "Integer mismatch"
+        )
+    }
+
     private static func compareAmount(field: String, expected: Double?, actual: Double?) -> CheckResult.FieldResult {
         let e = expected
         let a = actual
@@ -331,4 +351,3 @@ struct OCRCorpusCheck {
         return lines.joined(separator: "\n")
     }
 }
-
