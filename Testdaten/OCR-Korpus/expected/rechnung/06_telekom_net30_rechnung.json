@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "06_telekom_net30_rechnung.txt",
+  "expected": {
+    "vendor_name": "TELEKOM SERVICE GMBH",
+    "payment_recipient": "TELEKOM SERVICE GMBH",
+    "amount_value": 49.99,
+    "category": "Telefon & Internet",
+    "due_date": null,
+    "due_offset_days_hint": 30,
+    "status_suggestion": "open",
+    "invoice_number": "TK-2026-3012",
+    "iban": "DE12500105170648489890"
+  }
+}

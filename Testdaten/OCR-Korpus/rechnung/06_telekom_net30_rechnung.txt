@@ -1,0 +1,15 @@
+RECHNUNG
+TELEKOM SERVICE GMBH
+Kundenservice 1
+53113 Bonn
+
+Rechnungsnummer: TK-2026-3012
+Rechnungsdatum: 22.02.2026
+Zahlungsziel: 30 Tage netto
+
+Internet & Telefon Februar 49,99 EUR
+
+Gesamtbetrag: 49,99 EUR
+
+Zahlungsempfaenger: Telekom Service GmbH
+IBAN: DE12500105170648489890

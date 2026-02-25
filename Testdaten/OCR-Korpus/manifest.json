@@ -55,6 +55,30 @@
       "document_type": "receipt",
       "source_file": "kassenbon/04_lidl_kassenbon.txt",
       "expected_file": "expected/kassenbon/04_lidl_kassenbon.json"
+    },
+    {
+      "id": "invoice_06_telekom_net30_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/06_telekom_net30_rechnung.txt",
+      "expected_file": "expected/rechnung/06_telekom_net30_rechnung.json"
+    },
+    {
+      "id": "invoice_07_cloud_due14_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/07_cloud_due14_invoice.txt",
+      "expected_file": "expected/rechnung/07_cloud_due14_invoice.json"
+    },
+    {
+      "id": "invoice_08_versicherung_7tage_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/08_versicherung_7tage_rechnung.txt",
+      "expected_file": "expected/rechnung/08_versicherung_7tage_rechnung.json"
+    },
+    {
+      "id": "receipt_05_penny_rueckgeld_txt",
+      "document_type": "receipt",
+      "source_file": "kassenbon/05_penny_rueckgeld_kassenbon.txt",
+      "expected_file": "expected/kassenbon/05_penny_rueckgeld_kassenbon.json"
     }
   ]
 }

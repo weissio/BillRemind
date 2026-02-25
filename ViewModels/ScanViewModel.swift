@@ -113,6 +113,7 @@ final class ScanViewModel: ObservableObject {
             id: draft.id,
             createdAt: .now,
             receivedAt: draft.receivedAt,
+            invoiceDate: draft.invoiceDate,
             vendorName: draft.vendorName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Unbekannt" : draft.vendorName,
             paymentRecipient: draft.paymentRecipient.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? draft.vendorName : draft.paymentRecipient,
             amount: draft.amount,
@@ -162,9 +163,9 @@ final class ScanViewModel: ObservableObject {
 
         let dueOffsetDays: Int? = {
             guard let dueDate = invoice.dueDate else { return nil }
-            let received = Calendar.current.startOfDay(for: invoice.receivedAt)
+            let invoiceDate = Calendar.current.startOfDay(for: invoice.invoiceDate ?? invoice.receivedAt)
             let due = Calendar.current.startOfDay(for: dueDate)
-            return Calendar.current.dateComponents([.day], from: received, to: due).day
+            return Calendar.current.dateComponents([.day], from: invoiceDate, to: due).day
         }()
 
         if let existing = try? modelContext.fetch(descriptor).first {
@@ -190,7 +191,7 @@ final class ScanViewModel: ObservableObject {
         let text = parsed.extractedText
         let vendorEvidence = hasVendorEvidence(vendor: parsed.vendorName, text: text)
         let amountEvidence = hasAmountEvidence(amount: parsed.amount, text: text)
-        let dueDateEvidence = isReceipt ? true : hasDueDateEvidence(dueDate: parsed.dueDate, text: text)
+        let dueDateEvidence = isReceipt ? true : (hasDueDateEvidence(dueDate: parsed.dueDate, text: text) || hasDueOffsetEvidence(text: text))
         let numberEvidence = hasInvoiceNumberEvidence(invoiceNumber: parsed.invoiceNumber, text: text)
         let ibanEvidence = hasIBANEvidence(iban: parsed.iban, text: text)
 
@@ -302,6 +303,12 @@ final class ScanViewModel: ObservableObject {
         }
     }
 
+    private func hasDueOffsetEvidence(text: String) -> Bool {
+        let lower = text.lowercased()
+        let pattern = #"(?:net\s*30|net\s*14|net\s*7|zahlbar\s+innerhalb\s+von\s+(?:7|14|30)\s*tage|due\s+in\s+(?:7|14|30)\s*days?)"#
+        return lower.range(of: pattern, options: .regularExpression) != nil
+    }
+
     private func hasInvoiceNumberEvidence(invoiceNumber: String?, text: String) -> Bool {
         let number = (invoiceNumber ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard !number.isEmpty else { return false }
@@ -325,6 +332,8 @@ struct InvoiceDraft {
     var category: String = "Sonstiges"
     var amount: Decimal?
     var receivedAt: Date = Date()
+    var invoiceDate: Date = Date()
+    var dueOffsetDaysHint: Int?
     var dueDate: Date?
     var invoiceNumber: String = ""
     var iban: String = ""
@@ -344,6 +353,13 @@ struct InvoiceDraft {
     var ibanConfidence: Double?
     var needsReview: Bool = false
     var reviewHint: String = ""
+    var ocrOriginalVendorName: String?
+    var ocrOriginalPaymentRecipient: String?
+    var ocrOriginalCategory: String?
+    var ocrOriginalAmount: Decimal?
+    var ocrOriginalDueDate: Date?
+    var ocrOriginalInvoiceNumber: String?
+    var ocrOriginalIBAN: String?
 
     init(parsed: ParsedInvoiceData? = nil, captureMode: ScanCaptureMode = .invoice, importKind: InvoiceImportKind? = nil) {
         self.importKind = importKind ?? (captureMode == .receipt ? .scanReceipt : .scanInvoice)
@@ -355,7 +371,10 @@ struct InvoiceDraft {
         paymentRecipient = parsed.paymentRecipient
         category = parsed.category
         amount = parsed.amount
-        receivedAt = Date()
+        let inferredInvoiceDate = parsed.invoiceDate ?? Date()
+        receivedAt = inferredInvoiceDate
+        invoiceDate = inferredInvoiceDate
+        dueOffsetDaysHint = parsed.dueOffsetDaysHint
         dueDate = parsed.dueDate
         invoiceNumber = parsed.invoiceNumber ?? ""
         iban = parsed.iban ?? ""
@@ -369,6 +388,17 @@ struct InvoiceDraft {
         ibanConfidence = parsed.ibanConfidence
         reviewHint = parsed.reviewHint ?? ""
         needsReview = (parsed.ocrConfidence ?? 0) < 0.8 || !reviewHint.isEmpty
+        ocrOriginalVendorName = parsed.vendorName
+        ocrOriginalPaymentRecipient = parsed.paymentRecipient
+        ocrOriginalCategory = parsed.category
+        ocrOriginalAmount = parsed.amount
+        ocrOriginalDueDate = parsed.dueDate
+        ocrOriginalInvoiceNumber = parsed.invoiceNumber
+        ocrOriginalIBAN = parsed.iban
+
+        if dueDate == nil, let offset = dueOffsetDaysHint {
+            dueDate = Calendar.current.date(byAdding: .day, value: offset, to: invoiceDate)
+        }
 
         if let dueDate {
             reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: dueDate)

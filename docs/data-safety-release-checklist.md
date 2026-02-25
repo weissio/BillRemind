@@ -11,7 +11,7 @@ This checklist is mandatory before every production update.
 ## 2. Pre-release backup safety
 - Ensure backup export works on the release candidate build.
 - Create and validate a restore using a backup from the previous app version.
-- Verify restored values for invoices, income, fixed costs, loans, and special repayments.
+- Verify restored values for invoices, income, fixed costs, loans, special repayments, and OCR learning profiles.
 
 ## 3. Upgrade validation matrix
 - Test update path: `N-1 -> N` (latest public to candidate).
@@ -22,6 +22,7 @@ This checklist is mandatory before every production update.
   - Stats/analytics values
   - Export creation
   - Settings persistence
+  - OCR review confidence + learned category/payment-recipient suggestions still work
 
 ## 4. Release gates
 - No unresolved data-loss risks.

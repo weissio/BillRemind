@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "07_cloud_due14_invoice.txt",
+  "expected": {
+    "vendor_name": "CLOUDTOOLS LTD",
+    "payment_recipient": "CLOUDTOOLS LTD",
+    "amount_value": 89.0,
+    "category": "Abos",
+    "due_date": null,
+    "due_offset_days_hint": 14,
+    "status_suggestion": "open",
+    "invoice_number": "CT-2026-1488",
+    "iban": "DE21500500000987654321"
+  }
+}

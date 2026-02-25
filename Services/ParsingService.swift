@@ -12,6 +12,8 @@ struct ParsedInvoiceData {
     var paymentRecipient: String = "Unbekannt"
     var category: String = "Sonstiges"
     var amount: Decimal?
+    var invoiceDate: Date?
+    var dueOffsetDaysHint: Int? = nil
     var dueDate: Date?
     var invoiceNumber: String?
     var iban: String?
@@ -35,6 +37,9 @@ struct ParsingService {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
         let documentType = classifyDocumentType(from: lines)
+        let invoiceDate = documentType == .receipt ? nil : extractInvoiceDate(from: lines)
+        let dueDate = documentType == .receipt ? nil : extractDueDate(from: lines)
+        let dueOffsetDaysHint = documentType == .receipt ? nil : extractDueOffsetDaysHint(from: lines)
 
         return ParsedInvoiceData(
             documentType: documentType,
@@ -42,7 +47,9 @@ struct ParsingService {
             paymentRecipient: extractPaymentRecipient(from: lines),
             category: extractCategory(from: lines),
             amount: extractAmount(from: lines, documentType: documentType),
-            dueDate: documentType == .receipt ? nil : extractDueDate(from: lines),
+            invoiceDate: invoiceDate,
+            dueOffsetDaysHint: dueOffsetDaysHint,
+            dueDate: dueDate,
             invoiceNumber: extractInvoiceNumber(from: lines),
             iban: extractIBAN(from: text),
             note: nil,
@@ -51,17 +58,10 @@ struct ParsingService {
     }
 
     func extractIBAN(from text: String) -> String? {
-        let pattern = #"\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]){10,30}\b"#
+        let pattern = #"\b[A-Z]{2}\d{2}(?:[ \t]?[A-Z0-9]){10,30}\b"#
         let upper = text.uppercased()
         guard let range = upper.range(of: pattern, options: .regularExpression) else { return nil }
-        let raw = String(upper[range]).replacingOccurrences(of: " ", with: "")
-        // OCR often appends neighboring tokens (for example "BIC") to IBAN.
-        // For DE IBANs we can safely normalize to the exact canonical length (22).
-        if raw.hasPrefix("DE"), raw.count > 22 {
-            let end = raw.index(raw.startIndex, offsetBy: 22)
-            return String(raw[..<end])
-        }
-        return raw
+        return Self.normalizeIBANValue(String(upper[range]))
     }
 
     func extractAmount(from lines: [String], documentType: ParsedDocumentType) -> Decimal? {
@@ -95,9 +95,12 @@ struct ParsingService {
     private func extractReceiptTotalAmount(from lines: [String]) -> Decimal? {
         guard !lines.isEmpty else { return nil }
 
-        let strongKeywords = ["summe", "gesamt", "zu zahlen", "endbetrag", "zahlbetrag", "ec", "karte", "bar"]
-        let weakKeywords = ["eur", "€", "betrag"]
-        let negativeKeywords = ["mwst", "ust", "steuer", "rabatt", "gespart", "einzelpreis", "zwischensumme"]
+        let strongKeywords = ["summe", "gesamt", "zu zahlen", "endbetrag", "zahlbetrag", "ec", "karte"]
+        let weakKeywords = ["eur", "€", "betrag", "bar"]
+        let negativeKeywords = [
+            "mwst", "ust", "steuer", "rabatt", "gespart", "einzelpreis", "zwischensumme",
+            "rückgeld", "rueckgeld", "gegeben", "bar gegeben", "erhalten"
+        ]
 
         var scored: [(score: Double, amount: Decimal)] = []
         var lastAmount: Decimal?
@@ -133,10 +136,39 @@ struct ParsingService {
         let pattern = #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#
         let matches = text.matches(for: pattern)
         return matches.compactMap { raw in
-            let normalized = raw
-                .replacingOccurrences(of: " ", with: "")
-                .replacingOccurrences(of: ".", with: "")
-                .replacingOccurrences(of: ",", with: ".")
+            let compact = raw.replacingOccurrences(of: " ", with: "")
+            let hasComma = compact.contains(",")
+            let hasDot = compact.contains(".")
+            let normalized: String
+
+            if hasComma && hasDot {
+                // Mixed separators (e.g. 1.234,56 or 1,234.56): choose right-most as decimal separator.
+                if let lastComma = compact.lastIndex(of: ","), let lastDot = compact.lastIndex(of: ".") {
+                    if lastComma > lastDot {
+                        normalized = compact
+                            .replacingOccurrences(of: ".", with: "")
+                            .replacingOccurrences(of: ",", with: ".")
+                    } else {
+                        normalized = compact
+                            .replacingOccurrences(of: ",", with: "")
+                    }
+                } else {
+                    normalized = compact.replacingOccurrences(of: ",", with: ".")
+                }
+            } else if hasComma {
+                // DE decimal comma.
+                normalized = compact.replacingOccurrences(of: ",", with: ".")
+            } else if hasDot {
+                // If suffix has exactly two digits, treat as decimal dot, otherwise as thousands separator.
+                let parts = compact.split(separator: ".", omittingEmptySubsequences: false)
+                if parts.count >= 2, parts.last?.count == 2 {
+                    normalized = compact
+                } else {
+                    normalized = compact.replacingOccurrences(of: ".", with: "")
+                }
+            } else {
+                normalized = compact
+            }
             return Decimal(string: normalized)
         }
     }
@@ -164,6 +196,92 @@ struct ParsingService {
                     if let date = dateFormatter.date(from: token) {
                         return calendar.startOfDay(for: date)
                     }
+                }
+            }
+        }
+        return nil
+    }
+
+    func extractInvoiceDate(from lines: [String]) -> Date? {
+        let keywords = [
+            "rechnungsdatum", "rechnung vom", "invoice date", "invoice dated",
+            "belegdatum", "datum der rechnung"
+        ]
+        let dueKeywords = ["zahlbar bis", "fällig", "faellig", "due date", "due"]
+
+        let keywordLines = lines.filter { line in
+            let lower = line.lowercased()
+            return keywords.contains { lower.contains($0) } &&
+                !dueKeywords.contains(where: { lower.contains($0) })
+        }
+
+        for line in keywordLines {
+            if let parsed = parseFirstDate(in: line) {
+                return parsed
+            }
+        }
+
+        for line in lines.prefix(12) {
+            let lower = line.lowercased()
+            if dueKeywords.contains(where: { lower.contains($0) }) { continue }
+            if lower.contains("bestelldatum") || lower.contains("versanddatum") { continue }
+            if let parsed = parseFirstDate(in: line), parsed <= calendar.startOfDay(for: Date()) {
+                return parsed
+            }
+        }
+
+        return nil
+    }
+
+    func extractDueOffsetDaysHint(from lines: [String]) -> Int? {
+        let lowerLines = lines.map { $0.lowercased() }
+        let dueKeywords = ["zahlbar", "zahlungsziel", "fällig", "faellig", "due", "net"]
+        let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag)\s*netto\b"#
+
+        for line in lowerLines {
+            guard dueKeywords.contains(where: { line.contains($0) }) else { continue }
+
+            if let token = line.firstCaptureGroup(for: dayPattern),
+               let days = Int(token),
+               [7, 14, 30].contains(days) {
+                return days
+            }
+
+            if let days = line.matches(for: #"\b(7|14|30)\s*(?:tagen|tage|tag)\b"#).first,
+               let value = Int(days.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()),
+               [7, 14, 30].contains(value),
+               dueKeywords.contains(where: { line.contains($0) }) {
+                return value
+            }
+
+            if line.contains("net 30") || line.contains("netto 30") {
+                return 30
+            }
+            if line.contains("net 14") || line.contains("netto 14") {
+                return 14
+            }
+            if line.contains("net 7") || line.contains("netto 7") {
+                return 7
+            }
+        }
+
+        return nil
+    }
+
+    private func parseFirstDate(in line: String) -> Date? {
+        let datePattern = #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#
+        let tokens = line.matches(for: datePattern)
+        guard !tokens.isEmpty else { return nil }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "de_DE")
+        let formats = ["dd.MM.yyyy", "dd.MM.yy", "yyyy-MM-dd"]
+
+        for token in tokens {
+            for format in formats {
+                dateFormatter.dateFormat = format
+                if let date = dateFormatter.date(from: token) {
+                    return calendar.startOfDay(for: date)
                 }
             }
         }
@@ -308,7 +426,7 @@ struct ParsingService {
         let text = lines.joined(separator: " ").lowercased()
         if containsAny(in: text, keywords: ["miete", "vermieter", "warmmiete", "kaltmiete"]) { return "Wohnen" }
         if containsAny(in: text, keywords: ["strom", "gas", "wasser", "energie", "heizung"]) { return "Wohnen" }
-        if containsAny(in: text, keywords: ["supermarkt", "lebensmittel", "rewe", "edeka", "lidl", "aldi"]) { return "Lebensmittel" }
+        if containsAny(in: text, keywords: ["supermarkt", "lebensmittel", "rewe", "edeka", "lidl", "aldi", "penny", "netto markt"]) { return "Lebensmittel" }
         if containsAny(in: text, keywords: ["versicherung", "haftpflicht", "kasko", "krankenversicherung"]) { return "Versicherung" }
         if containsAny(in: text, keywords: ["telekom", "internet", "mobilfunk", "dsl", "vodafone", "o2"]) { return "Telefon & Internet" }
         if containsAny(in: text, keywords: ["abo", "subscription", "netflix", "spotify", "apple.com/bill"]) { return "Abos" }
@@ -339,6 +457,40 @@ struct ParsingService {
 
     private func containsAny(in text: String, keywords: [String]) -> Bool {
         keywords.contains { text.contains($0) }
+    }
+
+    static func normalizeIBANValue(_ value: String?) -> String? {
+        guard let value else { return nil }
+
+        var normalized = value.uppercased()
+            .replacingOccurrences(of: #"(?i)\bBIC\b.*$"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
+
+        guard !normalized.isEmpty else { return nil }
+
+        if let bicRange = normalized.range(of: "BIC") {
+            normalized = String(normalized[..<bicRange.lowerBound])
+        }
+
+        guard normalized.count >= 15 else { return nil }
+
+        let countryLengths: [String: Int] = [
+            "DE": 22, "AT": 20, "CH": 21, "NL": 18, "BE": 16, "FR": 27,
+            "ES": 24, "IT": 27, "PL": 28, "LU": 20
+        ]
+
+        if normalized.count >= 4 {
+            let country = String(normalized.prefix(2))
+            if let expectedLength = countryLengths[country], normalized.count >= expectedLength {
+                return String(normalized.prefix(expectedLength))
+            }
+        }
+
+        if normalized.count > 34 {
+            normalized = String(normalized.prefix(34))
+        }
+
+        return normalized
     }
 }
 

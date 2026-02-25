@@ -2,11 +2,64 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 
+enum SupportMailService {
+    static let recipient = "mnemor.app@gmail.com"
+
+    static func bugReportURL(isEnglish: Bool, source: String) -> URL? {
+        let subject = isEnglish ? "Mnemor Bug Report" : "Mnemor Bugmeldung"
+        let body = """
+        \(isEnglish ? "Please describe the issue briefly:" : "Bitte Problem kurz beschreiben:")
+
+        \(isEnglish ? "Steps to reproduce:" : "Schritte zur Reproduktion:")
+        1.
+        2.
+        3.
+
+        \(isEnglish ? "Expected behavior:" : "Erwartetes Verhalten:")
+
+        \(isEnglish ? "Actual behavior:" : "Ist-Verhalten:")
+
+        ---
+        App: \(appVersionString())
+        iOS: \(UIDevice.current.systemVersion)
+        Device: \(UIDevice.current.model)
+        Source: \(source)
+        Locale: \(Locale.current.identifier)
+        """
+
+        guard
+            let subjectEscaped = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let bodyEscaped = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
+            return nil
+        }
+        return URL(string: "mailto:\(recipient)?subject=\(subjectEscaped)&body=\(bodyEscaped)")
+    }
+
+    static func appVersionString() -> String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
+    static func debugInfoText(source: String) -> String {
+        """
+        App: \(appVersionString())
+        iOS: \(UIDevice.current.systemVersion)
+        Device: \(UIDevice.current.model)
+        Source: \(source)
+        Locale: \(Locale.current.identifier)
+        """
+    }
+}
+
 struct SettingsView: View {
+    @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var invoices: [Invoice]
     @Query private var vendorProfiles: [VendorProfile]
+    @Query private var ocrLearningProfiles: [OCRLearningProfile]
     @Query private var incomeEntries: [IncomeEntry]
     @Query private var installmentPlans: [InstallmentPlan]
     @Query private var installmentSpecialRepayments: [InstallmentSpecialRepayment]
@@ -95,6 +148,15 @@ struct SettingsView: View {
                 }
             }
 
+            Section(L10n.t("Support", "Support")) {
+                Button(L10n.t("Problem melden", "Report issue")) {
+                    openBugReportMail()
+                }
+                Button(L10n.t("Debug-Infos kopieren", "Copy debug info")) {
+                    copyDebugInfo()
+                }
+            }
+
             if let infoMessage {
                 Section {
                     Text(infoMessage)
@@ -142,6 +204,7 @@ struct SettingsView: View {
         let payload = BackupPayload(
             invoices: invoices.map(InvoiceSnapshot.init),
             vendorProfiles: vendorProfiles.map(VendorProfileSnapshot.init),
+            ocrLearningProfiles: ocrLearningProfiles.map(OCRLearningProfileSnapshot.init),
             incomeEntries: incomeEntries.map(IncomeEntrySnapshot.init),
             installmentPlans: installmentPlans.map(InstallmentPlanSnapshot.init),
             installmentSpecialRepayments: installmentSpecialRepayments.map(InstallmentSpecialRepaymentSnapshot.init)
@@ -169,6 +232,7 @@ struct SettingsView: View {
 
             for invoice in invoices { modelContext.delete(invoice) }
             for profile in vendorProfiles { modelContext.delete(profile) }
+            for profile in ocrLearningProfiles { modelContext.delete(profile) }
             for income in incomeEntries { modelContext.delete(income) }
             for plan in installmentPlans { modelContext.delete(plan) }
             for repayment in installmentSpecialRepayments { modelContext.delete(repayment) }
@@ -177,6 +241,9 @@ struct SettingsView: View {
                 modelContext.insert(snapshot.makeModel())
             }
             for snapshot in payload.vendorProfiles {
+                modelContext.insert(snapshot.makeModel())
+            }
+            for snapshot in payload.ocrLearningProfiles {
                 modelContext.insert(snapshot.makeModel())
             }
             for snapshot in payload.incomeEntries {
@@ -198,6 +265,25 @@ struct SettingsView: View {
 
     private var isEnglish: Bool {
         appLanguageCode == "en"
+    }
+
+    private func openBugReportMail() {
+        guard let url = SupportMailService.bugReportURL(
+            isEnglish: isEnglish,
+            source: "Settings"
+        ) else {
+            infoMessage = L10n.t(
+                "Bug-Mail konnte nicht vorbereitet werden.",
+                "Could not prepare bug email."
+            )
+            return
+        }
+        openURL(url)
+    }
+
+    private func copyDebugInfo() {
+        UIPasteboard.general.string = SupportMailService.debugInfoText(source: "Settings")
+        infoMessage = L10n.t("Debug-Infos kopiert.", "Debug info copied.")
     }
 }
 
@@ -262,8 +348,8 @@ struct FeedbackView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
         let subject = appLanguageCode == "en"
-            ? "BillRemind Feedback [\(feedbackCategory.rawValue)]"
-            : "BillRemind Feedback [\(feedbackCategory.rawValue)]"
+            ? "Mnemor Feedback [\(feedbackCategory.rawValue)]"
+            : "Mnemor Feedback [\(feedbackCategory.rawValue)]"
         let body = """
         \(L10n.t("Kategorie", "Category")): \(feedbackCategory.rawValue)
         \(L10n.t("Nachricht", "Message")): \(bodyText.isEmpty ? L10n.t("(bitte ausfüllen)", "(please fill in)") : bodyText)
@@ -272,7 +358,7 @@ struct FeedbackView: View {
         iOS: \(UIDevice.current.systemVersion)
         """
 
-        let recipient = "feedback@billremind.app"
+        let recipient = SupportMailService.recipient
         guard
             let subjectEscaped = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
             let bodyEscaped = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
@@ -299,7 +385,7 @@ struct HelpView: View {
             Section(L10n.t("Scan & Import", "Scan & import")) {
                 helpLine(L10n.t("Scan Rechnung setzt den Status standardmäßig auf Offen.", "Scan invoice sets the status to Open by default."))
                 helpLine(L10n.t("Scan Kassenbon setzt den Status automatisch auf Bezahlt.", "Scan receipt sets the status to Paid automatically."))
-                helpLine(L10n.t("Bei +7 / +14 / +30 Tagen wird vom Eingangsdatum aus gerechnet.", "+7 / +14 / +30 days are calculated from the received date."))
+                helpLine(L10n.t("Bei +7 / +14 / +30 Tagen wird vom Rechnungsdatum aus gerechnet.", "+7 / +14 / +30 days are calculated from the invoice date."))
                 helpLine(L10n.t("Zusätzlich kannst du Rechnungen per PDF importieren oder manuell erfassen.", "You can also import invoices via PDF or enter them manually."))
             }
 
@@ -376,6 +462,7 @@ private enum FeedbackCategory: String, CaseIterable, Identifiable {
 private struct BackupPayload: Codable {
     let invoices: [InvoiceSnapshot]
     let vendorProfiles: [VendorProfileSnapshot]
+    let ocrLearningProfiles: [OCRLearningProfileSnapshot]
     let incomeEntries: [IncomeEntrySnapshot]
     let installmentPlans: [InstallmentPlanSnapshot]
     let installmentSpecialRepayments: [InstallmentSpecialRepaymentSnapshot]
@@ -383,12 +470,14 @@ private struct BackupPayload: Codable {
     init(
         invoices: [InvoiceSnapshot],
         vendorProfiles: [VendorProfileSnapshot],
+        ocrLearningProfiles: [OCRLearningProfileSnapshot],
         incomeEntries: [IncomeEntrySnapshot],
         installmentPlans: [InstallmentPlanSnapshot],
         installmentSpecialRepayments: [InstallmentSpecialRepaymentSnapshot]
     ) {
         self.invoices = invoices
         self.vendorProfiles = vendorProfiles
+        self.ocrLearningProfiles = ocrLearningProfiles
         self.incomeEntries = incomeEntries
         self.installmentPlans = installmentPlans
         self.installmentSpecialRepayments = installmentSpecialRepayments
@@ -398,6 +487,7 @@ private struct BackupPayload: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         invoices = try container.decode([InvoiceSnapshot].self, forKey: .invoices)
         vendorProfiles = try container.decode([VendorProfileSnapshot].self, forKey: .vendorProfiles)
+        ocrLearningProfiles = try container.decodeIfPresent([OCRLearningProfileSnapshot].self, forKey: .ocrLearningProfiles) ?? []
         incomeEntries = try container.decode([IncomeEntrySnapshot].self, forKey: .incomeEntries)
         installmentPlans = try container.decode([InstallmentPlanSnapshot].self, forKey: .installmentPlans)
         installmentSpecialRepayments = try container.decodeIfPresent([InstallmentSpecialRepaymentSnapshot].self, forKey: .installmentSpecialRepayments) ?? []
@@ -408,6 +498,7 @@ private struct InvoiceSnapshot: Codable {
     let id: UUID
     let createdAt: Date
     let receivedAt: Date
+    let invoiceDate: Date?
     let vendorName: String
     let paymentRecipient: String
     let amount: Decimal?
@@ -431,10 +522,70 @@ private struct InvoiceSnapshot: Codable {
     let needsReview: Bool
     let reviewHint: String?
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt
+        case receivedAt
+        case invoiceDate
+        case vendorName
+        case paymentRecipient
+        case amount
+        case category
+        case dueDate
+        case invoiceNumber
+        case iban
+        case note
+        case statusRaw
+        case paidAt
+        case reminderEnabled
+        case reminderDate
+        case imageFileName
+        case extractedText
+        case ocrConfidence
+        case vendorConfidence
+        case amountConfidence
+        case dueDateConfidence
+        case invoiceNumberConfidence
+        case ibanConfidence
+        case needsReview
+        case reviewHint
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        receivedAt = try container.decode(Date.self, forKey: .receivedAt)
+        invoiceDate = try container.decodeIfPresent(Date.self, forKey: .invoiceDate)
+        vendorName = try container.decode(String.self, forKey: .vendorName)
+        paymentRecipient = try container.decode(String.self, forKey: .paymentRecipient)
+        amount = try container.decodeIfPresent(Decimal.self, forKey: .amount)
+        category = try container.decode(String.self, forKey: .category)
+        dueDate = try container.decodeIfPresent(Date.self, forKey: .dueDate)
+        invoiceNumber = try container.decodeIfPresent(String.self, forKey: .invoiceNumber)
+        iban = try container.decodeIfPresent(String.self, forKey: .iban)
+        note = try container.decodeIfPresent(String.self, forKey: .note)
+        statusRaw = try container.decode(String.self, forKey: .statusRaw)
+        paidAt = try container.decodeIfPresent(Date.self, forKey: .paidAt)
+        reminderEnabled = try container.decode(Bool.self, forKey: .reminderEnabled)
+        reminderDate = try container.decodeIfPresent(Date.self, forKey: .reminderDate)
+        imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
+        extractedText = try container.decodeIfPresent(String.self, forKey: .extractedText)
+        ocrConfidence = try container.decodeIfPresent(Double.self, forKey: .ocrConfidence)
+        vendorConfidence = try container.decodeIfPresent(Double.self, forKey: .vendorConfidence)
+        amountConfidence = try container.decodeIfPresent(Double.self, forKey: .amountConfidence)
+        dueDateConfidence = try container.decodeIfPresent(Double.self, forKey: .dueDateConfidence)
+        invoiceNumberConfidence = try container.decodeIfPresent(Double.self, forKey: .invoiceNumberConfidence)
+        ibanConfidence = try container.decodeIfPresent(Double.self, forKey: .ibanConfidence)
+        needsReview = try container.decodeIfPresent(Bool.self, forKey: .needsReview) ?? false
+        reviewHint = try container.decodeIfPresent(String.self, forKey: .reviewHint)
+    }
+
     init(from invoice: Invoice) {
         id = invoice.id
         createdAt = invoice.createdAt
         receivedAt = invoice.receivedAt
+        invoiceDate = invoice.invoiceDate
         vendorName = invoice.vendorName
         paymentRecipient = invoice.paymentRecipient
         amount = invoice.amount
@@ -464,6 +615,7 @@ private struct InvoiceSnapshot: Codable {
             id: id,
             createdAt: createdAt,
             receivedAt: receivedAt,
+            invoiceDate: invoiceDate,
             vendorName: vendorName,
             paymentRecipient: paymentRecipient,
             amount: amount,
@@ -514,6 +666,41 @@ private struct VendorProfileSnapshot: Codable {
             preferredPaymentRecipient: preferredPaymentRecipient,
             preferredCategory: preferredCategory,
             preferredDueOffsetDays: preferredDueOffsetDays,
+            updatedAt: updatedAt
+        )
+    }
+}
+
+private struct OCRLearningProfileSnapshot: Codable {
+    let id: String
+    let vendorID: String
+    let fieldRaw: String
+    let sampleCount: Int
+    let correctionCount: Int
+    let lastSuggestedValue: String?
+    let lastFinalValue: String?
+    let updatedAt: Date
+
+    init(from model: OCRLearningProfile) {
+        id = model.id
+        vendorID = model.vendorID
+        fieldRaw = model.fieldRaw
+        sampleCount = model.sampleCount
+        correctionCount = model.correctionCount
+        lastSuggestedValue = model.lastSuggestedValue
+        lastFinalValue = model.lastFinalValue
+        updatedAt = model.updatedAt
+    }
+
+    func makeModel() -> OCRLearningProfile {
+        OCRLearningProfile(
+            id: id,
+            vendorID: vendorID,
+            field: OCRLearningProfile.Field(rawValue: fieldRaw) ?? .vendor,
+            sampleCount: sampleCount,
+            correctionCount: correctionCount,
+            lastSuggestedValue: lastSuggestedValue,
+            lastFinalValue: lastFinalValue,
             updatedAt: updatedAt
         )
     }

@@ -1,8 +1,8 @@
 {
   "failedCases" : 0,
-  "generatedAt" : "2026-02-21T15:45:26Z",
-  "passedCases" : 9,
-  "passedFieldChecks" : 81,
+  "generatedAt" : "2026-02-23T21:11:56Z",
+  "passedCases" : 13,
+  "passedFieldChecks" : 130,
   "passRateCases" : 1,
   "passRateFields" : 1,
   "results" : [
@@ -40,6 +40,12 @@
         },
         {
           "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "actual" : "30",
+          "expected" : "30",
+          "field" : "due_offset_days_hint",
           "ok" : true
         },
         {
@@ -104,6 +110,12 @@
           "ok" : true
         },
         {
+          "actual" : "30",
+          "expected" : "30",
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "open",
           "expected" : "open",
           "field" : "status_suggestion",
@@ -162,6 +174,12 @@
         },
         {
           "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "actual" : "30",
+          "expected" : "30",
+          "field" : "due_offset_days_hint",
           "ok" : true
         },
         {
@@ -226,6 +244,10 @@
           "ok" : true
         },
         {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "paid",
           "expected" : "paid",
           "field" : "status_suggestion",
@@ -283,6 +305,10 @@
           "ok" : true
         },
         {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "paid",
           "expected" : "paid",
           "field" : "status_suggestion",
@@ -337,6 +363,10 @@
         },
         {
           "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
           "ok" : true
         },
         {
@@ -401,6 +431,10 @@
           "ok" : true
         },
         {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "open",
           "expected" : "open",
           "field" : "status_suggestion",
@@ -462,6 +496,10 @@
           "ok" : true
         },
         {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "paid",
           "expected" : "paid",
           "field" : "status_suggestion",
@@ -519,6 +557,10 @@
           "ok" : true
         },
         {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
           "actual" : "paid",
           "expected" : "paid",
           "field" : "status_suggestion",
@@ -538,8 +580,270 @@
       "id" : "receipt_04_lidl_txt",
       "passed" : true,
       "sourceFile" : "kassenbon\/04_lidl_kassenbon.txt"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "TELEKOM SERVICE GMBH",
+          "expected" : "TELEKOM SERVICE GMBH",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "TELEKOM SERVICE GMBH",
+          "expected" : "TELEKOM SERVICE GMBH",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "49.99",
+          "expected" : "49.99",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "TELEFON & INTERNET",
+          "expected" : "TELEFON & INTERNET",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "actual" : "30",
+          "expected" : "30",
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "TK-2026-3012",
+          "expected" : "TK-2026-3012",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE12500105170648489890",
+          "expected" : "DE12500105170648489890",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_06_telekom_net30_txt",
+      "passed" : true,
+      "sourceFile" : "rechnung\/06_telekom_net30_rechnung.txt"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "CLOUDTOOLS LTD",
+          "expected" : "CLOUDTOOLS LTD",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "CLOUDTOOLS LTD",
+          "expected" : "CLOUDTOOLS LTD",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "89.00",
+          "expected" : "89.00",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "ABOS",
+          "expected" : "ABOS",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "actual" : "14",
+          "expected" : "14",
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "CT-2026-1488",
+          "expected" : "CT-2026-1488",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE21500500000987654321",
+          "expected" : "DE21500500000987654321",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_07_cloud_due14_txt",
+      "passed" : true,
+      "sourceFile" : "rechnung\/07_cloud_due14_invoice.txt"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "SICHERHEIT DIREKT AG",
+          "expected" : "SICHERHEIT DIREKT AG",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "SICHERHEIT DIREKT AG",
+          "expected" : "SICHERHEIT DIREKT AG",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "24.50",
+          "expected" : "24.50",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "VERSICHERUNG",
+          "expected" : "VERSICHERUNG",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "actual" : "7",
+          "expected" : "7",
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "SD-2026-0707",
+          "expected" : "SD-2026-0707",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE47500105175407324931",
+          "expected" : "DE47500105175407324931",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_08_versicherung_7tage_txt",
+      "passed" : true,
+      "sourceFile" : "rechnung\/08_versicherung_7tage_rechnung.txt"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "receipt",
+          "expected" : "receipt",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "PENNY MARKT GMBH",
+          "expected" : "PENNY MARKT GMBH",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "PENNY MARKT GMBH",
+          "expected" : "PENNY MARKT GMBH",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "11.50",
+          "expected" : "11.50",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "LEBENSMITTEL",
+          "expected" : "LEBENSMITTEL",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "paid",
+          "expected" : "paid",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "receipt",
+      "documentTypeExpected" : "receipt",
+      "id" : "receipt_05_penny_rueckgeld_txt",
+      "passed" : true,
+      "sourceFile" : "kassenbon\/05_penny_rueckgeld_kassenbon.txt"
     }
   ],
-  "totalCases" : 9,
-  "totalFieldChecks" : 81
+  "totalCases" : 13,
+  "totalFieldChecks" : 130
 }

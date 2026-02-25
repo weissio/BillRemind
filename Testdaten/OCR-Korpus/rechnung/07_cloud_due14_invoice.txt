@@ -1,0 +1,15 @@
+INVOICE
+CLOUDTOOLS LTD
+1 River Lane
+Dublin
+
+Invoice No: CT-2026-1488
+Invoice Date: 21.02.2026
+Payment terms: due in 14 days
+
+Pro Plan Subscription 89.00 EUR
+
+Amount due: 89.00 EUR
+
+Payment recipient: CloudTools Ltd
+IBAN: DE21500500000987654321
