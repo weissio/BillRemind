@@ -1,8 +1,8 @@
 # OCR Corpus Report
 
-- Generated: 2026-02-23T21:11:56Z
-- Cases: 13/13 passed (100.0%)
-- Fields: 130/130 passed (100.0%)
+- Generated: 2026-02-26T11:35:52Z
+- Cases: 14/14 passed (100.0%)
+- Fields: 140/140 passed (100.0%)
 
 ## Case Details
 
@@ -200,3 +200,18 @@
 - [OK] status_suggestion: expected=`paid` actual=`paid`
 - [OK] invoice_number: expected=`null` actual=`null`
 - [OK] iban: expected=`null` actual=`null`
+
+### invoice_09_date_amount_noise_txt - PASS
+- Source: `rechnung/09_datum_als_betrag_noise_rechnung.txt`
+- Document type expected/actual: `invoice` / `invoice`
+
+- [OK] document_type: expected=`invoice` actual=`invoice`
+- [OK] vendor_name: expected=`ACME SERVICES GMBH` actual=`ACME SERVICES GMBH`
+- [OK] payment_recipient: expected=`ACME SERVICES GMBH` actual=`ACME SERVICES GMBH`
+- [OK] amount_value: expected=`87.40` actual=`87.40`
+- [OK] category: expected=`SONSTIGES` actual=`SONSTIGES`
+- [OK] due_date: expected=`null` actual=`null`
+- [OK] due_offset_days_hint: expected=`null` actual=`null`
+- [OK] status_suggestion: expected=`open` actual=`open`
+- [OK] invoice_number: expected=`AC-2026-1902` actual=`AC-2026-1902`
+- [OK] iban: expected=`DE13500105175407329876` actual=`DE13500105175407329876`

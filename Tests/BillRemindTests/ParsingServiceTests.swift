@@ -44,4 +44,12 @@ final class ParsingServiceTests: XCTestCase {
             .map(String.init)
         XCTAssertEqual(service.extractInvoiceNumber(from: lines), "INV-7788")
     }
+
+    func testDoesNotReadInvoiceDateAsAmount() {
+        let lines = ParserFixtures.invoiceWithDateAmountNoise
+            .split(separator: "\n")
+            .map(String.init)
+        let amount = service.extractAmount(from: lines, documentType: .invoice)
+        XCTAssertEqual(amount, Decimal(string: "87.40"))
+    }
 }

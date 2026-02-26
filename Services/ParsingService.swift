@@ -133,9 +133,26 @@ struct ParsingService {
     }
 
     private func extractAmounts(from text: String) -> [Decimal] {
-        let pattern = #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#
-        let matches = text.matches(for: pattern)
-        return matches.compactMap { raw in
+        let amountPattern = #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#
+        let fullDatePattern = #"\b\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}\b"#
+        guard
+            let amountRegex = try? NSRegularExpression(pattern: amountPattern),
+            let fullDateRegex = try? NSRegularExpression(pattern: fullDatePattern)
+        else {
+            return []
+        }
+
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let dateRanges = fullDateRegex.matches(in: text, range: fullRange).map(\.range)
+        let matches = amountRegex.matches(in: text, range: fullRange)
+
+        return matches.compactMap { match in
+            if dateRanges.contains(where: { NSIntersectionRange(match.range, $0).length > 0 }) {
+                return nil
+            }
+
+            let raw = nsText.substring(with: match.range)
             let compact = raw.replacingOccurrences(of: " ", with: "")
             let hasComma = compact.contains(",")
             let hasDot = compact.contains(".")

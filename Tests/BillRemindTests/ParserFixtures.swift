@@ -23,4 +23,11 @@ enum ParserFixtures {
     Summe 249,90 €
     Fällig am 05.02.26
     """
+
+    static let invoiceWithDateAmountNoise = """
+    ACME Services GmbH
+    Rechnungsdatum: 19.02.2026
+    Rechnungsnummer: A-2026-19
+    Zu zahlen: 87,40 EUR
+    """
 }

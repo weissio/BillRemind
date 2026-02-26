@@ -79,6 +79,12 @@
       "document_type": "receipt",
       "source_file": "kassenbon/05_penny_rueckgeld_kassenbon.txt",
       "expected_file": "expected/kassenbon/05_penny_rueckgeld_kassenbon.json"
+    },
+    {
+      "id": "invoice_09_date_amount_noise_txt",
+      "document_type": "invoice",
+      "source_file": "rechnung/09_datum_als_betrag_noise_rechnung.txt",
+      "expected_file": "expected/rechnung/09_datum_als_betrag_noise_rechnung.json"
     }
   ]
 }
