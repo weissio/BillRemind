@@ -51,10 +51,43 @@ struct ParsingService {
             dueOffsetDaysHint: dueOffsetDaysHint,
             dueDate: dueDate,
             invoiceNumber: documentType == .receipt ? nil : extractInvoiceNumber(from: lines),
-            iban: extractIBAN(from: text),
+            iban: extractIBAN(from: lines, fullText: text),
             note: nil,
             extractedText: text
         )
+    }
+
+    func extractIBAN(from lines: [String], fullText: String) -> String? {
+        let lowerLines = lines.map { normalizedLower($0) }
+        let labelKeywords = ["iban", "account", "konto", "kontoinhaber", "payment"]
+        let deLikePattern = #"\bD[EI1L][A-Z0-9]{2}(?:[ \t:/-]?[A-Z0-9]){10,40}\b"#
+        let genericPattern = #"\b[A-Z]{2}\d{2}(?:[ \t:/-]?[A-Z0-9]){10,34}\b"#
+
+        for (idx, line) in lines.enumerated() {
+            guard labelKeywords.contains(where: { lowerLines[idx].contains($0) }) else { continue }
+            if let normalized = Self.normalizeIBANValue(line) {
+                return normalized
+            }
+            if let suffix = line.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true).last,
+               let normalized = Self.normalizeIBANValue(String(suffix)) {
+                return normalized
+            }
+
+            for nearby in idx...min(idx + 2, lines.count - 1) {
+                for candidate in lines[nearby].uppercased().matches(for: deLikePattern) {
+                    if let normalized = Self.normalizeIBANValue(candidate) {
+                        return normalized
+                    }
+                }
+                for candidate in lines[nearby].uppercased().matches(for: genericPattern) {
+                    if let normalized = Self.normalizeIBANValue(candidate) {
+                        return normalized
+                    }
+                }
+            }
+        }
+
+        return extractIBAN(from: fullText)
     }
 
     func extractIBAN(from text: String) -> String? {
@@ -267,6 +300,10 @@ struct ParsingService {
             "belegdatum", "datum der rechnung", "date:", "issue date"
         ]
         let dueKeywords = ["zahlbar bis", "fällig", "faellig", "due date", "due"]
+        let serviceKeywords = [
+            "leistungsdatum", "service date", "delivery date", "lieferdatum",
+            "bestelldatum", "versanddatum", "leistungszeitraum", "service period"
+        ]
 
         let indexedLines = Array(lines.enumerated())
         let keywordIndices = indexedLines.compactMap { idx, line -> Int? in
@@ -280,7 +317,9 @@ struct ParsingService {
 
         // 1) Best case: label and date on same line.
         for idx in keywordIndices {
-            if let parsed = parseFirstDate(in: lines[idx]) {
+            let lower = lines[idx].lowercased()
+            if serviceKeywords.contains(where: { lower.contains($0) }) { continue }
+            if let parsed = parseFirstDate(in: lines[idx]), parsed <= calendar.startOfDay(for: Date()) {
                 return parsed
             }
         }
@@ -291,7 +330,7 @@ struct ParsingService {
             for j in nextRange {
                 let lower = lines[j].lowercased()
                 if dueKeywords.contains(where: { lower.contains($0) }) { continue }
-                if lower.contains("bestelldatum") || lower.contains("versanddatum") || lower.contains("leistungszeitraum") {
+                if serviceKeywords.contains(where: { lower.contains($0) }) {
                     continue
                 }
                 if let parsed = parseFirstDate(in: lines[j]), parsed <= calendar.startOfDay(for: Date()) {
@@ -300,17 +339,27 @@ struct ParsingService {
             }
         }
 
-        // 3) Conservative fallback in first lines.
-        for line in lines.prefix(20) {
+        // 3) Score-based fallback in first lines to avoid service/order dates.
+        var best: (score: Int, date: Date)?
+        for line in lines.prefix(24) {
             let lower = line.lowercased()
             if dueKeywords.contains(where: { lower.contains($0) }) { continue }
-            if lower.contains("bestelldatum") || lower.contains("versanddatum") || lower.contains("leistungsdatum") { continue }
-            if let parsed = parseFirstDate(in: line), parsed <= calendar.startOfDay(for: Date()) {
-                return parsed
+            if serviceKeywords.contains(where: { lower.contains($0) }) { continue }
+            guard let parsed = parseFirstDate(in: line), parsed <= calendar.startOfDay(for: Date()) else { continue }
+
+            var score = 0
+            if keywords.contains(where: { lower.contains($0) }) { score += 12 }
+            if lower.contains("rechnungsdatum") || lower.contains("invoice date") || lower.contains("issue date") { score += 6 }
+            if lower.contains("datum") || lower.contains("date") { score += 2 }
+            if lower.contains("invoice") || lower.contains("rechnung") { score += 2 }
+            if lower.contains("service") || lower.contains("leistung") || lower.contains("bestell") || lower.contains("versand") { score -= 8 }
+
+            if best == nil || score > best!.score {
+                best = (score, parsed)
             }
         }
 
-        return nil
+        return best?.date
     }
 
     func extractDueOffsetDaysHint(from lines: [String]) -> Int? {
@@ -520,9 +569,42 @@ struct ParsingService {
             options: .regularExpression
         ).trimmingCharacters(in: .whitespacesAndNewlines)
 
+        value = healInvoiceNumberOCRNoise(value)
+
         guard value.count >= 4 else { return nil }
         guard value.range(of: #"[A-Z0-9]"#, options: .regularExpression) != nil else { return nil }
         guard value.range(of: #"^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$"#, options: .regularExpression) == nil else { return nil }
+        return value
+    }
+
+    private static func healInvoiceNumberOCRNoise(_ raw: String) -> String {
+        var value = raw
+
+        // Common OCR swap in DE invoices: RG000123 -> R6000123.
+        if value.range(of: #"^R6\d{6}$"#, options: .regularExpression) != nil {
+            let second = value.index(after: value.startIndex)
+            value.replaceSubrange(second...second, with: "G")
+        }
+
+        // Normalize digit-like letters in numeric tail.
+        let prefixes = ["RG", "INV-", "RE-", "R"]
+        for prefix in prefixes where value.hasPrefix(prefix) {
+            let start = value.index(value.startIndex, offsetBy: prefix.count)
+            if start < value.endIndex {
+                let tail = String(value[start...]).map { c -> Character in
+                    switch c {
+                    case "O", "D", "Q": return "0"
+                    case "I", "L": return "1"
+                    case "Z": return "2"
+                    case "S": return "5"
+                    case "B": return "8"
+                    default: return c
+                    }
+                }
+                value = prefix + String(tail)
+            }
+            break
+        }
         return value
     }
 
@@ -839,8 +921,10 @@ struct ParsingService {
                 return nil
             }
             if country == "DE" {
-                if let range = normalized.range(of: #"^DE\d{20}"#, options: .regularExpression) {
+                if let range = normalized.range(of: #"DE\d{20}"#, options: .regularExpression) {
                     normalized = String(normalized[range])
+                } else if let directMapped = extractGermanIBANFromNoisy(normalized) {
+                    normalized = directMapped
                 } else if let healed = healGermanIBAN(normalized) {
                     normalized = healed
                 } else {
@@ -857,6 +941,27 @@ struct ParsingService {
         }
 
         return normalized
+    }
+
+    private static func extractGermanIBANFromNoisy(_ raw: String) -> String? {
+        guard raw.count >= 8 else { return nil }
+        let mapped = raw.map { c -> Character in
+            switch c {
+            case "O", "D", "Q": return "0"
+            case "I", "L": return "1"
+            case "Z": return "2"
+            case "S": return "5"
+            case "G": return "6"
+            case "T", "Y": return "7"
+            case "B": return "8"
+            default: return c
+            }
+        }
+        let healed = String(mapped)
+        if let range = healed.range(of: #"DE\d{20}"#, options: .regularExpression) {
+            return String(healed[range])
+        }
+        return nil
     }
 
     private static func healGermanIBAN(_ raw: String) -> String? {
