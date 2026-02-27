@@ -155,4 +155,24 @@ final class ParsingServiceTests: XCTestCase {
         XCTAssertEqual(formatter.string(from: parsed.invoiceDate ?? .distantPast), "2026-02-11")
         XCTAssertEqual(parsed.dueOffsetDaysHint, 7)
     }
+
+    func testNormalizesInvoiceNumberWithoutHyphenPrefix() {
+        let number = ParsingService.normalizeInvoiceNumberValue("INV00181")
+        XCTAssertEqual(number, "INV-00181")
+    }
+
+    func testExtractsSlashInvoiceNumberWithSpaces() {
+        let text = """
+        Rechnung
+        Rechnungsnr.
+        2026 / 00005
+        Rechnungsdatum
+        22.02.2026
+        Zahlungsziel
+        7 Tage
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.invoiceNumber, "2026/00005")
+        XCTAssertEqual(parsed.dueOffsetDaysHint, 7)
+    }
 }

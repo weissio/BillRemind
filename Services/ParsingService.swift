@@ -38,9 +38,10 @@ struct ParsingService {
     }
 
     func parse(text: String) -> ParsedInvoiceData {
-        let lines = text
+        let normalizedText = normalizeOCRText(text)
+        let lines = normalizedText
             .split(separator: "\n")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { normalizeOCRLine(String($0)) }
             .filter { !$0.isEmpty }
         let documentType = classifyDocumentType(from: lines)
         let headerSignals = documentType == .receipt ? HeaderSignals.empty : extractHeaderSignals(from: lines)
@@ -58,10 +59,33 @@ struct ParsingService {
             dueOffsetDaysHint: dueOffsetDaysHint,
             dueDate: dueDate,
             invoiceNumber: documentType == .receipt ? nil : (headerSignals.invoiceNumber ?? extractInvoiceNumber(from: lines)),
-            iban: extractIBAN(from: lines, fullText: text),
+            iban: extractIBAN(from: lines, fullText: normalizedText),
             note: nil,
-            extractedText: text
+            extractedText: normalizedText
         )
+    }
+
+    private func normalizeOCRText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+            .map(normalizeOCRLine)
+            .joined(separator: "\n")
+    }
+
+    private func normalizeOCRLine(_ raw: String) -> String {
+        var value = raw.precomposedStringWithCompatibilityMapping
+        value = value
+            .replacingOccurrences(of: #"[​‌‍﻿]"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[        ]"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"[‐‑‒–—―−]"#, with: "-", options: .regularExpression)
+            .replacingOccurrences(of: #"[／⁄∕]"#, with: "/", options: .regularExpression)
+            .replacingOccurrences(of: #"[：﹕]"#, with: ":", options: .regularExpression)
+            .replacingOccurrences(of: #"\bD\s*E\s*[:;\.-]?\s*(\d)"#, with: "DE$1", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return value
     }
 
     private func extractHeaderSignals(from lines: [String]) -> HeaderSignals {
@@ -607,6 +631,7 @@ struct ParsingService {
         let patterns = [
             #"\b(?:INV|RE|RG)[-\s]?\d{3,10}(?:[-/]\d{2,8})?\b"#,
             #"\bR\d{6,10}\b"#,
+            #"\b\d{4}\s*/\s*\d{3,8}\b"#,
             #"\b\d{4}/\d{3,8}\b"#,
             #"\b[A-Z]{1,3}-\d{4}-\d{2,6}\b"#
         ]
@@ -639,6 +664,13 @@ struct ParsingService {
         ).trimmingCharacters(in: .whitespacesAndNewlines)
 
         value = healInvoiceNumberOCRNoise(value)
+
+        if let range = value.range(of: #"^(INV|RE)(\d{3,})$"#, options: .regularExpression),
+           range.lowerBound == value.startIndex, range.upperBound == value.endIndex,
+           let prefix = value.firstCaptureGroup(for: #"^(INV|RE)(\d{3,})$"#),
+           let suffix = value.firstCaptureGroup(for: #"^(?:INV|RE)(\d{3,})$"#) {
+            value = "\(prefix)-\(suffix)"
+        }
 
         guard value.count >= 4 else { return nil }
         guard value.range(of: #"[A-Z0-9]"#, options: .regularExpression) != nil else { return nil }
@@ -930,15 +962,25 @@ struct ParsingService {
             "kassenbon", "bon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld",
             "ust", "mwst", "summe eur", "gesamtsumme", "steuer", "filiale"
         ]
+        let strongReceiptKeywords = [
+            "kassenbon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld", "filiale"
+        ]
         let invoiceKeywords = [
             "rechnung", "invoice", "rechnungsnummer", "rechnung nr", "zahlbar bis", "fällig", "faellig",
             "zahlungsempfänger", "zahlungsempfaenger", "iban", "due date"
         ]
+        let strongInvoiceKeywords = [
+            "rechnungsnr", "rechnungsnummer", "rechnungsdatum", "zahlungsziel", "leistungsdatum",
+            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms"
+        ]
 
         let receiptHits = receiptKeywords.filter { text.contains($0) }.count
+        let strongReceiptHits = strongReceiptKeywords.filter { text.contains($0) }.count
         let invoiceHits = invoiceKeywords.filter { text.contains($0) }.count
+        let strongInvoiceHits = strongInvoiceKeywords.filter { text.contains($0) }.count
 
-        if receiptHits >= 2 && invoiceHits <= 1 { return .receipt }
+        if strongInvoiceHits >= 2 { return .invoice }
+        if receiptHits >= 2 && strongReceiptHits >= 1 && invoiceHits == 0 && strongInvoiceHits == 0 { return .receipt }
         if invoiceHits >= 2 { return .invoice }
         return .unknown
     }
