@@ -32,10 +32,26 @@ struct OCRService: OCRServicing {
 
         for variant in variants {
             do {
-                let candidate = try await recognizeText(from: variant.image, orientation: orientation, variantName: variant.name)
-                attempted.append(candidate)
-                if best == nil || candidate.score > best!.score {
-                    best = candidate
+                let corrected = try await recognizeText(
+                    from: variant.image,
+                    orientation: orientation,
+                    variantName: "\(variant.name)-corrected",
+                    usesLanguageCorrection: true
+                )
+                attempted.append(corrected)
+                if best == nil || corrected.score > best!.score {
+                    best = corrected
+                }
+
+                let raw = try await recognizeText(
+                    from: variant.image,
+                    orientation: orientation,
+                    variantName: "\(variant.name)-raw",
+                    usesLanguageCorrection: false
+                )
+                attempted.append(raw)
+                if best == nil || raw.score > best!.score {
+                    best = raw
                 }
             } catch {
                 lastError = error
@@ -77,6 +93,7 @@ struct OCRService: OCRServicing {
                       let baseImage = renderImage(for: page, maxSide: 2600) else { continue }
                 var ocr = try await recognizeText(from: baseImage)
                 var trimmed = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                var rescueSourceImage = baseImage
 
                 // Retry with larger render target when OCR is empty or too weak for invoice parsing.
                 if isWeakPageOCR(trimmed), let highResImage = renderImage(for: page, maxSide: 3800) {
@@ -85,6 +102,27 @@ struct OCRService: OCRServicing {
                     if pageSignalScore(retryTrimmed) > pageSignalScore(trimmed) {
                         ocr = retry
                         trimmed = retryTrimmed
+                        rescueSourceImage = highResImage
+                    }
+                }
+                if isWeakPageOCR(trimmed), let ultraResImage = renderImage(for: page, maxSide: 4600) {
+                    let retry = try await recognizeText(from: ultraResImage)
+                    let retryTrimmed = retry.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if pageSignalScore(retryTrimmed) > pageSignalScore(trimmed) {
+                        ocr = retry
+                        trimmed = retryTrimmed
+                        rescueSourceImage = ultraResImage
+                    }
+                }
+
+                // Region rescue: header/footer crops often contain metadata blocks (invoice number/date/IBAN).
+                if let rescueText = try await supplementalMetadataText(from: rescueSourceImage),
+                   !rescueText.isEmpty {
+                    let merged = [trimmed, rescueText]
+                        .filter { !$0.isEmpty }
+                        .joined(separator: "\n")
+                    if pageSignalScore(merged) > pageSignalScore(trimmed) {
+                        trimmed = merged
                     }
                 }
 
@@ -135,7 +173,12 @@ struct OCRService: OCRServicing {
         return UIImage(cgImage: cgImage)
     }
 
-    private func recognizeText(from cgImage: CGImage, orientation: CGImagePropertyOrientation, variantName: String) async throws -> OCRCandidate {
+    private func recognizeText(
+        from cgImage: CGImage,
+        orientation: CGImagePropertyOrientation,
+        variantName: String,
+        usesLanguageCorrection: Bool
+    ) async throws -> OCRCandidate {
         try await withCheckedThrowingContinuation { continuation in
             let request = VNRecognizeTextRequest { request, error in
                 if let error {
@@ -159,7 +202,7 @@ struct OCRService: OCRServicing {
             }
             request.recognitionLanguages = ["de-DE", "en-US"]
             request.recognitionLevel = .accurate
-            request.usesLanguageCorrection = true
+            request.usesLanguageCorrection = usesLanguageCorrection
 
             do {
                 let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation)
@@ -202,12 +245,14 @@ struct OCRService: OCRServicing {
             .reduce(0) { $0 + (lower.contains($1) ? 1 : 0) }
         let dateHits = lower.matches(for: #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#).count
         let amountHits = lower.matches(for: #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#).count
+        let invoiceNoHits = lower.matches(for: #"\b(?:re|rg|inv)[-\s]?\d{4,}\b"#).count
 
         return chars * 0.004
             + lines * 0.15
             + Double(keywordHits) * 1.8
             + Double(dateHits) * 0.8
             + Double(amountHits) * 0.5
+            + Double(invoiceNoHits) * 1.3
             + Double(meanConfidence) * 6.0
     }
 
@@ -225,6 +270,34 @@ struct OCRService: OCRServicing {
         let numberHits = lower.matches(for: #"\b(?:re|rg|inv)[-\s]?\d{4,}\b"#).count
         let dateHits = lower.matches(for: #"\b\d{1,2}\.\d{1,2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#).count
         return chars * 0.002 + Double(keywordHits) * 1.8 + Double(numberHits) * 1.6 + Double(dateHits) * 0.8
+    }
+
+    private func supplementalMetadataText(from image: UIImage) async throws -> String? {
+        guard let cgImage = image.cgImage else { return nil }
+        let width = cgImage.width
+        let height = cgImage.height
+        guard width > 200, height > 200 else { return nil }
+
+        // Target common metadata zones across invoice templates.
+        let zones: [CGRect] = [
+            CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height) * 0.48), // top block
+            CGRect(x: CGFloat(width) * 0.35, y: 0, width: CGFloat(width) * 0.65, height: CGFloat(height) * 0.55), // top-right metadata
+            CGRect(x: 0, y: CGFloat(height) * 0.58, width: CGFloat(width), height: CGFloat(height) * 0.42) // bottom bank/footer block
+        ]
+
+        var snippets: [String] = []
+        for zone in zones {
+            let cropRect = zone.integral
+            guard let crop = cgImage.cropping(to: cropRect) else { continue }
+            let cropImage = UIImage(cgImage: crop)
+            let ocr = try await recognizeText(from: cropImage)
+            let text = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                snippets.append(text)
+            }
+        }
+        if snippets.isEmpty { return nil }
+        return snippets.joined(separator: "\n")
     }
 
     private func cgImageOrientation(for orientation: UIImage.Orientation) -> CGImagePropertyOrientation {

@@ -161,6 +161,15 @@ struct ParsingService {
                 return normalized
             }
 
+            let windowText = lines[idx...min(idx + 3, lines.count - 1)].joined(separator: " ")
+            if let normalized = Self.normalizeIBANValue(windowText) {
+                return normalized
+            }
+            let compactWindow = windowText.replacingOccurrences(of: #"\s+"#, with: "", options: .regularExpression)
+            if let normalized = Self.normalizeIBANValue(compactWindow) {
+                return normalized
+            }
+
             for nearby in idx...min(idx + 2, lines.count - 1) {
                 for candidate in lines[nearby].uppercased().matches(for: deLikePattern) {
                     if let normalized = Self.normalizeIBANValue(candidate) {
@@ -172,6 +181,10 @@ struct ParsingService {
                         return normalized
                     }
                 }
+            }
+
+            if let noisyFromWindow = Self.extractGermanIBANFromNoisy(windowText.uppercased()) {
+                return noisyFromWindow
             }
         }
 
