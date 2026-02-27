@@ -98,4 +98,16 @@ final class ParsingServiceTests: XCTestCase {
             .map(String.init)
         XCTAssertEqual(service.extractVendorName(from: lines), "adidas AG")
     }
+
+    func testExtractsNoisyGermanIBANFromPaymentLine() {
+        let iban = service.extractIBAN(from: ParserFixtures.invoiceWithOCRNoisyIBANAndTerms)
+        XCTAssertEqual(iban, "DE57776898534130012311")
+    }
+
+    func testExtractsDueOffsetFromSeparatedTermsLayout() {
+        let lines = ParserFixtures.invoiceWithOCRNoisyIBANAndTerms
+            .split(separator: "\n")
+            .map(String.init)
+        XCTAssertEqual(service.extractDueOffsetDaysHint(from: lines), 14)
+    }
 }

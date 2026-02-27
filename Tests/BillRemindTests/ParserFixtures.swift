@@ -53,4 +53,15 @@ enum ParserFixtures {
     Der Verkauf erfolgte im Namen und auf Rechnung der adidas AG.
     Hilfe und Kontakt
     """
+
+    static let invoiceWithOCRNoisyIBANAndTerms = """
+    INVOICE
+    Invoice No.
+    R6001439
+    Invoice Date
+    04.11.2025
+    Terms
+    14 days
+    Pay. D1 57 7768 9853 4130 0123 11 - BIC: GENODEFF
+    """
 }

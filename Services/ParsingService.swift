@@ -59,9 +59,23 @@ struct ParsingService {
 
     func extractIBAN(from text: String) -> String? {
         let upper = text.uppercased()
-        if let labeled = upper.firstCaptureGroup(for: #"(?i)\bIBAN\b[^A-Z0-9]*([A-Z]{2}\d{2}[A-Z0-9 \t]{10,40})"#),
+        if let labeled = upper.firstCaptureGroup(
+            for: #"(?i)\b(?:IBAN|I[^A-Z]{0,3}B[^A-Z]{0,3}A[^A-Z]{0,3}N|PAN|PANN)\b[^A-Z0-9]*([A-Z0-9][A-Z0-9 \t:/-]{12,60})"#
+        ),
            let normalized = Self.normalizeIBANValue(labeled) {
             return normalized
+        }
+        if let paymentLabeled = upper.firstCaptureGroup(
+            for: #"(?i)\b(?:PAY(?:MENT)?|ACCOUNT|PAY\.)\b[^A-Z0-9]*(D[EI1L][ A-Z0-9:/-]{12,60})"#
+        ), let normalized = Self.normalizeIBANValue(paymentLabeled) {
+            return normalized
+        }
+
+        let deLikePattern = #"\bD[EI1L][A-Z0-9]{2}(?:[ \t:/-]?[A-Z0-9]){10,40}\b"#
+        for candidate in upper.matches(for: deLikePattern) {
+            if let normalized = Self.normalizeIBANValue(candidate) {
+                return normalized
+            }
         }
 
         let pattern = #"\b[A-Z]{2}\d{2}(?:[ \t]?[A-Z0-9]){10,30}\b"#
@@ -303,13 +317,31 @@ struct ParsingService {
         let lowerLines = lines.map { $0.lowercased() }
         let dueKeywords = ["zahlbar", "zahlungsziel", "fällig", "faellig", "due", "net", "terms", "payment terms"]
         let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
+        let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
 
-        for line in lowerLines {
-            guard dueKeywords.contains(where: { line.contains($0) }) else { continue }
+        for (idx, line) in lowerLines.enumerated() {
+            let hasContextKeyword: Bool = {
+                if dueKeywords.contains(where: { line.contains($0) }) { return true }
+                let from = max(0, idx - 8)
+                let to = min(lowerLines.count - 1, idx + 2)
+                if from <= to {
+                    for j in from...to where dueKeywords.contains(where: { lowerLines[j].contains($0) }) {
+                        return true
+                    }
+                }
+                return false
+            }()
+
+            guard hasContextKeyword else { continue }
             let hasDayNumber = line.range(of: #"\b(7|14|30)\b"#, options: .regularExpression) != nil
             if !hasDayNumber { continue }
 
             if let token = line.firstCaptureGroup(for: dayPattern),
+               let days = Int(token),
+               [7, 14, 30].contains(days) {
+                return days
+            }
+            if let token = line.firstCaptureGroup(for: plainDaysPattern),
                let days = Int(token),
                [7, 14, 30].contains(days) {
                 return days
@@ -409,6 +441,20 @@ struct ParsingService {
             }
         }
 
+        let headerHints = ["invoice no", "invoice nr", "invoice number", "rechnungsnr", "rechnungsnummer", "rg nr"]
+        for (idx, line) in normalizedLines.enumerated() {
+            let lower = normalizedLower(line)
+            guard headerHints.contains(where: { lower.contains($0) }) else { continue }
+            let nextRange = (idx + 1)...min(idx + 12, normalizedLines.count - 1)
+            for j in nextRange {
+                if let token = firstStandaloneInvoiceNumberToken(in: normalizedLines[j]),
+                   let normalized = normalizeInvoiceNumberCandidate(token),
+                   !normalized.isEmpty {
+                    return normalized
+                }
+            }
+        }
+
         // Fallback for plain standalone identifiers often used in simple templates.
         let joined = normalizedLines.joined(separator: " ")
         let fallbackPatterns = [
@@ -418,6 +464,7 @@ struct ParsingService {
             #"\bINV\s*\d{3,6}\b"#,
             #"\bRG\d{4,6}\b"#,
             #"\bRG\s*\d{4,6}\b"#,
+            #"\bR\d{6,10}\b"#,
             #"\b\d{4}/\d{2,6}\b"#,
             #"\b\d{4}-\d{2,6}\b"#,
             #"\b\d{3,5}-\d{2}\b"#
@@ -428,6 +475,22 @@ struct ParsingService {
             }
         }
 
+        return nil
+    }
+
+    private func firstStandaloneInvoiceNumberToken(in line: String) -> String? {
+        let upper = line.uppercased()
+        let patterns = [
+            #"\b(?:INV|RE|RG)[-\s]?\d{3,10}(?:[-/]\d{2,8})?\b"#,
+            #"\bR\d{6,10}\b"#,
+            #"\b\d{4}/\d{3,8}\b"#,
+            #"\b[A-Z]{1,3}-\d{4}-\d{2,6}\b"#
+        ]
+        for pattern in patterns {
+            if let range = upper.range(of: pattern, options: .regularExpression) {
+                return String(upper[range])
+            }
+        }
         return nil
     }
 
@@ -740,6 +803,16 @@ struct ParsingService {
 
         guard !normalized.isEmpty else { return nil }
 
+        if normalized.count >= 2, normalized.hasPrefix("D") {
+            let second = normalized[normalized.index(after: normalized.startIndex)]
+            if second == "1" || second == "I" || second == "L" {
+                normalized.replaceSubrange(
+                    normalized.index(after: normalized.startIndex)...normalized.index(after: normalized.startIndex),
+                    with: "E"
+                )
+            }
+        }
+
         if let bicRange = normalized.range(of: "BIC") {
             normalized = String(normalized[..<bicRange.lowerBound])
         }
@@ -760,10 +833,13 @@ struct ParsingService {
                 return nil
             }
             if country == "DE" {
-                guard let range = normalized.range(of: #"^DE\d{20}"#, options: .regularExpression) else {
+                if let range = normalized.range(of: #"^DE\d{20}"#, options: .regularExpression) {
+                    normalized = String(normalized[range])
+                } else if let healed = healGermanIBAN(normalized) {
+                    normalized = healed
+                } else {
                     return nil
                 }
-                normalized = String(normalized[range])
             } else {
                 guard normalized.count >= expectedLength else { return nil }
                 normalized = String(normalized.prefix(expectedLength))
@@ -775,6 +851,51 @@ struct ParsingService {
         }
 
         return normalized
+    }
+
+    private static func healGermanIBAN(_ raw: String) -> String? {
+        var adapted = raw
+        if !adapted.hasPrefix("DE"), adapted.hasPrefix("D"), adapted.count >= 2 {
+            adapted.replaceSubrange(
+                adapted.index(after: adapted.startIndex)...adapted.index(after: adapted.startIndex),
+                with: "E"
+            )
+        }
+        guard adapted.hasPrefix("DE"), adapted.count >= 10 else { return nil }
+
+        let tail = Array(adapted.dropFirst(2))
+        guard tail.count >= 2 else { return nil }
+
+        func mapDigitLike(_ c: Character) -> Character {
+            switch c {
+            case "O", "D", "Q": return "0"
+            case "I", "L": return "1"
+            case "Z": return "2"
+            case "S": return "5"
+            case "G": return "6"
+            case "T", "Y": return "7"
+            case "B": return "8"
+            default: return c
+            }
+        }
+
+        var check = ""
+        for c in tail.prefix(2) {
+            let m = mapDigitLike(c)
+            guard m.isNumber else { return nil }
+            check.append(m)
+        }
+
+        var bodyDigits = ""
+        for c in tail.dropFirst(2) {
+            let m = mapDigitLike(c)
+            if m.isNumber {
+                bodyDigits.append(m)
+            }
+        }
+        guard bodyDigits.count >= 18 else { return nil }
+        bodyDigits = String(bodyDigits.prefix(18))
+        return "DE" + check + bodyDigits
     }
 }
 
