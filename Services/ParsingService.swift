@@ -318,6 +318,7 @@ struct ParsingService {
         let dueKeywords = ["zahlbar", "zahlungsziel", "fällig", "faellig", "due", "net", "terms", "payment terms"]
         let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
         let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
+        let fromInvoicePattern = #"(?:due|payable|payment\s+due|zahlbar)\s*(?:within\s*)?(7|14|30)\s*(?:days?|tagen|tage|tag)\s*(?:from|after)?\s*(?:the\s*)?(?:invoice|invoice\s+receipt|receipt|rechnungsdatum)"#
 
         for (idx, line) in lowerLines.enumerated() {
             let hasContextKeyword: Bool = {
@@ -336,6 +337,11 @@ struct ParsingService {
             let hasDayNumber = line.range(of: #"\b(7|14|30)\b"#, options: .regularExpression) != nil
             if !hasDayNumber { continue }
 
+            if let token = line.firstCaptureGroup(for: fromInvoicePattern),
+               let days = Int(token),
+               [7, 14, 30].contains(days) {
+                return days
+            }
             if let token = line.firstCaptureGroup(for: dayPattern),
                let days = Int(token),
                [7, 14, 30].contains(days) {

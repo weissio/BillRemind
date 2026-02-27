@@ -110,4 +110,11 @@ final class ParsingServiceTests: XCTestCase {
             .map(String.init)
         XCTAssertEqual(service.extractDueOffsetDaysHint(from: lines), 14)
     }
+
+    func testExtractsDueOffsetFromInvoiceReceiptPhrase() {
+        let lines = ParserFixtures.invoiceWithDueFromInvoiceReceipt
+            .split(separator: "\n")
+            .map(String.init)
+        XCTAssertEqual(service.extractDueOffsetDaysHint(from: lines), 30)
+    }
 }

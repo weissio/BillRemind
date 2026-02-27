@@ -64,4 +64,11 @@ enum ParserFixtures {
     14 days
     Pay. D1 57 7768 9853 4130 0123 11 - BIC: GENODEFF
     """
+
+    static let invoiceWithDueFromInvoiceReceipt = """
+    INVOICE
+    Invoice No: INV-00999
+    Invoice Date: 10.02.2026
+    Due 30 days from invoice receipt
+    """
 }
