@@ -175,4 +175,10 @@ final class ParsingServiceTests: XCTestCase {
         XCTAssertEqual(parsed.invoiceNumber, "2026/00005")
         XCTAssertEqual(parsed.dueOffsetDaysHint, 7)
     }
+
+    func testExtractsLooseGermanIBANFromNoisyBankLine() {
+        let text = "ZAN: DE:317556830430148960 - BIC: DEUTDEFYX"
+        let iban = service.extractIBAN(from: text)
+        XCTAssertEqual(iban, "DE317556830430148960")
+    }
 }

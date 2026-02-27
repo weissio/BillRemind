@@ -171,7 +171,7 @@ struct ParsingService {
 
     func extractIBAN(from lines: [String], fullText: String) -> String? {
         let lowerLines = lines.map { normalizedLower($0) }
-        let labelKeywords = ["iban", "account", "konto", "kontoinhaber", "payment"]
+        let labelKeywords = ["iban", "account", "konto", "kontoinhaber", "payment", "pay", "zan", "tan", "baan", "bay"]
         let deLikePattern = #"\bD[EI1L][A-Z0-9]{2}(?:[ \t:/-]?[A-Z0-9]){10,40}\b"#
         let genericPattern = #"\b[A-Z]{2}\d{2}(?:[ \t:/-]?[A-Z0-9]){10,34}\b"#
 
@@ -189,9 +189,15 @@ struct ParsingService {
             if let normalized = Self.normalizeIBANValue(windowText) {
                 return normalized
             }
+            if let loose = Self.normalizeLooseGermanIBANValue(windowText), !loose.isEmpty {
+                return loose
+            }
             let compactWindow = windowText.replacingOccurrences(of: #"\s+"#, with: "", options: .regularExpression)
             if let normalized = Self.normalizeIBANValue(compactWindow) {
                 return normalized
+            }
+            if let loose = Self.normalizeLooseGermanIBANValue(compactWindow), !loose.isEmpty {
+                return loose
             }
 
             for nearby in idx...min(idx + 2, lines.count - 1) {
@@ -1052,6 +1058,34 @@ struct ParsingService {
         }
 
         return normalized
+    }
+
+    private static func normalizeLooseGermanIBANValue(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let upper = value.uppercased()
+        // Only apply loose fallback for explicit bank labels directly tied to a DE... candidate.
+        let labelBoundPattern = #"(?i)(?:IBAN|ZAN|TAN|BAY|BAAN|ACCOUNT|PAY)[^A-Z0-9]{0,8}D[EI1L][^A-Z0-9]{0,4}([0-9A-Z\s:/-]{14,36})(?:\bBIC\b|$)"#
+        guard let payload = upper.firstCaptureGroup(for: labelBoundPattern) else { return nil }
+        if upper.contains("UST") || upper.contains("VAT") || upper.contains("HRB") || upper.contains("AMTSGERICHT") {
+            return nil
+        }
+
+        let mappedDigits = payload.compactMap { c -> Character? in
+            switch c {
+            case "0"..."9": return c
+            case "O", "D", "Q": return "0"
+            case "I", "L": return "1"
+            case "Z": return "2"
+            case "S": return "5"
+            case "G": return "6"
+            case "T", "Y": return "7"
+            case "B": return "8"
+            default: return nil
+            }
+        }
+        guard mappedDigits.count >= 16 else { return nil }
+        let digits = String(mappedDigits.prefix(20))
+        return "DE" + digits
     }
 
     private static func extractGermanIBANFromNoisy(_ raw: String) -> String? {
