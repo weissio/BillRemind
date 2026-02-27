@@ -77,4 +77,14 @@ enum ParserFixtures {
     Leistungsdatum: 03.01.2026
     Rechnungsdatum: 15.01.2026
     """
+
+    static let invoiceWithSeparatedHeaderValues = """
+    RECHNUNG
+    Rechnungsnummer
+    RG000205
+    Rechnungsdatum
+    11.02.2026
+    Zahlungsziel
+    7 Tage netto
+    """
 }

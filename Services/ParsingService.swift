@@ -30,6 +30,12 @@ struct ParsedInvoiceData {
 
 struct ParsingService {
     private let calendar = Calendar.current
+    private struct HeaderSignals {
+        var invoiceNumber: String?
+        var invoiceDate: Date?
+        var dueOffsetDaysHint: Int?
+        static let empty = HeaderSignals(invoiceNumber: nil, invoiceDate: nil, dueOffsetDaysHint: nil)
+    }
 
     func parse(text: String) -> ParsedInvoiceData {
         let lines = text
@@ -37,9 +43,10 @@ struct ParsingService {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
         let documentType = classifyDocumentType(from: lines)
-        let invoiceDate = documentType == .receipt ? nil : extractInvoiceDate(from: lines)
+        let headerSignals = documentType == .receipt ? HeaderSignals.empty : extractHeaderSignals(from: lines)
+        let invoiceDate = documentType == .receipt ? nil : (headerSignals.invoiceDate ?? extractInvoiceDate(from: lines))
         let dueDate = documentType == .receipt ? nil : extractDueDate(from: lines)
-        let dueOffsetDaysHint = documentType == .receipt ? nil : extractDueOffsetDaysHint(from: lines)
+        let dueOffsetDaysHint = documentType == .receipt ? nil : (headerSignals.dueOffsetDaysHint ?? extractDueOffsetDaysHint(from: lines))
 
         return ParsedInvoiceData(
             documentType: documentType,
@@ -50,11 +57,92 @@ struct ParsingService {
             invoiceDate: invoiceDate,
             dueOffsetDaysHint: dueOffsetDaysHint,
             dueDate: dueDate,
-            invoiceNumber: documentType == .receipt ? nil : extractInvoiceNumber(from: lines),
+            invoiceNumber: documentType == .receipt ? nil : (headerSignals.invoiceNumber ?? extractInvoiceNumber(from: lines)),
             iban: extractIBAN(from: lines, fullText: text),
             note: nil,
             extractedText: text
         )
+    }
+
+    private func extractHeaderSignals(from lines: [String]) -> HeaderSignals {
+        var signals = HeaderSignals.empty
+        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "invoice no", "invoice number", "invoice nr", "belegnr", "rg nr"]
+        let dateLabels = ["rechnungsdatum", "rechnung vom", "invoice date", "issue date", "belegdatum", "date:"]
+        let dueLabels = ["zahlungsziel", "zahlbar", "fällig", "faellig", "due", "terms", "payment terms", "netto"]
+        let serviceKeywords = ["leistungsdatum", "service date", "delivery date", "lieferdatum", "bestelldatum", "versanddatum"]
+        let normalizedLines = lines.map { $0.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression) }
+
+        for (idx, line) in normalizedLines.enumerated() {
+            let lower = normalizedLower(line)
+            let valueRange = idx...min(idx + 3, normalizedLines.count - 1)
+
+            if signals.invoiceNumber == nil, numberLabels.contains(where: { lower.contains($0) }) {
+                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
+                   let normalized = normalizeInvoiceNumberCandidate(sameLine) {
+                    signals.invoiceNumber = normalized
+                } else {
+                    for j in valueRange {
+                        if let token = firstStandaloneInvoiceNumberToken(in: normalizedLines[j]),
+                           let normalized = normalizeInvoiceNumberCandidate(token) {
+                            signals.invoiceNumber = normalized
+                            break
+                        }
+                    }
+                }
+            }
+
+            if signals.invoiceDate == nil,
+               dateLabels.contains(where: { lower.contains($0) }),
+               !serviceKeywords.contains(where: { lower.contains($0) }) {
+                if let sameDate = parseFirstDate(in: line), sameDate <= calendar.startOfDay(for: Date()) {
+                    signals.invoiceDate = sameDate
+                } else {
+                    for j in valueRange {
+                        let nextLower = normalizedLower(normalizedLines[j])
+                        if serviceKeywords.contains(where: { nextLower.contains($0) }) { continue }
+                        if let parsed = parseFirstDate(in: normalizedLines[j]), parsed <= calendar.startOfDay(for: Date()) {
+                            signals.invoiceDate = parsed
+                            break
+                        }
+                    }
+                }
+            }
+
+            if signals.dueOffsetDaysHint == nil, dueLabels.contains(where: { lower.contains($0) }) {
+                for j in valueRange {
+                    if let days = extractInlineDueDays(from: normalizedLower(normalizedLines[j])) {
+                        signals.dueOffsetDaysHint = days
+                        break
+                    }
+                }
+            }
+
+            if signals.invoiceNumber != nil, signals.invoiceDate != nil, signals.dueOffsetDaysHint != nil {
+                break
+            }
+        }
+
+        return signals
+    }
+
+    private func extractInlineDueDays(from lowerLine: String) -> Int? {
+        let fromInvoicePattern = #"(?:due|payable|payment\s+due|zahlbar)\s*(?:within\s*)?(7|14|30)\s*(?:days?|tagen|tage|tag)\s*(?:from|after)?\s*(?:the\s*)?(?:invoice|invoice\s+receipt|receipt|rechnungsdatum)"#
+        let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
+        let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
+
+        if let token = lowerLine.firstCaptureGroup(for: fromInvoicePattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if let token = lowerLine.firstCaptureGroup(for: dayPattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if let token = lowerLine.firstCaptureGroup(for: plainDaysPattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if lowerLine.contains("net 30") || lowerLine.contains("netto 30") { return 30 }
+        if lowerLine.contains("net 14") || lowerLine.contains("netto 14") { return 14 }
+        if lowerLine.contains("net 7") || lowerLine.contains("netto 7") { return 7 }
+        return nil
     }
 
     func extractIBAN(from lines: [String], fullText: String) -> String? {
@@ -365,9 +453,6 @@ struct ParsingService {
     func extractDueOffsetDaysHint(from lines: [String]) -> Int? {
         let lowerLines = lines.map { $0.lowercased() }
         let dueKeywords = ["zahlbar", "zahlungsziel", "fällig", "faellig", "due", "net", "terms", "payment terms"]
-        let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
-        let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
-        let fromInvoicePattern = #"(?:due|payable|payment\s+due|zahlbar)\s*(?:within\s*)?(7|14|30)\s*(?:days?|tagen|tage|tag)\s*(?:from|after)?\s*(?:the\s*)?(?:invoice|invoice\s+receipt|receipt|rechnungsdatum)"#
 
         for (idx, line) in lowerLines.enumerated() {
             let hasContextKeyword: Bool = {
@@ -386,37 +471,8 @@ struct ParsingService {
             let hasDayNumber = line.range(of: #"\b(7|14|30)\b"#, options: .regularExpression) != nil
             if !hasDayNumber { continue }
 
-            if let token = line.firstCaptureGroup(for: fromInvoicePattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
+            if let days = extractInlineDueDays(from: line) {
                 return days
-            }
-            if let token = line.firstCaptureGroup(for: dayPattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
-                return days
-            }
-            if let token = line.firstCaptureGroup(for: plainDaysPattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
-                return days
-            }
-
-            if let days = line.matches(for: #"\b(7|14|30)\s*(?:tagen|tage|tag)\b"#).first,
-               let value = Int(days.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()),
-               [7, 14, 30].contains(value),
-               dueKeywords.contains(where: { line.contains($0) }) {
-                return value
-            }
-
-            if line.contains("net 30") || line.contains("netto 30") {
-                return 30
-            }
-            if line.contains("net 14") || line.contains("netto 14") {
-                return 14
-            }
-            if line.contains("net 7") || line.contains("netto 7") {
-                return 7
             }
         }
 

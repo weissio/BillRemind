@@ -146,4 +146,13 @@ final class ParsingServiceTests: XCTestCase {
         let parsed = service.parse(text: text)
         XCTAssertEqual(parsed.iban, "DE75776898534130012311")
     }
+
+    func testExtractsHeaderSignalsFromSeparatedRows() {
+        let parsed = service.parse(text: ParserFixtures.invoiceWithSeparatedHeaderValues)
+        XCTAssertEqual(parsed.invoiceNumber, "RG000205")
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertEqual(formatter.string(from: parsed.invoiceDate ?? .distantPast), "2026-02-11")
+        XCTAssertEqual(parsed.dueOffsetDaysHint, 7)
+    }
 }
