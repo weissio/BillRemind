@@ -78,11 +78,11 @@ struct OCRService: OCRServicing {
                 var ocr = try await recognizeText(from: baseImage)
                 var trimmed = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
 
-                // Some scanned PDFs need a larger render target to keep small fonts readable.
-                if trimmed.isEmpty, let highResImage = renderImage(for: page, maxSide: 3200) {
+                // Retry with larger render target when OCR is empty or too weak for invoice parsing.
+                if isWeakPageOCR(trimmed), let highResImage = renderImage(for: page, maxSide: 3800) {
                     let retry = try await recognizeText(from: highResImage)
                     let retryTrimmed = retry.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !retryTrimmed.isEmpty {
+                    if pageSignalScore(retryTrimmed) > pageSignalScore(trimmed) {
                         ocr = retry
                         trimmed = retryTrimmed
                     }
@@ -105,7 +105,7 @@ struct OCRService: OCRServicing {
         let bounds = page.bounds(for: .mediaBox)
         guard bounds.width > 0, bounds.height > 0 else { return nil }
 
-        let scale = min(maxSide / max(bounds.width, bounds.height), 3.0)
+        let scale = min(maxSide / max(bounds.width, bounds.height), 6.0)
         let width = Int(bounds.width * scale)
         let height = Int(bounds.height * scale)
         guard width > 0, height > 0 else { return nil }
@@ -209,6 +209,22 @@ struct OCRService: OCRServicing {
             + Double(dateHits) * 0.8
             + Double(amountHits) * 0.5
             + Double(meanConfidence) * 6.0
+    }
+
+    private func isWeakPageOCR(_ text: String) -> Bool {
+        pageSignalScore(text) < 7.0
+    }
+
+    private func pageSignalScore(_ text: String) -> Double {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return 0 }
+        let lower = trimmed.lowercased()
+        let chars = Double(trimmed.count)
+        let keywordHits = ["rechnung", "invoice", "iban", "rechnungsnummer", "invoice number", "invoice date"]
+            .reduce(0) { $0 + (lower.contains($1) ? 1 : 0) }
+        let numberHits = lower.matches(for: #"\b(?:re|rg|inv)[-\s]?\d{4,}\b"#).count
+        let dateHits = lower.matches(for: #"\b\d{1,2}\.\d{1,2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#).count
+        return chars * 0.002 + Double(keywordHits) * 1.8 + Double(numberHits) * 1.6 + Double(dateHits) * 0.8
     }
 
     private func cgImageOrientation(for orientation: UIImage.Orientation) -> CGImagePropertyOrientation {
