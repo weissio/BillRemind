@@ -71,4 +71,10 @@ enum ParserFixtures {
     Invoice Date: 10.02.2026
     Due 30 days from invoice receipt
     """
+
+    static let invoiceWithServiceDateAndInvoiceDate = """
+    Rechnung
+    Leistungsdatum: 03.01.2026
+    Rechnungsdatum: 15.01.2026
+    """
 }

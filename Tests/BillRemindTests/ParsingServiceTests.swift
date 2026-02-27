@@ -117,4 +117,33 @@ final class ParsingServiceTests: XCTestCase {
             .map(String.init)
         XCTAssertEqual(service.extractDueOffsetDaysHint(from: lines), 30)
     }
+
+    func testHealsInvoiceNumberRGWhenGReadAs6() {
+        let normalized = ParsingService.normalizeInvoiceNumberValue("R6000011")
+        XCTAssertEqual(normalized, "RG000011")
+    }
+
+    func testKeepsKnownGermanIBANPattern() {
+        let iban = service.extractIBAN(from: "IBAN: DE12 5001 0517 0648 4898 90")
+        XCTAssertEqual(iban, "DE12500105170648489890")
+    }
+
+    func testPrefersInvoiceDateOverServiceDate() {
+        let lines = ParserFixtures.invoiceWithServiceDateAndInvoiceDate
+            .split(separator: "\n")
+            .map(String.init)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertEqual(formatter.string(from: service.extractInvoiceDate(from: lines) ?? .distantPast), "2026-01-15")
+    }
+
+    func testExtractsIBANFromLabeledLineWithNeighborNoise() {
+        let text = """
+        Rechnung Nr.: RG000086
+        Invoice Date: 13.01.2026
+        IBAN / Account: DE75776898534130012311
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.iban, "DE75776898534130012311")
+    }
 }
