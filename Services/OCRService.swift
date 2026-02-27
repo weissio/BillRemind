@@ -74,9 +74,20 @@ struct OCRService: OCRServicing {
             var debugLines: [String] = []
             for pageIndex in 0..<document.pageCount {
                 guard let page = document.page(at: pageIndex),
-                      let image = renderImage(for: page) else { continue }
-                let ocr = try await recognizeText(from: image)
-                let trimmed = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                      let baseImage = renderImage(for: page, maxSide: 2600) else { continue }
+                var ocr = try await recognizeText(from: baseImage)
+                var trimmed = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                // Some scanned PDFs need a larger render target to keep small fonts readable.
+                if trimmed.isEmpty, let highResImage = renderImage(for: page, maxSide: 3200) {
+                    let retry = try await recognizeText(from: highResImage)
+                    let retryTrimmed = retry.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !retryTrimmed.isEmpty {
+                        ocr = retry
+                        trimmed = retryTrimmed
+                    }
+                }
+
                 if !trimmed.isEmpty {
                     chunks.append(trimmed)
                 }
@@ -90,25 +101,38 @@ struct OCRService: OCRServicing {
         return OCRExtractionResult(text: chunks.joined(separator: "\n"), debugSummary: "PDF enthält digitalen Text (kein Vision-OCR verwendet)")
     }
 
-    private func renderImage(for page: PDFPage) -> UIImage? {
+    private func renderImage(for page: PDFPage, maxSide: CGFloat) -> UIImage? {
         let bounds = page.bounds(for: .mediaBox)
         guard bounds.width > 0, bounds.height > 0 else { return nil }
 
-        let maxSide: CGFloat = 2200
-        let scale = min(maxSide / max(bounds.width, bounds.height), 2.0)
-        let size = CGSize(width: bounds.width * scale, height: bounds.height * scale)
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = 1
+        let scale = min(maxSide / max(bounds.width, bounds.height), 3.0)
+        let width = Int(bounds.width * scale)
+        let height = Int(bounds.height * scale)
+        guard width > 0, height > 0 else { return nil }
 
-        let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
-            UIColor.white.setFill()
-            context.fill(CGRect(origin: .zero, size: size))
-            context.cgContext.saveGState()
-            context.cgContext.scaleBy(x: scale, y: scale)
-            page.draw(with: .mediaBox, to: context.cgContext)
-            context.cgContext.restoreGState()
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else {
+            return nil
         }
-        return image
+
+        context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        context.interpolationQuality = .high
+        context.saveGState()
+        context.scaleBy(x: scale, y: scale)
+        page.draw(with: .mediaBox, to: context)
+        context.restoreGState()
+
+        guard let cgImage = context.makeImage() else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 
     private func recognizeText(from cgImage: CGImage, orientation: CGImagePropertyOrientation, variantName: String) async throws -> OCRCandidate {
