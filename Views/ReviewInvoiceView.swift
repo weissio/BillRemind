@@ -169,7 +169,10 @@ struct ReviewInvoiceView: View {
                         TextField(L10n.t("z. B. INV-2026-001", "e.g. INV-2026-001"), text: $draft.invoiceNumber)
                     }
                     highlightedField(title: "IBAN", confidence: draft.ibanConfidence) {
-                        TextField("DE89 3704 0044 0532 0130 00", text: $draft.iban)
+                        TextField(
+                            L10n.t("IBAN eingeben", "Enter IBAN"),
+                            text: $draft.iban
+                        )
                             .textInputAutocapitalization(.characters)
                         HStack(spacing: 10) {
                             Button(L10n.t("IBAN kopieren", "Copy IBAN")) {
@@ -233,6 +236,7 @@ struct ReviewInvoiceView: View {
             )
             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
             .onAppear {
+                sanitizeCriticalIdentifiers()
                 applyLearnedDefaultsIfAvailable()
             }
             .onChange(of: draft.invoiceDate) { value in
@@ -330,7 +334,9 @@ struct ReviewInvoiceView: View {
     }
 
     private func saveDirectly() {
+        sanitizeCriticalIdentifiers()
         draft.iban = ParsingService.normalizeIBANValue(draft.iban) ?? ""
+        draft.invoiceNumber = ParsingService.normalizeInvoiceNumberValue(draft.invoiceNumber) ?? ""
         draft.needsReview = (draft.ocrConfidence ?? 0) < 0.8 || !draft.reviewHint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         persistOCRLearningFromReview()
         do {
@@ -414,6 +420,32 @@ struct ReviewInvoiceView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             ibanCopied = false
         }
+    }
+
+    private func sanitizeCriticalIdentifiers() {
+        let normalizedIBAN = ParsingService.normalizeIBANValue(draft.iban)
+        let normalizedInvoice = ParsingService.normalizeInvoiceNumberValue(draft.invoiceNumber)
+
+        var iban = normalizedIBAN ?? ""
+        var invoiceNumber = normalizedInvoice ?? ""
+
+        let ibanAsInvoice = ParsingService.normalizeInvoiceNumberValue(draft.iban)
+        let invoiceAsIBAN = ParsingService.normalizeIBANValue(draft.invoiceNumber)
+
+        // Typical swap/misread fallback: "RG...INVOICEDATE" landed in IBAN while invoice number is empty.
+        if iban.isEmpty, invoiceNumber.isEmpty, let recovered = ibanAsInvoice {
+            invoiceNumber = recovered
+        }
+        // Reverse swap fallback: IBAN landed in invoice number field.
+        if iban.isEmpty, let recoveredIBAN = invoiceAsIBAN {
+            iban = recoveredIBAN
+            if invoiceNumber == (ParsingService.normalizeInvoiceNumberValue(draft.invoiceNumber) ?? "") {
+                invoiceNumber = ""
+            }
+        }
+
+        draft.iban = iban
+        draft.invoiceNumber = invoiceNumber
     }
 
     private var allCategories: [String] {
