@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "09_datum_als_betrag_noise_rechnung.txt",
+  "expected": {
+    "vendor_name": "ACME SERVICES GMBH",
+    "payment_recipient": "ACME SERVICES GMBH",
+    "amount_value": 87.4,
+    "category": "Sonstiges",
+    "due_date": null,
+    "due_offset_days_hint": null,
+    "status_suggestion": "open",
+    "invoice_number": "AC-2026-1902",
+    "iban": "DE13500105175407329876"
+  }
+}

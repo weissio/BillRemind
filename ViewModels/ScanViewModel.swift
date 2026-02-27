@@ -376,8 +376,16 @@ struct InvoiceDraft {
         invoiceDate = inferredInvoiceDate
         dueOffsetDaysHint = parsed.dueOffsetDaysHint
         dueDate = parsed.dueDate
-        invoiceNumber = parsed.invoiceNumber ?? ""
-        iban = parsed.iban ?? ""
+        let normalizedInvoiceNumber = ParsingService.normalizeInvoiceNumberValue(parsed.invoiceNumber)
+        let normalizedIBAN = ParsingService.normalizeIBANValue(parsed.iban)
+        let recoveredInvoiceNumberFromIBANField: String? = {
+            guard normalizedInvoiceNumber == nil else { return nil }
+            guard normalizedIBAN == nil else { return nil }
+            return ParsingService.normalizeInvoiceNumberValue(parsed.iban)
+        }()
+
+        invoiceNumber = normalizedInvoiceNumber ?? recoveredInvoiceNumberFromIBANField ?? ""
+        iban = normalizedIBAN ?? ""
         note = parsed.note ?? ""
         extractedText = parsed.extractedText
         ocrConfidence = parsed.ocrConfidence

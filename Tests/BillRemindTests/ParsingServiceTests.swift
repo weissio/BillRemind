@@ -44,4 +44,70 @@ final class ParsingServiceTests: XCTestCase {
             .map(String.init)
         XCTAssertEqual(service.extractInvoiceNumber(from: lines), "INV-7788")
     }
+
+    func testDoesNotReadInvoiceDateAsAmount() {
+        let lines = ParserFixtures.invoiceWithDateAmountNoise
+            .split(separator: "\n")
+            .map(String.init)
+        let amount = service.extractAmount(from: lines, documentType: .invoice)
+        XCTAssertEqual(amount, Decimal(string: "87.40"))
+    }
+
+    func testExtractsSupplierAndRecipientFromLabels() {
+        let lines = ParserFixtures.invoiceWithFromAndRecipient
+            .split(separator: "\n")
+            .map(String.init)
+
+        XCTAssertEqual(service.extractVendorName(from: lines), "Weber IT Services Bahnhofstraße 8 76133 Karlsruhe")
+        XCTAssertEqual(service.parse(text: ParserFixtures.invoiceWithFromAndRecipient).paymentRecipient, "Weber IT Services Bahnhofstraße 8 76133 Karlsruhe")
+    }
+
+    func testPrefersGrossAmountOverNetAmount() {
+        let lines = ParserFixtures.invoiceWithFromAndRecipient
+            .split(separator: "\n")
+            .map(String.init)
+        let amount = service.extractAmount(from: lines, documentType: .invoice)
+        XCTAssertEqual(amount, Decimal(string: "3177.30"))
+    }
+
+    func testExtractsInvoiceNumberFromRechnungNrHyphenFormat() {
+        let lines = ParserFixtures.invoiceWithRechnungNrHyphen
+            .split(separator: "\n")
+            .map(String.init)
+        XCTAssertEqual(service.extractInvoiceNumber(from: lines), "INV-00006")
+    }
+
+    func testRejectsInvalidGermanIBANWithTextNoise() {
+        let iban = service.extractIBAN(from: "IBAN: DE123456789IBAN")
+        XCTAssertNil(iban)
+    }
+
+    func testRejectsInvoiceTokenAsIBAN() {
+        let iban = service.extractIBAN(from: "IBAN: RG000086INVOICEDATE")
+        XCTAssertNil(iban)
+    }
+
+    func testNormalizeInvoiceNumberStripsInvoiceDateNoise() {
+        let number = ParsingService.normalizeInvoiceNumberValue("RG000086 Invoice Date: 13.01.2026")
+        XCTAssertEqual(number, "RG000086")
+    }
+
+    func testExtractsSellerNameFromSellerOfRecordPhrase() {
+        let lines = ParserFixtures.invoiceWithSellerOfRecordPhrase
+            .split(separator: "\n")
+            .map(String.init)
+        XCTAssertEqual(service.extractVendorName(from: lines), "adidas AG")
+    }
+
+    func testExtractsNoisyGermanIBANFromPaymentLine() {
+        let iban = service.extractIBAN(from: ParserFixtures.invoiceWithOCRNoisyIBANAndTerms)
+        XCTAssertEqual(iban, "DE57776898534130012311")
+    }
+
+    func testExtractsDueOffsetFromSeparatedTermsLayout() {
+        let lines = ParserFixtures.invoiceWithOCRNoisyIBANAndTerms
+            .split(separator: "\n")
+            .map(String.init)
+        XCTAssertEqual(service.extractDueOffsetDaysHint(from: lines), 14)
+    }
 }

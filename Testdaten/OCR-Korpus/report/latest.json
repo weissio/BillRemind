@@ -1,8 +1,8 @@
 {
   "failedCases" : 0,
-  "generatedAt" : "2026-02-23T21:11:56Z",
-  "passedCases" : 13,
-  "passedFieldChecks" : 130,
+  "generatedAt" : "2026-02-27T01:18:55Z",
+  "passedCases" : 14,
+  "passedFieldChecks" : 140,
   "passRateCases" : 1,
   "passRateFields" : 1,
   "results" : [
@@ -842,8 +842,73 @@
       "id" : "receipt_05_penny_rueckgeld_txt",
       "passed" : true,
       "sourceFile" : "kassenbon\/05_penny_rueckgeld_kassenbon.txt"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "ACME SERVICES GMBH",
+          "expected" : "ACME SERVICES GMBH",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "ACME SERVICES GMBH",
+          "expected" : "ACME SERVICES GMBH",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "87.40",
+          "expected" : "87.40",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "SONSTIGES",
+          "expected" : "SONSTIGES",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "AC-2026-1902",
+          "expected" : "AC-2026-1902",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE13500105175407329876",
+          "expected" : "DE13500105175407329876",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_09_date_amount_noise_txt",
+      "passed" : true,
+      "sourceFile" : "rechnung\/09_datum_als_betrag_noise_rechnung.txt"
     }
   ],
-  "totalCases" : 13,
-  "totalFieldChecks" : 130
+  "totalCases" : 14,
+  "totalFieldChecks" : 140
 }
