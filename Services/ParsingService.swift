@@ -248,6 +248,9 @@ struct ParsingService {
                 return normalized
             }
         }
+        if let loose = Self.normalizeLooseGermanIBANValue(upper), !loose.isEmpty {
+            return loose
+        }
         return nil
     }
 
@@ -1038,8 +1041,8 @@ struct ParsingService {
                 return nil
             }
             if country == "DE" {
-                if let range = normalized.range(of: #"DE\d{20}"#, options: .regularExpression) {
-                    normalized = String(normalized[range])
+                if let exact = bestGermanIBANCandidate(from: normalized) {
+                    normalized = exact
                 } else if let directMapped = extractGermanIBANFromNoisy(normalized) {
                     normalized = directMapped
                 } else if let healed = healGermanIBAN(normalized) {
@@ -1060,32 +1063,79 @@ struct ParsingService {
         return normalized
     }
 
+    private static func bestGermanIBANCandidate(from value: String) -> String? {
+        let upper = value.uppercased()
+        guard let range = upper.range(of: #"DE\d{20,30}"#, options: .regularExpression) else { return nil }
+        let matched = String(upper[range])
+        guard matched.count >= 22 else { return nil }
+        let digits = String(matched.dropFirst(2))
+        guard digits.count >= 20 else { return nil }
+
+        var valid: [String] = []
+        for start in 0...(digits.count - 20) {
+            let s = digits.index(digits.startIndex, offsetBy: start)
+            let e = digits.index(s, offsetBy: 20)
+            let candidate = "DE" + String(digits[s..<e])
+            if isIBANChecksumValid(candidate) {
+                valid.append(candidate)
+            }
+        }
+        if let preferred = valid.first(where: { $0.hasPrefix("DE" + String(digits.prefix(2))) }) {
+            return preferred
+        }
+        if let firstValid = valid.first {
+            return firstValid
+        }
+        return "DE" + String(digits.prefix(20))
+    }
+
     private static func normalizeLooseGermanIBANValue(_ value: String?) -> String? {
         guard let value else { return nil }
         let upper = value.uppercased()
-        // Only apply loose fallback for explicit bank labels directly tied to a DE... candidate.
-        let labelBoundPattern = #"(?i)(?:IBAN|ZAN|TAN|BAY|BAAN|ACCOUNT|PAY)[^A-Z0-9]{0,8}D[EI1L][^A-Z0-9]{0,4}([0-9A-Z\s:/-]{14,36})(?:\bBIC\b|$)"#
-        guard let payload = upper.firstCaptureGroup(for: labelBoundPattern) else { return nil }
-        if upper.contains("UST") || upper.contains("VAT") || upper.contains("HRB") || upper.contains("AMTSGERICHT") {
-            return nil
-        }
+        let lines = upper
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        let bankHintPattern = #"(?i)\b(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)\b"#
 
-        let mappedDigits = payload.compactMap { c -> Character? in
-            switch c {
-            case "0"..."9": return c
-            case "O", "D", "Q": return "0"
-            case "I", "L": return "1"
-            case "Z": return "2"
-            case "S": return "5"
-            case "G": return "6"
-            case "T", "Y": return "7"
-            case "B": return "8"
-            default: return nil
+        for line in lines {
+            let hasBankLabel = line.range(of: bankHintPattern, options: .regularExpression) != nil
+            let hasBIC = line.contains("BIC")
+            if !hasBankLabel && !hasBIC { continue }
+
+            // Company footer lines often contain DE VAT/HRB tokens but no payment context.
+            if (line.contains("UST") || line.contains("VAT") || line.contains("HRB") || line.contains("AMTSGERICHT")) && !hasBIC {
+                continue
+            }
+
+            if let payload = line.firstCaptureGroup(
+                for: #"(?i)(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)[^A-Z0-9]{0,10}D[EI1L][^A-Z0-9]{0,3}([0-9ODQILZSGTYB\s:/-]{14,40})(?:\bBIC\b|$)"#
+            ) {
+                let mappedDigits = payload.compactMap { c -> Character? in
+                    switch c {
+                    case "0"..."9": return c
+                    case "O", "D", "Q": return "0"
+                    case "I", "L": return "1"
+                    case "Z": return "2"
+                    case "S": return "5"
+                    case "G": return "6"
+                    case "T", "Y": return "7"
+                    case "B": return "8"
+                    default: return nil
+                    }
+                }
+                guard mappedDigits.count >= 20 else { continue }
+                let candidate = "DE" + String(mappedDigits.prefix(20))
+                if isIBANChecksumValid(candidate) {
+                    return candidate
+                }
+            }
+
+            if let noisy = extractGermanIBANFromNoisy(line) {
+                return noisy
             }
         }
-        guard mappedDigits.count >= 16 else { return nil }
-        let digits = String(mappedDigits.prefix(20))
-        return "DE" + digits
+        return nil
     }
 
     private static func extractGermanIBANFromNoisy(_ raw: String) -> String? {
@@ -1102,9 +1152,13 @@ struct ParsingService {
             default: return c
             }
         }
-        let healed = String(mapped)
-        if let range = healed.range(of: #"DE\d{20}"#, options: .regularExpression) {
-            return String(healed[range])
+        var healed = String(mapped)
+            .uppercased()
+            .replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
+        healed = healed.replacingOccurrences(of: #"D[1IL]"#, with: "DE", options: .regularExpression)
+
+        if let best = bestGermanIBANCandidate(from: healed), isIBANChecksumValid(best) {
+            return best
         }
         return nil
     }
@@ -1152,6 +1206,29 @@ struct ParsingService {
         guard bodyDigits.count >= 18 else { return nil }
         bodyDigits = String(bodyDigits.prefix(18))
         return "DE" + check + bodyDigits
+    }
+
+    private static func isIBANChecksumValid(_ iban: String) -> Bool {
+        let cleaned = iban.uppercased().replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
+        guard cleaned.count >= 15 else { return false }
+        let moved = String(cleaned.dropFirst(4) + cleaned.prefix(4))
+
+        var remainder = 0
+        for ch in moved {
+            if ch.isNumber {
+                guard let digit = ch.wholeNumberValue else { return false }
+                remainder = (remainder * 10 + digit) % 97
+            } else if ch >= "A", ch <= "Z" {
+                let value = Int(ch.unicodeScalars.first!.value) - 55
+                for digitChar in String(value) {
+                    guard let digit = digitChar.wholeNumberValue else { return false }
+                    remainder = (remainder * 10 + digit) % 97
+                }
+            } else {
+                return false
+            }
+        }
+        return remainder == 1
     }
 }
 

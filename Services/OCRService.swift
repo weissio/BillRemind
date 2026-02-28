@@ -59,12 +59,25 @@ struct OCRService: OCRServicing {
         }
 
         if let best {
+            var finalText = best.text
+            let hasIbanInBest = hasIBANSignal(in: best.text)
+            if !hasIbanInBest,
+               let ibanCandidate = attempted
+                .filter({ hasIBANSignal(in: $0.text) })
+                .max(by: { ibanSignalScore($0.text) < ibanSignalScore($1.text) }),
+               ibanCandidate.variantName != best.variantName {
+                let merged = mergeOCRTexts(primary: best.text, secondary: ibanCandidate.text)
+                if pageSignalScore(merged) >= pageSignalScore(best.text) {
+                    finalText = merged
+                }
+            }
+
             let ranked = attempted.sorted { $0.score > $1.score }
             let topDebug = ranked.prefix(3).map {
                 "\($0.variantName): score \(String(format: "%.2f", $0.score)), conf \(String(format: "%.2f", $0.meanConfidence)), lines \($0.lineCount)"
             }.joined(separator: " | ")
             let summary = "OCR gewählt: \(best.variantName) (score \(String(format: "%.2f", best.score)))" + (topDebug.isEmpty ? "" : "\n\(topDebug)")
-            return OCRExtractionResult(text: best.text, debugSummary: summary)
+            return OCRExtractionResult(text: finalText, debugSummary: summary)
         }
         throw lastError ?? OCRError.invalidImage
     }
@@ -116,7 +129,9 @@ struct OCRService: OCRServicing {
                 }
 
                 // Region rescue: header/footer crops often contain metadata blocks (invoice number/date/IBAN).
-                if let rescueText = try await supplementalMetadataText(from: rescueSourceImage),
+                // Use a larger render target for metadata OCR even when page OCR is otherwise strong.
+                let metadataSourceImage = renderImage(for: page, maxSide: 4200) ?? rescueSourceImage
+                if let rescueText = try await supplementalMetadataText(from: metadataSourceImage),
                    !rescueText.isEmpty {
                     let merged = [trimmed, rescueText]
                         .filter { !$0.isEmpty }
@@ -256,6 +271,36 @@ struct OCRService: OCRServicing {
             + Double(meanConfidence) * 6.0
     }
 
+    private func hasIBANSignal(in text: String) -> Bool {
+        let lower = text.lowercased()
+        if lower.contains("iban") || lower.contains("bic") || lower.contains("account") || lower.contains("konto") {
+            return true
+        }
+        return lower.range(of: #"\bd[ei1l]\s*[:\-]?\s*\d{2}"#, options: .regularExpression) != nil
+    }
+
+    private func ibanSignalScore(_ text: String) -> Double {
+        let lower = text.lowercased()
+        let keywordHits = ["iban", "bic", "account", "konto", "payment", "zahlung"].reduce(0) { $0 + (lower.contains($1) ? 1 : 0) }
+        let deHits = lower.matches(for: #"\bd[ei1l][\s:/-]*\d{2}"#).count
+        let lineHits = lower.matches(for: #"(?i)\b(?:iban|account|pay(?:ment)?|zan|tan|ban|an)\b.*(?:bic|d[ei1l])"#).count
+        return Double(keywordHits) * 2.5 + Double(deHits) * 1.8 + Double(lineHits) * 3.0
+    }
+
+    private func mergeOCRTexts(primary: String, secondary: String) -> String {
+        var seen = Set<String>()
+        var merged: [String] = []
+        let primaryLines = primary.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        let secondaryLines = secondary.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+        for line in primaryLines + secondaryLines {
+            let key = line.lowercased()
+            if seen.insert(key).inserted {
+                merged.append(line)
+            }
+        }
+        return merged.joined(separator: "\n")
+    }
+
     private func isWeakPageOCR(_ text: String) -> Bool {
         pageSignalScore(text) < 7.0
     }
@@ -282,7 +327,9 @@ struct OCRService: OCRServicing {
         let zones: [CGRect] = [
             CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height) * 0.48), // top block
             CGRect(x: CGFloat(width) * 0.35, y: 0, width: CGFloat(width) * 0.65, height: CGFloat(height) * 0.55), // top-right metadata
-            CGRect(x: 0, y: CGFloat(height) * 0.58, width: CGFloat(width), height: CGFloat(height) * 0.42) // bottom bank/footer block
+            CGRect(x: 0, y: CGFloat(height) * 0.58, width: CGFloat(width), height: CGFloat(height) * 0.42), // bottom bank/footer block
+            CGRect(x: CGFloat(width) * 0.45, y: CGFloat(height) * 0.60, width: CGFloat(width) * 0.55, height: CGFloat(height) * 0.35), // bottom-right bank lines
+            CGRect(x: 0, y: CGFloat(height) * 0.78, width: CGFloat(width), height: CGFloat(height) * 0.22) // footer strip
         ]
 
         var snippets: [String] = []
