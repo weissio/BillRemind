@@ -1109,7 +1109,7 @@ struct ParsingService {
             }
 
             if let payload = line.firstCaptureGroup(
-                for: #"(?i)(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)[^A-Z0-9]{0,10}D[EI1L][^A-Z0-9]{0,3}([0-9ODQILZSGTYB\s:/-]{14,40})(?:\bBIC\b|$)"#
+                for: #"(?i)(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)[^A-Z0-9]{0,10}D[EI1L5S][^A-Z0-9]{0,3}([0-9A-Z\s:/-]{14,44})(?:\bBIC\b|$)"#
             ) {
                 let mappedDigits = payload.compactMap { c -> Character? in
                     switch c {
@@ -1117,17 +1117,29 @@ struct ParsingService {
                     case "O", "D", "Q": return "0"
                     case "I", "L": return "1"
                     case "Z": return "2"
-                    case "S": return "5"
+                    case "A": return "4"
+                    case "S", "$": return "5"
                     case "G": return "6"
-                    case "T", "Y": return "7"
-                    case "B": return "8"
+                    case "T", "Y", "N": return "7"
+                    case "B", "R": return "8"
+                    case "P": return "9"
                     default: return nil
                     }
                 }
                 guard mappedDigits.count >= 20 else { continue }
-                let candidate = "DE" + String(mappedDigits.prefix(20))
-                if isIBANChecksumValid(candidate) {
-                    return candidate
+                let digits = String(mappedDigits)
+                if digits.count == 20 {
+                    let candidate = "DE" + digits
+                    if isIBANChecksumValid(candidate) { return candidate }
+                } else {
+                    for start in 0...(digits.count - 20) {
+                        let s = digits.index(digits.startIndex, offsetBy: start)
+                        let e = digits.index(s, offsetBy: 20)
+                        let candidate = "DE" + String(digits[s..<e])
+                        if isIBANChecksumValid(candidate) {
+                            return candidate
+                        }
+                    }
                 }
             }
 
@@ -1145,10 +1157,12 @@ struct ParsingService {
             case "O", "D", "Q": return "0"
             case "I", "L": return "1"
             case "Z": return "2"
-            case "S": return "5"
+            case "A": return "4"
+            case "S", "$": return "5"
             case "G": return "6"
-            case "T", "Y": return "7"
-            case "B": return "8"
+            case "T", "Y", "N": return "7"
+            case "B", "R": return "8"
+            case "P": return "9"
             default: return c
             }
         }
@@ -1156,6 +1170,7 @@ struct ParsingService {
             .uppercased()
             .replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
         healed = healed.replacingOccurrences(of: #"D[1IL]"#, with: "DE", options: .regularExpression)
+        healed = healed.replacingOccurrences(of: #"D[5S]"#, with: "DE", options: .regularExpression)
 
         if let best = bestGermanIBANCandidate(from: healed), isIBANChecksumValid(best) {
             return best
@@ -1181,10 +1196,10 @@ struct ParsingService {
             case "O", "D", "Q": return "0"
             case "I", "L": return "1"
             case "Z": return "2"
-            case "S": return "5"
+            case "S", "$": return "5"
             case "G": return "6"
             case "T", "Y": return "7"
-            case "B": return "8"
+            case "B", "R": return "8"
             default: return c
             }
         }

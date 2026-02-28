@@ -130,7 +130,7 @@ struct OCRService: OCRServicing {
 
                 // Region rescue: header/footer crops often contain metadata blocks (invoice number/date/IBAN).
                 // Use a larger render target for metadata OCR even when page OCR is otherwise strong.
-                let metadataSourceImage = renderImage(for: page, maxSide: 4200) ?? rescueSourceImage
+                let metadataSourceImage = renderImage(for: page, maxSide: 5600) ?? rescueSourceImage
                 if let rescueText = try await supplementalMetadataText(from: metadataSourceImage),
                    !rescueText.isEmpty {
                     let merged = [trimmed, rescueText]
@@ -158,7 +158,7 @@ struct OCRService: OCRServicing {
         let bounds = page.bounds(for: .mediaBox)
         guard bounds.width > 0, bounds.height > 0 else { return nil }
 
-        let scale = min(maxSide / max(bounds.width, bounds.height), 6.0)
+        let scale = min(maxSide / max(bounds.width, bounds.height), 8.0)
         let width = Int(bounds.width * scale)
         let height = Int(bounds.height * scale)
         guard width > 0, height > 0 else { return nil }
@@ -329,7 +329,9 @@ struct OCRService: OCRServicing {
             CGRect(x: CGFloat(width) * 0.35, y: 0, width: CGFloat(width) * 0.65, height: CGFloat(height) * 0.55), // top-right metadata
             CGRect(x: 0, y: CGFloat(height) * 0.58, width: CGFloat(width), height: CGFloat(height) * 0.42), // bottom bank/footer block
             CGRect(x: CGFloat(width) * 0.45, y: CGFloat(height) * 0.60, width: CGFloat(width) * 0.55, height: CGFloat(height) * 0.35), // bottom-right bank lines
-            CGRect(x: 0, y: CGFloat(height) * 0.78, width: CGFloat(width), height: CGFloat(height) * 0.22) // footer strip
+            CGRect(x: 0, y: CGFloat(height) * 0.78, width: CGFloat(width), height: CGFloat(height) * 0.22), // footer strip
+            CGRect(x: CGFloat(width) * 0.38, y: CGFloat(height) * 0.42, width: CGFloat(width) * 0.62, height: CGFloat(height) * 0.40), // short-invoice right metadata window
+            CGRect(x: 0, y: CGFloat(height) * 0.46, width: CGFloat(width), height: CGFloat(height) * 0.30) // middle strip for shifted bank block
         ]
 
         var snippets: [String] = []
