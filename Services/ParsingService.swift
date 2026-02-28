@@ -30,16 +30,24 @@ struct ParsedInvoiceData {
 
 struct ParsingService {
     private let calendar = Calendar.current
+    private struct HeaderSignals {
+        var invoiceNumber: String?
+        var invoiceDate: Date?
+        var dueOffsetDaysHint: Int?
+        static let empty = HeaderSignals(invoiceNumber: nil, invoiceDate: nil, dueOffsetDaysHint: nil)
+    }
 
     func parse(text: String) -> ParsedInvoiceData {
-        let lines = text
+        let normalizedText = normalizeOCRText(text)
+        let lines = normalizedText
             .split(separator: "\n")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { normalizeOCRLine(String($0)) }
             .filter { !$0.isEmpty }
         let documentType = classifyDocumentType(from: lines)
-        let invoiceDate = documentType == .receipt ? nil : extractInvoiceDate(from: lines)
+        let headerSignals = documentType == .receipt ? HeaderSignals.empty : extractHeaderSignals(from: lines)
+        let invoiceDate = documentType == .receipt ? nil : (headerSignals.invoiceDate ?? extractInvoiceDate(from: lines))
         let dueDate = documentType == .receipt ? nil : extractDueDate(from: lines)
-        let dueOffsetDaysHint = documentType == .receipt ? nil : extractDueOffsetDaysHint(from: lines)
+        let dueOffsetDaysHint = documentType == .receipt ? nil : (headerSignals.dueOffsetDaysHint ?? extractDueOffsetDaysHint(from: lines))
 
         return ParsedInvoiceData(
             documentType: documentType,
@@ -50,16 +58,120 @@ struct ParsingService {
             invoiceDate: invoiceDate,
             dueOffsetDaysHint: dueOffsetDaysHint,
             dueDate: dueDate,
-            invoiceNumber: documentType == .receipt ? nil : extractInvoiceNumber(from: lines),
-            iban: extractIBAN(from: lines, fullText: text),
+            invoiceNumber: documentType == .receipt ? nil : (headerSignals.invoiceNumber ?? extractInvoiceNumber(from: lines)),
+            iban: extractIBAN(from: lines, fullText: normalizedText),
             note: nil,
-            extractedText: text
+            extractedText: normalizedText
         )
+    }
+
+    private func normalizeOCRText(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+            .map(normalizeOCRLine)
+            .joined(separator: "\n")
+    }
+
+    private func normalizeOCRLine(_ raw: String) -> String {
+        var value = raw.precomposedStringWithCompatibilityMapping
+        value = value
+            .replacingOccurrences(of: #"[​‌‍﻿]"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[        ]"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"[‐‑‒–—―−]"#, with: "-", options: .regularExpression)
+            .replacingOccurrences(of: #"[／⁄∕]"#, with: "/", options: .regularExpression)
+            .replacingOccurrences(of: #"[：﹕]"#, with: ":", options: .regularExpression)
+            .replacingOccurrences(of: #"\bD\s*E\s*[:;\.-]?\s*(\d)"#, with: "DE$1", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return value
+    }
+
+    private func extractHeaderSignals(from lines: [String]) -> HeaderSignals {
+        var signals = HeaderSignals.empty
+        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "invoice no", "invoice number", "invoice nr", "belegnr", "rg nr"]
+        let dateLabels = ["rechnungsdatum", "rechnung vom", "invoice date", "issue date", "belegdatum", "date:"]
+        let dueLabels = ["zahlungsziel", "zahlbar", "fällig", "faellig", "due", "terms", "payment terms", "netto"]
+        let serviceKeywords = ["leistungsdatum", "service date", "delivery date", "lieferdatum", "bestelldatum", "versanddatum"]
+        let normalizedLines = lines.map { $0.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression) }
+
+        for (idx, line) in normalizedLines.enumerated() {
+            let lower = normalizedLower(line)
+            let valueRange = idx...min(idx + 3, normalizedLines.count - 1)
+
+            if signals.invoiceNumber == nil, numberLabels.contains(where: { lower.contains($0) }) {
+                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
+                   let normalized = normalizeInvoiceNumberCandidate(sameLine) {
+                    signals.invoiceNumber = normalized
+                } else {
+                    for j in valueRange {
+                        if let token = firstStandaloneInvoiceNumberToken(in: normalizedLines[j]),
+                           let normalized = normalizeInvoiceNumberCandidate(token) {
+                            signals.invoiceNumber = normalized
+                            break
+                        }
+                    }
+                }
+            }
+
+            if signals.invoiceDate == nil,
+               dateLabels.contains(where: { lower.contains($0) }),
+               !serviceKeywords.contains(where: { lower.contains($0) }) {
+                if let sameDate = parseFirstDate(in: line), sameDate <= calendar.startOfDay(for: Date()) {
+                    signals.invoiceDate = sameDate
+                } else {
+                    for j in valueRange {
+                        let nextLower = normalizedLower(normalizedLines[j])
+                        if serviceKeywords.contains(where: { nextLower.contains($0) }) { continue }
+                        if let parsed = parseFirstDate(in: normalizedLines[j]), parsed <= calendar.startOfDay(for: Date()) {
+                            signals.invoiceDate = parsed
+                            break
+                        }
+                    }
+                }
+            }
+
+            if signals.dueOffsetDaysHint == nil, dueLabels.contains(where: { lower.contains($0) }) {
+                for j in valueRange {
+                    if let days = extractInlineDueDays(from: normalizedLower(normalizedLines[j])) {
+                        signals.dueOffsetDaysHint = days
+                        break
+                    }
+                }
+            }
+
+            if signals.invoiceNumber != nil, signals.invoiceDate != nil, signals.dueOffsetDaysHint != nil {
+                break
+            }
+        }
+
+        return signals
+    }
+
+    private func extractInlineDueDays(from lowerLine: String) -> Int? {
+        let fromInvoicePattern = #"(?:due|payable|payment\s+due|zahlbar)\s*(?:within\s*)?(7|14|30)\s*(?:days?|tagen|tage|tag)\s*(?:from|after)?\s*(?:the\s*)?(?:invoice|invoice\s+receipt|receipt|rechnungsdatum)"#
+        let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
+        let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
+
+        if let token = lowerLine.firstCaptureGroup(for: fromInvoicePattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if let token = lowerLine.firstCaptureGroup(for: dayPattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if let token = lowerLine.firstCaptureGroup(for: plainDaysPattern), let days = Int(token), [7, 14, 30].contains(days) {
+            return days
+        }
+        if lowerLine.contains("net 30") || lowerLine.contains("netto 30") { return 30 }
+        if lowerLine.contains("net 14") || lowerLine.contains("netto 14") { return 14 }
+        if lowerLine.contains("net 7") || lowerLine.contains("netto 7") { return 7 }
+        return nil
     }
 
     func extractIBAN(from lines: [String], fullText: String) -> String? {
         let lowerLines = lines.map { normalizedLower($0) }
-        let labelKeywords = ["iban", "account", "konto", "kontoinhaber", "payment"]
+        let labelKeywords = ["iban", "account", "konto", "kontoinhaber", "payment", "pay", "zan", "tan", "baan", "bay"]
         let deLikePattern = #"\bD[EI1L][A-Z0-9]{2}(?:[ \t:/-]?[A-Z0-9]){10,40}\b"#
         let genericPattern = #"\b[A-Z]{2}\d{2}(?:[ \t:/-]?[A-Z0-9]){10,34}\b"#
 
@@ -73,6 +185,21 @@ struct ParsingService {
                 return normalized
             }
 
+            let windowText = lines[idx...min(idx + 3, lines.count - 1)].joined(separator: " ")
+            if let normalized = Self.normalizeIBANValue(windowText) {
+                return normalized
+            }
+            if let loose = Self.normalizeLooseGermanIBANValue(windowText), !loose.isEmpty {
+                return loose
+            }
+            let compactWindow = windowText.replacingOccurrences(of: #"\s+"#, with: "", options: .regularExpression)
+            if let normalized = Self.normalizeIBANValue(compactWindow) {
+                return normalized
+            }
+            if let loose = Self.normalizeLooseGermanIBANValue(compactWindow), !loose.isEmpty {
+                return loose
+            }
+
             for nearby in idx...min(idx + 2, lines.count - 1) {
                 for candidate in lines[nearby].uppercased().matches(for: deLikePattern) {
                     if let normalized = Self.normalizeIBANValue(candidate) {
@@ -84,6 +211,10 @@ struct ParsingService {
                         return normalized
                     }
                 }
+            }
+
+            if let noisyFromWindow = Self.extractGermanIBANFromNoisy(windowText.uppercased()) {
+                return noisyFromWindow
             }
         }
 
@@ -116,6 +247,9 @@ struct ParsingService {
             if let normalized = Self.normalizeIBANValue(candidate) {
                 return normalized
             }
+        }
+        if let loose = Self.normalizeLooseGermanIBANValue(upper), !loose.isEmpty {
+            return loose
         }
         return nil
     }
@@ -365,9 +499,6 @@ struct ParsingService {
     func extractDueOffsetDaysHint(from lines: [String]) -> Int? {
         let lowerLines = lines.map { $0.lowercased() }
         let dueKeywords = ["zahlbar", "zahlungsziel", "fällig", "faellig", "due", "net", "terms", "payment terms"]
-        let dayPattern = #"(?:innerhalb\s+von\s+|in\s+|due\s+in\s+|net\s*)(\d{1,2})\s*(?:tagen|tage|tag|days?|d)\b|(\d{1,2})\s*(?:tagen|tage|tag|days?)\s*(?:net|netto)?\b"#
-        let plainDaysPattern = #"\b(7|14|30)\s*(?:days?|tagen|tage|tag)\b"#
-        let fromInvoicePattern = #"(?:due|payable|payment\s+due|zahlbar)\s*(?:within\s*)?(7|14|30)\s*(?:days?|tagen|tage|tag)\s*(?:from|after)?\s*(?:the\s*)?(?:invoice|invoice\s+receipt|receipt|rechnungsdatum)"#
 
         for (idx, line) in lowerLines.enumerated() {
             let hasContextKeyword: Bool = {
@@ -386,37 +517,8 @@ struct ParsingService {
             let hasDayNumber = line.range(of: #"\b(7|14|30)\b"#, options: .regularExpression) != nil
             if !hasDayNumber { continue }
 
-            if let token = line.firstCaptureGroup(for: fromInvoicePattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
+            if let days = extractInlineDueDays(from: line) {
                 return days
-            }
-            if let token = line.firstCaptureGroup(for: dayPattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
-                return days
-            }
-            if let token = line.firstCaptureGroup(for: plainDaysPattern),
-               let days = Int(token),
-               [7, 14, 30].contains(days) {
-                return days
-            }
-
-            if let days = line.matches(for: #"\b(7|14|30)\s*(?:tagen|tage|tag)\b"#).first,
-               let value = Int(days.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()),
-               [7, 14, 30].contains(value),
-               dueKeywords.contains(where: { line.contains($0) }) {
-                return value
-            }
-
-            if line.contains("net 30") || line.contains("netto 30") {
-                return 30
-            }
-            if line.contains("net 14") || line.contains("netto 14") {
-                return 14
-            }
-            if line.contains("net 7") || line.contains("netto 7") {
-                return 7
             }
         }
 
@@ -538,6 +640,7 @@ struct ParsingService {
         let patterns = [
             #"\b(?:INV|RE|RG)[-\s]?\d{3,10}(?:[-/]\d{2,8})?\b"#,
             #"\bR\d{6,10}\b"#,
+            #"\b\d{4}\s*/\s*\d{3,8}\b"#,
             #"\b\d{4}/\d{3,8}\b"#,
             #"\b[A-Z]{1,3}-\d{4}-\d{2,6}\b"#
         ]
@@ -570,6 +673,13 @@ struct ParsingService {
         ).trimmingCharacters(in: .whitespacesAndNewlines)
 
         value = healInvoiceNumberOCRNoise(value)
+
+        if let range = value.range(of: #"^(INV|RE)(\d{3,})$"#, options: .regularExpression),
+           range.lowerBound == value.startIndex, range.upperBound == value.endIndex,
+           let prefix = value.firstCaptureGroup(for: #"^(INV|RE)(\d{3,})$"#),
+           let suffix = value.firstCaptureGroup(for: #"^(?:INV|RE)(\d{3,})$"#) {
+            value = "\(prefix)-\(suffix)"
+        }
 
         guard value.count >= 4 else { return nil }
         guard value.range(of: #"[A-Z0-9]"#, options: .regularExpression) != nil else { return nil }
@@ -861,15 +971,25 @@ struct ParsingService {
             "kassenbon", "bon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld",
             "ust", "mwst", "summe eur", "gesamtsumme", "steuer", "filiale"
         ]
+        let strongReceiptKeywords = [
+            "kassenbon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld", "filiale"
+        ]
         let invoiceKeywords = [
             "rechnung", "invoice", "rechnungsnummer", "rechnung nr", "zahlbar bis", "fällig", "faellig",
             "zahlungsempfänger", "zahlungsempfaenger", "iban", "due date"
         ]
+        let strongInvoiceKeywords = [
+            "rechnungsnr", "rechnungsnummer", "rechnungsdatum", "zahlungsziel", "leistungsdatum",
+            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms"
+        ]
 
         let receiptHits = receiptKeywords.filter { text.contains($0) }.count
+        let strongReceiptHits = strongReceiptKeywords.filter { text.contains($0) }.count
         let invoiceHits = invoiceKeywords.filter { text.contains($0) }.count
+        let strongInvoiceHits = strongInvoiceKeywords.filter { text.contains($0) }.count
 
-        if receiptHits >= 2 && invoiceHits <= 1 { return .receipt }
+        if strongInvoiceHits >= 2 { return .invoice }
+        if receiptHits >= 2 && strongReceiptHits >= 1 && invoiceHits == 0 && strongInvoiceHits == 0 { return .receipt }
         if invoiceHits >= 2 { return .invoice }
         return .unknown
     }
@@ -921,8 +1041,8 @@ struct ParsingService {
                 return nil
             }
             if country == "DE" {
-                if let range = normalized.range(of: #"DE\d{20}"#, options: .regularExpression) {
-                    normalized = String(normalized[range])
+                if let exact = bestGermanIBANCandidate(from: normalized) {
+                    normalized = exact
                 } else if let directMapped = extractGermanIBANFromNoisy(normalized) {
                     normalized = directMapped
                 } else if let healed = healGermanIBAN(normalized) {
@@ -943,6 +1063,93 @@ struct ParsingService {
         return normalized
     }
 
+    private static func bestGermanIBANCandidate(from value: String) -> String? {
+        let upper = value.uppercased()
+        guard let range = upper.range(of: #"DE\d{20,30}"#, options: .regularExpression) else { return nil }
+        let matched = String(upper[range])
+        guard matched.count >= 22 else { return nil }
+        let digits = String(matched.dropFirst(2))
+        guard digits.count >= 20 else { return nil }
+
+        var valid: [String] = []
+        for start in 0...(digits.count - 20) {
+            let s = digits.index(digits.startIndex, offsetBy: start)
+            let e = digits.index(s, offsetBy: 20)
+            let candidate = "DE" + String(digits[s..<e])
+            if isIBANChecksumValid(candidate) {
+                valid.append(candidate)
+            }
+        }
+        if let preferred = valid.first(where: { $0.hasPrefix("DE" + String(digits.prefix(2))) }) {
+            return preferred
+        }
+        if let firstValid = valid.first {
+            return firstValid
+        }
+        return "DE" + String(digits.prefix(20))
+    }
+
+    private static func normalizeLooseGermanIBANValue(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let upper = value.uppercased()
+        let lines = upper
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        let bankHintPattern = #"(?i)\b(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)\b"#
+
+        for line in lines {
+            let hasBankLabel = line.range(of: bankHintPattern, options: .regularExpression) != nil
+            let hasBIC = line.contains("BIC")
+            if !hasBankLabel && !hasBIC { continue }
+
+            // Company footer lines often contain DE VAT/HRB tokens but no payment context.
+            if (line.contains("UST") || line.contains("VAT") || line.contains("HRB") || line.contains("AMTSGERICHT")) && !hasBIC {
+                continue
+            }
+
+            if let payload = line.firstCaptureGroup(
+                for: #"(?i)(?:IBAN|ACCOUNT|PAY(?:MENT)?|PAYN|PANN?|PAN|ZAN|TAN|BAN|BAAN|ZAAN|ZN|AN|2N)[^A-Z0-9]{0,10}D[EI1L5S][^A-Z0-9]{0,3}([0-9A-Z\s:/-]{14,44})(?:\bBIC\b|$)"#
+            ) {
+                let mappedDigits = payload.compactMap { c -> Character? in
+                    switch c {
+                    case "0"..."9": return c
+                    case "O", "D", "Q": return "0"
+                    case "I", "L": return "1"
+                    case "Z": return "2"
+                    case "A": return "4"
+                    case "S", "$": return "5"
+                    case "G": return "6"
+                    case "T", "Y", "N": return "7"
+                    case "B", "R": return "8"
+                    case "P": return "9"
+                    default: return nil
+                    }
+                }
+                guard mappedDigits.count >= 20 else { continue }
+                let digits = String(mappedDigits)
+                if digits.count == 20 {
+                    let candidate = "DE" + digits
+                    if isIBANChecksumValid(candidate) { return candidate }
+                } else {
+                    for start in 0...(digits.count - 20) {
+                        let s = digits.index(digits.startIndex, offsetBy: start)
+                        let e = digits.index(s, offsetBy: 20)
+                        let candidate = "DE" + String(digits[s..<e])
+                        if isIBANChecksumValid(candidate) {
+                            return candidate
+                        }
+                    }
+                }
+            }
+
+            if let noisy = extractGermanIBANFromNoisy(line) {
+                return noisy
+            }
+        }
+        return nil
+    }
+
     private static func extractGermanIBANFromNoisy(_ raw: String) -> String? {
         guard raw.count >= 8 else { return nil }
         let mapped = raw.map { c -> Character in
@@ -950,16 +1157,23 @@ struct ParsingService {
             case "O", "D", "Q": return "0"
             case "I", "L": return "1"
             case "Z": return "2"
-            case "S": return "5"
+            case "A": return "4"
+            case "S", "$": return "5"
             case "G": return "6"
-            case "T", "Y": return "7"
-            case "B": return "8"
+            case "T", "Y", "N": return "7"
+            case "B", "R": return "8"
+            case "P": return "9"
             default: return c
             }
         }
-        let healed = String(mapped)
-        if let range = healed.range(of: #"DE\d{20}"#, options: .regularExpression) {
-            return String(healed[range])
+        var healed = String(mapped)
+            .uppercased()
+            .replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
+        healed = healed.replacingOccurrences(of: #"D[1IL]"#, with: "DE", options: .regularExpression)
+        healed = healed.replacingOccurrences(of: #"D[5S]"#, with: "DE", options: .regularExpression)
+
+        if let best = bestGermanIBANCandidate(from: healed), isIBANChecksumValid(best) {
+            return best
         }
         return nil
     }
@@ -982,10 +1196,10 @@ struct ParsingService {
             case "O", "D", "Q": return "0"
             case "I", "L": return "1"
             case "Z": return "2"
-            case "S": return "5"
+            case "S", "$": return "5"
             case "G": return "6"
             case "T", "Y": return "7"
-            case "B": return "8"
+            case "B", "R": return "8"
             default: return c
             }
         }
@@ -1007,6 +1221,29 @@ struct ParsingService {
         guard bodyDigits.count >= 18 else { return nil }
         bodyDigits = String(bodyDigits.prefix(18))
         return "DE" + check + bodyDigits
+    }
+
+    private static func isIBANChecksumValid(_ iban: String) -> Bool {
+        let cleaned = iban.uppercased().replacingOccurrences(of: #"[^A-Z0-9]"#, with: "", options: .regularExpression)
+        guard cleaned.count >= 15 else { return false }
+        let moved = String(cleaned.dropFirst(4) + cleaned.prefix(4))
+
+        var remainder = 0
+        for ch in moved {
+            if ch.isNumber {
+                guard let digit = ch.wholeNumberValue else { return false }
+                remainder = (remainder * 10 + digit) % 97
+            } else if ch >= "A", ch <= "Z" {
+                let value = Int(ch.unicodeScalars.first!.value) - 55
+                for digitChar in String(value) {
+                    guard let digit = digitChar.wholeNumberValue else { return false }
+                    remainder = (remainder * 10 + digit) % 97
+                }
+            } else {
+                return false
+            }
+        }
+        return remainder == 1
     }
 }
 
