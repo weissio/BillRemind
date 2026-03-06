@@ -8,6 +8,7 @@ on:
     paths:
       - "Services/ParsingService.swift"
       - "Services/OCRService.swift"
+      - "Resources/Assets.xcassets/**"
       - "tools/ocr_corpus_check.swift"
       - "Testdaten/OCR-Korpus/**"
       - "Makefile"
@@ -19,6 +20,7 @@ on:
     paths:
       - "Services/ParsingService.swift"
       - "Services/OCRService.swift"
+      - "Resources/Assets.xcassets/**"
       - "tools/ocr_corpus_check.swift"
       - "Testdaten/OCR-Korpus/**"
       - "Makefile"
