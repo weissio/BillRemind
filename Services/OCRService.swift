@@ -72,6 +72,16 @@ struct OCRService: OCRServicing {
                 }
             }
 
+            if hasReceiptSignal(in: finalText),
+               let sourceImage = sourceImage(for: best.variantName, variants: variants),
+               let receiptRescue = try await supplementalReceiptAmountText(from: sourceImage, orientation: orientation),
+               !receiptRescue.isEmpty {
+                let merged = mergeOCRTexts(primary: finalText, secondary: receiptRescue)
+                if receiptAmountSignalScore(merged) > receiptAmountSignalScore(finalText) {
+                    finalText = merged
+                }
+            }
+
             let ranked = attempted.sorted { $0.score > $1.score }
             let topDebug = ranked.prefix(3).map {
                 "\($0.variantName): score \(String(format: "%.2f", $0.score)), conf \(String(format: "%.2f", $0.meanConfidence)), lines \($0.lineCount)"
@@ -301,6 +311,11 @@ struct OCRService: OCRServicing {
         return merged.joined(separator: "\n")
     }
 
+    private func sourceImage(for variantName: String, variants: [(name: String, image: CGImage)]) -> CGImage? {
+        guard let prefix = variantName.split(separator: "-").first else { return nil }
+        return variants.first(where: { $0.name == String(prefix) })?.image
+    }
+
     private func isWeakPageOCR(_ text: String) -> Bool {
         pageSignalScore(text) < 7.0
     }
@@ -315,6 +330,20 @@ struct OCRService: OCRServicing {
         let numberHits = lower.matches(for: #"\b(?:re|rg|inv)[-\s]?\d{4,}\b"#).count
         let dateHits = lower.matches(for: #"\b\d{1,2}\.\d{1,2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#).count
         return chars * 0.002 + Double(keywordHits) * 1.8 + Double(numberHits) * 1.6 + Double(dateHits) * 0.8
+    }
+
+    private func hasReceiptSignal(in text: String) -> Bool {
+        let lower = text.lowercased()
+        let markers = ["kassenbon", "beleg", "summe", "zahlart", "rückgeld", "rueckgeld", "bar gegeben", "ec-karte"]
+        return markers.contains(where: { lower.contains($0) })
+    }
+
+    private func receiptAmountSignalScore(_ text: String) -> Double {
+        let lower = text.lowercased()
+        let amountHits = lower.matches(for: #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#).count
+        let keywordHits = ["summe", "gesamt", "zu zahlen", "zahlbetrag", "bar gegeben", "rückgeld", "rueckgeld", "zahlart", "ec", "karte"]
+            .reduce(0) { $0 + (lower.contains($1) ? 1 : 0) }
+        return Double(amountHits) * 1.0 + Double(keywordHits) * 2.0
     }
 
     private func supplementalMetadataText(from image: UIImage) async throws -> String? {
@@ -341,6 +370,39 @@ struct OCRService: OCRServicing {
             let cropImage = UIImage(cgImage: crop)
             let ocr = try await recognizeText(from: cropImage)
             let text = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                snippets.append(text)
+            }
+        }
+        if snippets.isEmpty { return nil }
+        return snippets.joined(separator: "\n")
+    }
+
+    private func supplementalReceiptAmountText(
+        from cgImage: CGImage,
+        orientation: CGImagePropertyOrientation
+    ) async throws -> String? {
+        let width = cgImage.width
+        let height = cgImage.height
+        guard width > 200, height > 200 else { return nil }
+
+        let zones: [CGRect] = [
+            CGRect(x: CGFloat(width) * 0.52, y: 0, width: CGFloat(width) * 0.48, height: CGFloat(height)), // right value column
+            CGRect(x: 0, y: CGFloat(height) * 0.50, width: CGFloat(width), height: CGFloat(height) * 0.50), // lower totals/payment area
+            CGRect(x: CGFloat(width) * 0.30, y: CGFloat(height) * 0.38, width: CGFloat(width) * 0.70, height: CGFloat(height) * 0.56) // mixed right-middle
+        ]
+
+        var snippets: [String] = []
+        for zone in zones {
+            let rect = zone.integral
+            guard let crop = cgImage.cropping(to: rect) else { continue }
+            let candidate = try await recognizeText(
+                from: crop,
+                orientation: orientation,
+                variantName: "ReceiptRescue",
+                usesLanguageCorrection: false
+            )
+            let text = candidate.text.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty {
                 snippets.append(text)
             }

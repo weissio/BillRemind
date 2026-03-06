@@ -181,4 +181,21 @@ final class ParsingServiceTests: XCTestCase {
         let iban = service.extractIBAN(from: text)
         XCTAssertEqual(iban, "DE317556830430148960")
     }
+
+    func testExtractsReceiptTotalFromCashGivenMinusChange() {
+        let lines = ParserFixtures.receiptWithCashGivenAndChangeColumns
+            .split(separator: "\n")
+            .map(String.init)
+        let amount = service.extractAmount(from: lines, documentType: .receipt)
+        XCTAssertEqual(amount, Decimal(string: "27.99"))
+    }
+
+    func testMapsGivenChangeTotalLabelBlockByOrder() {
+        let lines = ParserFixtures.receiptWithGivenChangeTotalBlock
+            .split(separator: "\n")
+            .map(String.init)
+        let amount = service.extractAmount(from: lines, documentType: .receipt)
+        XCTAssertEqual(amount, Decimal(string: "27.99"))
+    }
+
 }

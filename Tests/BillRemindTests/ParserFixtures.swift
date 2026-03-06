@@ -87,4 +87,27 @@ enum ParserFixtures {
     Zahlungsziel
     7 Tage netto
     """
+
+    static let receiptWithCashGivenAndChangeColumns = """
+    PENNY MARKT GMBH
+    KASSENBON
+    SUMME
+    BAR GEGEBEN
+    RUECKGELD
+    27,99
+    32,99
+    5,00
+    """
+
+    static let receiptWithGivenChangeTotalBlock = """
+    SUPERMARKT
+    KASSENBON
+    BAR GEGEBEN
+    RUECKGELD
+    SUMME
+    32,99
+    5,00
+    27,99
+    """
+
 }
