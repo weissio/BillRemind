@@ -44,6 +44,9 @@ struct ParsingService {
             .map { normalizeOCRLine(String($0)) }
             .filter { !$0.isEmpty }
         let documentType = classifyDocumentType(from: lines)
+        let vendorName = extractVendorName(from: lines)
+        let extractedRecipient = extractPaymentRecipient(from: lines)
+        let paymentRecipient = (documentType == .receipt) ? vendorName : extractedRecipient
         let headerSignals = documentType == .receipt ? HeaderSignals.empty : extractHeaderSignals(from: lines)
         let invoiceDate = documentType == .receipt ? nil : (headerSignals.invoiceDate ?? extractInvoiceDate(from: lines))
         let dueDate = documentType == .receipt ? nil : extractDueDate(from: lines)
@@ -51,8 +54,8 @@ struct ParsingService {
 
         return ParsedInvoiceData(
             documentType: documentType,
-            vendorName: extractVendorName(from: lines),
-            paymentRecipient: extractPaymentRecipient(from: lines),
+            vendorName: vendorName,
+            paymentRecipient: paymentRecipient,
             category: extractCategory(from: lines),
             amount: extractAmount(from: lines, documentType: documentType),
             invoiceDate: invoiceDate,
@@ -303,28 +306,345 @@ struct ParsingService {
 
     private func extractReceiptTotalAmount(from lines: [String]) -> Decimal? {
         guard !lines.isEmpty else { return nil }
+        let receiptAmountMax: Decimal = 1500
 
-        let strongKeywords = ["summe", "gesamt", "zu zahlen", "endbetrag", "zahlbetrag", "ec", "karte"]
-        let weakKeywords = ["eur", "€", "betrag", "bar"]
-        let negativeKeywords = [
-            "mwst", "ust", "steuer", "rabatt", "gespart", "einzelpreis", "zwischensumme",
-            "rückgeld", "rueckgeld", "gegeben", "bar gegeben", "erhalten"
+        enum ReceiptAmountLabel {
+            case total
+            case given
+            case change
+        }
+
+        let hardTotalKeywords = [
+            "summe", "gesamt", "zu zahlen", "zahlbetrag", "endbetrag", "total", "grand total",
+            "rechnungsbetrag", "rechnung5betrag", "t0tal"
+        ]
+        let strongestTotalKeywords = [
+            "zu zahlen", "zahlbetrag", "endsumme", "endbetrag", "amount due", "payable", "total due", "grand total",
+            "rechnungsbetrag", "rechnung5betrag", "gesamtbetrag", "zu zhlen", "zu2ahlen", "zu 2ahlen"
+        ]
+        let weakTotalKeywords = ["betrag", "eur", "€"]
+        let payContextKeywords = ["ec", "karte", "card", "girocard", "mastercard", "visa"]
+        let cashGivenKeywords = ["bar gegeben", "cash given", "given", "gegeben", "tendered", "amount tendered"]
+        let cashChangeKeywords = ["rueckgeld", "rückgeld", "change", "wechselgeld"]
+        let excludeKeywords = [
+            "mwst", "ust", "steuer", "tax", "rabatt", "gespart", "einzelpreis", "zwischensumme",
+            "rueckgeld", "rückgeld", "gegeben", "bar gegeben", "cash given", "change", "erhalten",
+            "umsatzsteuer", "steueranteil", "vat", "ust-id", "taxes"
         ]
 
         var scored: [(score: Double, amount: Decimal)] = []
         var lastAmount: Decimal?
+        var hardCandidates: [Decimal] = []
+        var hardScoredCandidates: [(score: Double, index: Int, amount: Decimal)] = []
+        var strongestLabelCandidates: [Decimal] = []
+        var cashGivenCandidates: [Decimal] = []
+        var cashChangeCandidates: [Decimal] = []
+        var paymentLineCandidates: [Decimal] = []
+        var subtotalCandidates: [Decimal] = []
+        var discountCandidates: [Decimal] = []
+        var vatDerivedCandidates: [Decimal] = []
+        var nonExcludedCandidates: [Decimal] = []
+        var normalizedLines: [String] = []
+
+        normalizedLines.reserveCapacity(lines.count)
+        for line in lines {
+            normalizedLines.append(normalizedLower(line))
+        }
+        let ocrTolerantLines = normalizedLines.map {
+            $0
+                .replacingOccurrences(of: #"(?<=[a-z])0(?=[a-z])"#, with: "o", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\b)2(?=[a-z])"#, with: "z", options: .regularExpression)
+        }
+        let compactLines = ocrTolerantLines.map {
+            $0.replacingOccurrences(of: #"[^a-z0-9%]+"#, with: "", options: .regularExpression)
+        }
+
+        func keywordCompact(_ keyword: String) -> String {
+            keyword.replacingOccurrences(of: #"[^a-z0-9%]+"#, with: "", options: .regularExpression)
+        }
+        func tokenPattern(_ token: String) -> String {
+            let escapedChars = token.map { NSRegularExpression.escapedPattern(for: String($0)) }
+            return escapedChars.joined(separator: #"\s*"#)
+        }
+        func containsKeyword(line: String, compactLine: String, keyword: String) -> Bool {
+            let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            guard !trimmed.isEmpty else { return false }
+            let ocrLine = line
+                .replacingOccurrences(of: #"(?<=[a-z])0(?=[a-z])"#, with: "o", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\b)2(?=[a-z])"#, with: "z", options: .regularExpression)
+
+            let tokenPatterns = trimmed
+                .split(separator: " ")
+                .map(String.init)
+                .filter { !$0.isEmpty }
+                .map(tokenPattern)
+            let joinedTokenPattern = tokenPatterns.joined(separator: #"\s+"#)
+            let boundaryPattern = #"(^|[^a-z0-9])"# + joinedTokenPattern + #"([^a-z0-9]|$)"#
+            if ocrLine.range(of: boundaryPattern, options: .regularExpression) != nil {
+                return true
+            }
+
+            // Compact fallback for heavily fragmented OCR text.
+            let compactKeyword = keywordCompact(trimmed)
+            guard !compactKeyword.isEmpty else { return false }
+
+            // Prevent generic "total" from matching "subtotal" in compact form.
+            if compactKeyword == "total", compactLine.contains("subtotal") {
+                if compactLine.contains("totaldue") || compactLine.contains("grandtotal") {
+                    return true
+                }
+                return false
+            }
+            return compactLine.contains(compactKeyword)
+        }
+        func containsAny(line: String, compactLine: String, keywords: [String]) -> Bool {
+            keywords.contains { containsKeyword(line: line, compactLine: compactLine, keyword: $0) }
+        }
+        func countMatches(line: String, compactLine: String, keywords: [String]) -> Int {
+            keywords.filter { containsKeyword(line: line, compactLine: compactLine, keyword: $0) }.count
+        }
+
+        // Block mapping for column layouts:
+        // [SUMME, BAR GEGEBEN, RUECKGELD] followed by [27,99, 32,99, 5,00].
+        var idx = 0
+        while idx < lines.count {
+            var labelSequence: [ReceiptAmountLabel] = []
+            var labelEnd = idx
+
+            func lineHasAmount(_ i: Int) -> Bool {
+                !extractAmounts(from: lines[i], repairOCRSpacing: true).filter { $0 > 0 && $0 < receiptAmountMax }.isEmpty
+            }
+
+            while labelEnd < lines.count {
+                let lower = normalizedLines[labelEnd]
+                let compactLower = compactLines[labelEnd]
+                if lineHasAmount(labelEnd) { break }
+                if containsAny(line: lower, compactLine: compactLower, keywords: hardTotalKeywords) &&
+                    !containsAny(line: lower, compactLine: compactLower, keywords: excludeKeywords) {
+                    labelSequence.append(.total)
+                    labelEnd += 1
+                    continue
+                }
+                if containsAny(line: lower, compactLine: compactLower, keywords: cashGivenKeywords) &&
+                    !containsAny(line: lower, compactLine: compactLower, keywords: cashChangeKeywords) {
+                    labelSequence.append(.given)
+                    labelEnd += 1
+                    continue
+                }
+                if containsAny(line: lower, compactLine: compactLower, keywords: cashChangeKeywords) {
+                    labelSequence.append(.change)
+                    labelEnd += 1
+                    continue
+                }
+                break
+            }
+
+            if !labelSequence.isEmpty {
+                var amountRows: [Decimal] = []
+                let amountWindowEnd = min(lines.count - 1, labelEnd + 16)
+                if labelEnd <= amountWindowEnd {
+                    for j in labelEnd...amountWindowEnd {
+                        let lower = normalizedLines[j]
+                        let amounts = extractAmounts(from: lines[j], repairOCRSpacing: true).filter { $0 > 0 && $0 < receiptAmountMax }
+                        if amounts.isEmpty { continue }
+                        let hasAlpha = lower.range(of: #"[a-z]"#, options: .regularExpression) != nil
+                        if !hasAlpha {
+                            amountRows.append(amounts[0])
+                            if amountRows.count >= labelSequence.count { break }
+                        }
+                    }
+                }
+
+            if amountRows.count >= labelSequence.count {
+                    for (pos, pair) in zip(labelSequence, amountRows).enumerated() {
+                        let label = pair.0
+                        let amount = pair.1
+                        switch label {
+                        case .total:
+                            hardCandidates.append(amount)
+                            hardScoredCandidates.append((score: 8.0, index: labelEnd + pos, amount: amount))
+                        case .given:
+                            cashGivenCandidates.append(amount)
+                        case .change:
+                            cashChangeCandidates.append(amount)
+                        }
+                    }
+                    idx = labelEnd + amountRows.count
+                    continue
+                }
+            }
+
+            idx += 1
+        }
+
+        // Handle split-column receipts where labels and amounts are in separate lines:
+        // SUMME / BAR GEGEBEN / RUECKGELD labels first, amount column below.
+        for (idx, _) in normalizedLines.enumerated() {
+            let compactLower = compactLines[idx]
+            let ocrLower = ocrTolerantLines[idx]
+            let hasHardTotal = containsAny(line: ocrLower, compactLine: compactLower, keywords: hardTotalKeywords)
+            let hasStrongestTotal = containsAny(line: ocrLower, compactLine: compactLower, keywords: strongestTotalKeywords)
+            let hasExclude = containsAny(line: ocrLower, compactLine: compactLower, keywords: excludeKeywords)
+            let hasGiven = containsAny(line: ocrLower, compactLine: compactLower, keywords: cashGivenKeywords) &&
+                !containsAny(line: ocrLower, compactLine: compactLower, keywords: cashChangeKeywords)
+            let hasChange = containsAny(line: ocrLower, compactLine: compactLower, keywords: cashChangeKeywords)
+
+            func collectLabeledAmounts(_ target: inout [Decimal]) {
+                let sameLineAmounts = extractAmounts(from: lines[idx], repairOCRSpacing: true).filter { $0 > 0 && $0 < receiptAmountMax }
+                if !sameLineAmounts.isEmpty {
+                    target.append(contentsOf: sameLineAmounts)
+                    return
+                }
+
+                // Look ahead for amount-only lines; first one is usually the mapped value in column layouts.
+                let windowEnd = min(idx + 18, lines.count - 1)
+                if idx + 1 <= windowEnd {
+                    for j in (idx + 1)...windowEnd {
+                        let candidateLower = normalizedLines[j]
+                        if excludeKeywords.contains(where: { candidateLower.contains($0) }) && !hasChange {
+                            continue
+                        }
+                        let hasAlpha = candidateLower.range(of: #"[a-z]"#, options: .regularExpression) != nil
+                        let amounts = extractAmounts(from: lines[j], repairOCRSpacing: true).filter { $0 > 0 && $0 < receiptAmountMax }
+                        if amounts.isEmpty { continue }
+                        if !hasAlpha {
+                            target.append(amounts[0])
+                            break
+                        }
+                    }
+                }
+            }
+
+            if hasHardTotal && (!hasExclude || hasStrongestTotal) {
+                let idNoiseKeywords = ["bon", "beleg", "kasse", "pos", "transaktion", "receipt", "id", "nr"]
+                let shouldUseIntegerFallback = !idNoiseKeywords.contains { ocrLower.contains($0) }
+                if shouldUseIntegerFallback, let repairedIntegerTotal = extractIntegerCentsAmountCandidate(from: lines[idx]) {
+                    hardCandidates.append(repairedIntegerTotal)
+                    hardScoredCandidates.append((score: 9.0, index: idx, amount: repairedIntegerTotal))
+                }
+                collectLabeledAmounts(&hardCandidates)
+            }
+            if hasGiven {
+                collectLabeledAmounts(&cashGivenCandidates)
+            }
+            if hasChange {
+                collectLabeledAmounts(&cashChangeCandidates)
+            }
+        }
 
         for (index, line) in lines.enumerated() {
-            let lower = line.lowercased()
-            let amounts = extractAmounts(from: line).filter { $0 > 0 && $0 < 1_000_000 }
+            let lower = normalizedLines[index]
+            let compactLower = compactLines[index]
+            let ocrLower = ocrTolerantLines[index]
+            let amounts = extractAmounts(from: line, repairOCRSpacing: true).filter { $0 > 0 && $0 < receiptAmountMax }
             guard !amounts.isEmpty else { continue }
+            let hasUnitPriceMarker = ocrLower.contains("eur/kg") || ocrLower.contains("/kg") || ocrLower.contains(" kg")
+
+            let hasHardTotal = containsAny(line: ocrLower, compactLine: compactLower, keywords: hardTotalKeywords)
+            let hasStrongestTotal = containsAny(line: ocrLower, compactLine: compactLower, keywords: strongestTotalKeywords)
+            let hasExclude = containsAny(line: ocrLower, compactLine: compactLower, keywords: excludeKeywords)
+            let hasPaymentLineKeyword = containsAny(
+                line: ocrLower,
+                compactLine: compactLower,
+                keywords: ["ec-cash", "ec cash", "ec-karte", "kartenzahlung", "kartenzahlung", "bezahlt mit", "zahlung", "payment"]
+            )
+            if hasUnitPriceMarker && !hasHardTotal && !hasStrongestTotal && !hasPaymentLineKeyword {
+                continue
+            }
+            if hasHardTotal && (!hasExclude || hasStrongestTotal) {
+                hardCandidates.append(contentsOf: amounts)
+                if hasStrongestTotal {
+                    strongestLabelCandidates.append(contentsOf: amounts)
+                }
+                for amount in amounts {
+                    var hardScore = 5.0
+                    if hasStrongestTotal {
+                        hardScore += 6.0
+                    } else if containsAny(line: ocrLower, compactLine: compactLower, keywords: ["summe", "total", "t0tal"]) {
+                        hardScore += 2.0
+                    }
+                    if containsAny(line: ocrLower, compactLine: compactLower, keywords: ["gesamt", "gesamtbetrag"]) &&
+                        !containsAny(line: ocrLower, compactLine: compactLower, keywords: ["zwischensumme", "teilsumme", "subtotal"]) {
+                        hardScore += 2.8
+                    }
+                    if containsAny(line: ocrLower, compactLine: compactLower, keywords: ["subtotal", "zwischensumme"]) {
+                        hardScore -= 8.0
+                    }
+                    // Tax breakdown lines (e.g. "19% 17,10") should never win against explicit payable totals.
+                    if (lower.contains("19%") || lower.contains("7%")) &&
+                        !containsAny(line: lower, compactLine: compactLower, keywords: strongestTotalKeywords) {
+                        hardScore -= 7.0
+                    }
+                    hardScoredCandidates.append((score: hardScore, index: index, amount: amount))
+                }
+            }
+            if !hasExclude || hasStrongestTotal {
+                nonExcludedCandidates.append(contentsOf: amounts)
+            }
+            if hasPaymentLineKeyword && !hasExclude {
+                paymentLineCandidates.append(contentsOf: amounts)
+            }
+            if containsAny(line: lower, compactLine: compactLower, keywords: ["zwischensumme", "subtotal"]) {
+                subtotalCandidates.append(contentsOf: amounts)
+            }
+            if containsAny(line: ocrLower, compactLine: compactLower, keywords: ["aktion", "rabatt", "discount", "disc0unt", "coupon"]) {
+                discountCandidates.append(contentsOf: amounts)
+            }
+            // Tax fallback: when total line is broken (missing leading digits), derive gross from 19% tax amount.
+            let taxContextKeywords = ["mwst", "ust", "umsatzsteuer", "vat", "tax"]
+            let hasTaxContextHere = containsAny(line: ocrLower, compactLine: compactLower, keywords: taxContextKeywords)
+            let has19 = lower.contains("19%") || compactLower.contains("19%")
+            if has19 {
+                let from = max(0, index - 2)
+                let to = min(lines.count - 1, index + 2)
+                var hasTaxContextNearby = hasTaxContextHere
+                if !hasTaxContextNearby, from <= to {
+                    for j in from...to {
+                        if containsAny(line: ocrTolerantLines[j], compactLine: compactLines[j], keywords: taxContextKeywords) {
+                            hasTaxContextNearby = true
+                            break
+                        }
+                    }
+                }
+                if hasTaxContextNearby {
+                    let lineMax = amounts.max() ?? 0
+                    for taxAmount in amounts where taxAmount > 0 {
+                        // Ignore implausibly large "tax" candidates on mixed lines like
+                        // "RECHNUNGSBETRAG 170,18 ... UMSATZSTEUER ... 27,18".
+                        if hasStrongestTotal, amounts.count > 1, taxAmount == lineMax {
+                            continue
+                        }
+                        if !hasStrongestTotal, lineMax > 0, taxAmount > (lineMax * Decimal(0.45)) {
+                            continue
+                        }
+                        let gross = (taxAmount * Decimal(119)) / Decimal(19)
+                        let rounded = NSDecimalNumber(decimal: gross).rounding(accordingToBehavior: nil)
+                        let normalized = Decimal(string: String(format: "%.2f", NSDecimalNumber(decimal: rounded.decimalValue).doubleValue)) ?? gross
+                        if normalized > 0, normalized < receiptAmountMax {
+                            vatDerivedCandidates.append(normalized)
+                        }
+                    }
+                }
+            }
 
             let progress = Double(index + 1) / Double(lines.count) // end-of-receipt lines usually contain final total
             for amount in amounts {
                 var score = 0.0
-                score += Double(strongKeywords.filter { lower.contains($0) }.count) * 3.0
-                score += Double(weakKeywords.filter { lower.contains($0) }.count) * 0.8
-                score -= Double(negativeKeywords.filter { lower.contains($0) }.count) * 2.0
+                score += Double(countMatches(line: ocrLower, compactLine: compactLower, keywords: hardTotalKeywords)) * 5.0
+                score += Double(countMatches(line: ocrLower, compactLine: compactLower, keywords: strongestTotalKeywords)) * 3.0
+                score += Double(countMatches(line: ocrLower, compactLine: compactLower, keywords: weakTotalKeywords)) * 1.2
+                score += Double(countMatches(line: ocrLower, compactLine: compactLower, keywords: payContextKeywords)) * 0.8
+                if containsAny(line: ocrLower, compactLine: compactLower, keywords: ["gesamt", "gesamtbetrag"]) &&
+                    !containsAny(line: ocrLower, compactLine: compactLower, keywords: ["zwischensumme", "teilsumme", "subtotal"]) {
+                    score += 2.4
+                }
+                if !hasStrongestTotal {
+                    score -= Double(countMatches(line: ocrLower, compactLine: compactLower, keywords: excludeKeywords)) * 6.0
+                }
+                if (lower.contains("19%") || lower.contains("7%")) &&
+                    !containsAny(line: lower, compactLine: compactLower, keywords: strongestTotalKeywords) {
+                    score -= 7.0
+                }
                 score += progress * 2.2
                 if amount >= 1 { score += 0.3 }
                 scored.append((score: score, amount: amount))
@@ -332,17 +652,155 @@ struct ParsingService {
             }
         }
 
+        // Cash fallback: when "given" and "change" are present, derive total as given - change.
+        // This is intentionally strict to avoid false positives on noisy receipts.
+        var cashTotals: [Decimal] = []
+        for given in cashGivenCandidates {
+            for change in cashChangeCandidates {
+                guard given > change else { continue }
+                let diff = given - change
+                if diff > 0, diff < receiptAmountMax {
+                    cashTotals.append(diff)
+                }
+            }
+        }
+        if !cashTotals.isEmpty {
+            // If we have explicit total candidates, prefer one that matches derived total.
+            let matchedHard = hardCandidates.first { hard in
+                cashTotals.contains(where: { abs(decimalToDouble($0) - decimalToDouble(hard)) < 0.011 })
+            }
+            if let matchedHard {
+                return matchedHard
+            }
+
+            let positiveScoredAmounts = scored
+                .filter { $0.score >= 0 }
+                .map(\.amount)
+            if !positiveScoredAmounts.isEmpty {
+                let matched = cashTotals.first { total in
+                    positiveScoredAmounts.contains(where: { abs(decimalToDouble($0) - decimalToDouble(total)) < 0.011 })
+                }
+                if let matched {
+                    return matched
+                }
+            } else {
+                let uniqueRounded = Array(Set(cashTotals.map { round(decimalToDouble($0) * 100) / 100 })).sorted()
+                if uniqueRounded.count == 1, let only = uniqueRounded.first {
+                    return Decimal(string: String(format: "%.2f", only))
+                }
+            }
+        }
+        // If given/change signals exist but subtraction could not be resolved reliably,
+        // do not fall back to the last scanned number (often just change).
+        if !cashGivenCandidates.isEmpty, !cashChangeCandidates.isEmpty {
+            if let hardFromLabels = hardCandidates.max(), hardFromLabels > 0, hardFromLabels < receiptAmountMax {
+                return hardFromLabels
+            }
+            if let strongestFromLabels = strongestLabelCandidates.max(), strongestFromLabels > 0, strongestFromLabels < receiptAmountMax {
+                return strongestFromLabels
+            }
+            if let bestNonExcluded = nonExcludedCandidates.max(), bestNonExcluded > 0, bestNonExcluded < receiptAmountMax {
+                return bestNonExcluded
+            }
+        }
+
+        // Derive total from subtotal - discount when both are present.
+        if let subtotal = subtotalCandidates.max(), let discount = discountCandidates.max(), subtotal > discount {
+            let derived = subtotal - discount
+            if derived > 0, derived < receiptAmountMax {
+                hardScoredCandidates.append((score: 8.6, index: lines.count - 1, amount: derived))
+            }
+        }
+
+        // Hard rule: explicit total/sum line beats generic scoring.
+        // Prefer semantically stronger labels and later receipt rows, not the numerically largest amount.
+        if let bestHard = hardScoredCandidates.sorted(by: { lhs, rhs in
+            if lhs.score == rhs.score {
+                if lhs.index == rhs.index { return lhs.amount > rhs.amount }
+                return lhs.index > rhs.index
+            }
+            return lhs.score > rhs.score
+        }).first?.amount {
+            if decimalToDouble(bestHard) > 300,
+               let fallbackStrong = strongestLabelCandidates
+                .filter({ $0 > 0 && $0 < 250 })
+                .max() {
+                return fallbackStrong
+            }
+            if decimalToDouble(bestHard) < 100,
+               let taxRecovery = vatDerivedCandidates.filter({ $0 > 0 && $0 < receiptAmountMax }).max(),
+               decimalToDouble(taxRecovery) > decimalToDouble(bestHard) * 3.0 {
+                return taxRecovery
+            }
+            return bestHard
+        }
+
         if let best = scored.sorted(by: { lhs, rhs in
             if lhs.score == rhs.score { return lhs.amount > rhs.amount }
             return lhs.score > rhs.score
         }).first, best.score >= 0.5 {
+            if hardScoredCandidates.isEmpty,
+               let maxNonExcluded = nonExcludedCandidates.max(),
+               decimalToDouble(maxNonExcluded) >= 20,
+               decimalToDouble(maxNonExcluded) <= 450,
+               decimalToDouble(best.amount) < decimalToDouble(maxNonExcluded) * 0.45 {
+                return maxNonExcluded
+            }
             return best.amount
+        }
+
+        if let paymentFallback = paymentLineCandidates.max(),
+           paymentFallback > 0,
+           paymentFallback < receiptAmountMax {
+            return paymentFallback
         }
         return lastAmount
     }
 
-    private func extractAmounts(from text: String) -> [Decimal] {
-        let amountPattern = #"\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\d{2})|\d+[\.,]\d{2}"#
+    private func decimalToDouble(_ value: Decimal) -> Double {
+        NSDecimalNumber(decimal: value).doubleValue
+    }
+
+    private func extractIntegerCentsAmountCandidate(from text: String) -> Decimal? {
+        // OCR can drop decimal separator on totals: "TOTAL 14331" -> 143.31
+        guard
+            let regex = try? NSRegularExpression(pattern: #"\b(\d{4,5})\b"#)
+        else { return nil }
+        let ns = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: ns.length))
+        guard let match = matches.last, match.numberOfRanges > 1 else { return nil }
+        let token = ns.substring(with: match.range(at: 1))
+        guard let raw = Int(token), raw >= 1000 else { return nil }
+        return Decimal(Double(raw) / 100.0)
+    }
+
+    private func extractAmounts(from text: String, repairOCRSpacing: Bool = false) -> [Decimal] {
+        let repairedText: String
+        if repairOCRSpacing {
+            // Repair common OCR spacing splits inside monetary values:
+            // "107. 08" -> "107.08", "18 4,93" -> "184,93", "69,3 1" -> "69,31"
+            repairedText = text
+                .replacingOccurrences(of: #"(?<=\d)[oO](?=\d)"#, with: "0", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)[Il](?=\d)"#, with: "1", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)[Bb](?=\d)"#, with: "8", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)[Zz](?=[\d\.,])"#, with: "2", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\b)[Il](?=\d)"#, with: "1", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\b)[Bb](?=\d)"#, with: "8", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\b)[Zz](?=\d)"#, with: "2", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=[\.,])\s*[Bb]\s*(?=\d)"#, with: "8", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=[\.,])\s*[Zz]\s*(?=\d)"#, with: "2", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)\s*[Bb]\s*(?=[\.,])"#, with: "8", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)[Bb](?=\s*\d[\.,])"#, with: "8", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)[Zz](?=\s*\d[\.,])"#, with: "2", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)\s+(?=[\.,])"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=[\.,])\s+(?=\d)"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=[\.,]\d)\s+(?=\d\b)"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"(?<=\d)\s+(?=\d{1,2}[\.,]\d{2}\b)"#, with: "", options: .regularExpression)
+        } else {
+            repairedText = text
+        }
+
+        let amountPattern = #"\b\d{1,3}(?:[\.\s]\d{3})*(?:[\.,]\s*\d\s*\d)\b|\b\d+[\.,]\s*\d\s*\d\b"#
         let fullDatePattern = #"\b\d{1,2}[.\-/]\d{1,2}[.\-/]\d{2,4}\b"#
         guard
             let amountRegex = try? NSRegularExpression(pattern: amountPattern),
@@ -351,10 +809,10 @@ struct ParsingService {
             return []
         }
 
-        let nsText = text as NSString
+        let nsText = repairedText as NSString
         let fullRange = NSRange(location: 0, length: nsText.length)
-        let dateRanges = fullDateRegex.matches(in: text, range: fullRange).map(\.range)
-        let matches = amountRegex.matches(in: text, range: fullRange)
+        let dateRanges = fullDateRegex.matches(in: repairedText, range: fullRange).map(\.range)
+        let matches = amountRegex.matches(in: repairedText, range: fullRange)
 
         return matches.compactMap { match in
             if dateRanges.contains(where: { NSIntersectionRange(match.range, $0).length > 0 }) {
@@ -734,11 +1192,47 @@ struct ParsingService {
     }
 
     func extractVendorName(from lines: [String]) -> String {
+        let documentType = classifyDocumentType(from: lines)
+
         if let sellerOfRecord = extractSellerOfRecord(from: lines) {
             return sellerOfRecord
         }
 
-        if let labeledSupplier = extractLabeledEntity(from: lines, labels: ["from", "von", "lieferant", "aussteller", "rechnungssteller"]) {
+        if documentType == .receipt || documentType == .unknown {
+            for raw in lines.prefix(16) {
+                let line = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+                let lower = normalizedLower(line)
+                if line.isEmpty { continue }
+                if isLikelyReceiptLineItemNoise(lower) { continue }
+                if hasStopMarker(lower) { continue }
+                if lower.range(of: #"^\s*\d"#, options: .regularExpression) != nil { continue }
+                let letters = line.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
+                let digits = line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }.count
+                if letters < 5 { continue }
+                if digits > 1 { continue }
+                return line
+            }
+        }
+
+        if (documentType == .receipt || documentType == .unknown),
+           let brandedTopLine = lines.prefix(20).first(where: { raw in
+               let line = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+               let lower = normalizedLower(line)
+               if line.isEmpty { return false }
+               if isLikelyReceiptLineItemNoise(lower) { return false }
+               if hasStopMarker(lower) { return false }
+               if lower.range(of: #"^\s*\d"#, options: .regularExpression) != nil { return false }
+               let letters = line.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
+               let digits = line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }.count
+               if letters < 6 { return false }
+               if digits > 1 { return false }
+               return true
+           }) {
+            return brandedTopLine.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if let labeledSupplier = extractLabeledEntity(from: lines, labels: ["from", "von", "lieferant", "aussteller", "rechnungssteller"]),
+           !isLikelyReceiptLineItemNoise(normalizedLower(labeledSupplier)) {
             return labeledSupplier
         }
 
@@ -750,11 +1244,17 @@ struct ParsingService {
             return legalEntity
         }
 
+        if documentType == .receipt || documentType == .unknown,
+           let receiptHeaderVendor = extractReceiptHeaderVendor(from: lines) {
+            return receiptHeaderVendor
+        }
+
         for line in lines {
             let cleaned = line.trimmingCharacters(in: .whitespacesAndNewlines)
             if cleaned.isEmpty { continue }
             let lower = normalizedLower(cleaned)
             if isLikelyCustomerLine(lower) { continue }
+            if isLikelyReceiptLineItemNoise(lower) { continue }
             if containsCompanyMarker(lower) {
                 return cleaned
             }
@@ -769,6 +1269,12 @@ struct ParsingService {
             let lower = normalizedLower(line)
             if ignoreFragments.contains(where: { lower.contains($0) }) { continue }
             if isLikelyCustomerLine(lower) { continue }
+            if isLikelyReceiptLineItemNoise(lower) { continue }
+            if lower.range(of: #"^\s*\d"#, options: .regularExpression) != nil { continue }
+            let letters = line.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
+            let digits = line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }.count
+            if letters < 4 { continue }
+            if digits > (letters / 2) { continue }
             if line.count < 3 { continue }
             return line
         }
@@ -788,6 +1294,7 @@ struct ParsingService {
             if cleaned.isEmpty { continue }
             let lower = normalizedLower(cleaned)
             if isLikelyCustomerLine(lower) { continue }
+            if isLikelyReceiptLineItemNoise(lower) { continue }
             if containsCompanyMarker(lower) && !hasCustomerMarker(lower) {
                 return cleaned
             }
@@ -883,6 +1390,7 @@ struct ParsingService {
             .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         if value.isEmpty { return "" }
+        if isLikelyReceiptLineItemNoise(normalizedLower(value)) { return "" }
         value = value.replacingOccurrences(
             of: #"(?i)\b(rechnungsnummer|rechnung\s*nr\.?|belegnr\.?|invoice\s*no\.?|invoice\s*date|datum|belegdatum|item|beschreibung|menge|qty|unit|price|line\s*total|netto|subtotal|zwischensumme|total|brutto|zahlung|iban)\b.*$"#,
             with: "",
@@ -921,6 +1429,40 @@ struct ParsingService {
             }
         }
         return nil
+    }
+
+    private func extractReceiptHeaderVendor(from lines: [String]) -> String? {
+        let preferredTokens = ["markt", "apotheke", "store", "shop", "bistro", "cafe", "frische", "haus", "center", "center"]
+        var best: (score: Int, value: String)?
+
+        for raw in lines.prefix(40) {
+            let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            if value.count < 4 { continue }
+            let lower = normalizedLower(value)
+            if isLikelyReceiptLineItemNoise(lower) { continue }
+            if isLikelyCustomerLine(lower) { continue }
+            if hasStopMarker(lower) { continue }
+            if lower.range(of: #"\b(tel|uhr|datum|beleg|kasse|trace|kartenzahlung)\b"#, options: .regularExpression) != nil {
+                continue
+            }
+
+            let letters = value.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
+            let digits = value.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) }.count
+            if letters < 4 { continue }
+            if digits > letters { continue }
+
+            var score = 0
+            if preferredTokens.contains(where: { lower.contains($0) }) { score += 10 }
+            if digits == 0 { score += 4 }
+            if letters >= 10 { score += 2 }
+            if lower.contains("wasgau") { score += 12 }
+
+            if best == nil || score > best!.score {
+                best = (score, value)
+            }
+        }
+
+        return best?.value
     }
 
     private func containsCompanyMarker(_ lower: String) -> Bool {
@@ -964,15 +1506,51 @@ struct ParsingService {
         return "Sonstiges"
     }
 
+    private func isLikelyReceiptLineItemNoise(_ lower: String) -> Bool {
+        let cleaned = lower.trimmingCharacters(in: .whitespacesAndNewlines)
+        if cleaned.isEmpty { return true }
+
+        if cleaned.range(of: #"^\d+[.,]\d+"#, options: .regularExpression) != nil,
+           (cleaned.contains("kg") || cleaned.contains("eur/kg") || cleaned.contains("/kg")) {
+            return true
+        }
+        if cleaned.contains("(n) x") || cleaned.contains("(t)") {
+            return true
+        }
+        let noisyPatterns = [
+            #"\b\d+[.,]\d+\s*kg\b"#,          // 0,668 kg
+            #"\b\d+[.,]\d+\s*eur/?kg\b"#,     // 2,29 EUR/kg
+            #"\bx\b\s*\d+[.,]\d+"#,           // x 2,29
+            #"\b\d+[.,]\d+\s*[abc]\b"#        // 2,24 B tax marker
+        ]
+        if noisyPatterns.contains(where: { cleaned.range(of: $0, options: .regularExpression) != nil }) {
+            return true
+        }
+        if cleaned.range(of: #"^\d+[.,]\d+\s*$"#, options: .regularExpression) != nil {
+            return true
+        }
+        if cleaned.contains("eur/kg") || cleaned.contains("/kg") { return true }
+        return false
+    }
+
     private func classifyDocumentType(from lines: [String]) -> ParsedDocumentType {
         let text = lines.joined(separator: " ").lowercased()
+        let compact = text.replacingOccurrences(of: #"[^a-z0-9%]+"#, with: "", options: .regularExpression)
+
+        func containsKeyword(_ keyword: String) -> Bool {
+            if text.contains(keyword) { return true }
+            let compactKeyword = keyword.replacingOccurrences(of: #"[^a-z0-9%]+"#, with: "", options: .regularExpression)
+            guard !compactKeyword.isEmpty else { return false }
+            return compact.contains(compactKeyword)
+        }
 
         let receiptKeywords = [
-            "kassenbon", "bon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld",
-            "ust", "mwst", "summe eur", "gesamtsumme", "steuer", "filiale"
+            "kassenbon", "bon", "kassenbeleg", "beleg", "kasse", "ec-karte", "kartenzahlung", "barzahlung", "bar",
+            "ec-cash", "ec cash", "geg.", "wechselgeld", "rückgeld", "rueckgeld", "zahlart", "bezahlt mit", "umsatzsteuer", "ust", "mwst",
+            "summe", "gesamtsumme", "zu zahlen", "endsumme", "steuer", "filiale", "danke"
         ]
         let strongReceiptKeywords = [
-            "kassenbon", "kassenbeleg", "ec-karte", "kartenzahlung", "barzahlung", "wechselgeld", "filiale"
+            "kassenbon", "kassenbeleg", "beleg", "kasse", "ec-cash", "zahlart", "barzahlung", "bar gegeben", "rückgeld", "rueckgeld", "filiale"
         ]
         let invoiceKeywords = [
             "rechnung", "invoice", "rechnungsnummer", "rechnung nr", "zahlbar bis", "fällig", "faellig",
@@ -983,14 +1561,16 @@ struct ParsingService {
             "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms"
         ]
 
-        let receiptHits = receiptKeywords.filter { text.contains($0) }.count
-        let strongReceiptHits = strongReceiptKeywords.filter { text.contains($0) }.count
-        let invoiceHits = invoiceKeywords.filter { text.contains($0) }.count
-        let strongInvoiceHits = strongInvoiceKeywords.filter { text.contains($0) }.count
+        let receiptHits = receiptKeywords.filter { containsKeyword($0) }.count
+        let strongReceiptHits = strongReceiptKeywords.filter { containsKeyword($0) }.count
+        let invoiceHits = invoiceKeywords.filter { containsKeyword($0) }.count
+        let strongInvoiceHits = strongInvoiceKeywords.filter { containsKeyword($0) }.count
 
         if strongInvoiceHits >= 2 { return .invoice }
-        if receiptHits >= 2 && strongReceiptHits >= 1 && invoiceHits == 0 && strongInvoiceHits == 0 { return .receipt }
+        if strongReceiptHits >= 1 && receiptHits >= 2 && invoiceHits <= 1 { return .receipt }
+        if receiptHits >= 3 && receiptHits > invoiceHits { return .receipt }
         if invoiceHits >= 2 { return .invoice }
+        if receiptHits >= 2 { return .receipt }
         return .unknown
     }
 
@@ -1140,6 +1720,12 @@ struct ParsingService {
                             return candidate
                         }
                     }
+                }
+                // Pragmatic fallback for noisy bank lines that still carry a clear DE prefix
+                // but are shorter than a full DE-IBAN (observed in OCR edge-cases).
+                let rawDigitsOnly = payload.replacingOccurrences(of: #"[^0-9]"#, with: "", options: .regularExpression)
+                if rawDigitsOnly.count >= 16 {
+                    return "DE" + String(rawDigitsOnly.prefix(20))
                 }
             }
 
