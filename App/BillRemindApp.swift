@@ -16,7 +16,8 @@ struct BillRemindApp: App {
             OCRLearningProfile.self,
             IncomeEntry.self,
             InstallmentPlan.self,
-            InstallmentSpecialRepayment.self
+            InstallmentSpecialRepayment.self,
+            LearnedParsingRule.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {

@@ -25,6 +25,10 @@ final class ScanViewModel: ObservableObject {
     private let ocrService: OCRServicing
     private let parsingService: ParsingService
     private let imageStore: ImageStore
+    private let layoutOCR = LayoutAwareOCRService()
+    private let spatialParser = SpatialParser()
+    private let merger = ParseResultMerger()
+    private let learningService = LearningService()
 
     init(
         ocrService: OCRServicing = OCRService(),
@@ -45,6 +49,13 @@ final class ScanViewModel: ObservableObject {
             let ocr = try await ocrService.recognizeText(from: image)
             let text = ocr.text
             var parsed = parsingService.parse(text: text)
+
+            // Spatial enhancement: run layout-aware OCR and merge additively (fills gaps only)
+            if let layoutResult = try? await layoutOCR.recognizeWithLayout(from: image) {
+                let spatialResult = spatialParser.parse(layout: layoutResult)
+                parsed = merger.merge(heuristic: parsed, spatial: spatialResult)
+            }
+
             applyQualityIndicators(to: &parsed)
             parsingWarning = text.isEmpty ? "Kein Text erkannt. Bitte Daten manuell ergänzen." : nil
             ocrDebugInfo = ocr.debugSummary
@@ -146,6 +157,31 @@ final class ScanViewModel: ObservableObject {
 
         modelContext.insert(invoice)
         upsertVendorProfile(from: invoice, modelContext: modelContext)
+
+        // Record learning outcome: compare OCR suggestions vs user-confirmed values
+        let suggested = FieldSnapshot(
+            vendor: draft.ocrOriginalVendorName,
+            amount: draft.ocrOriginalAmount.map { "\($0)" },
+            invoiceNumber: draft.ocrOriginalInvoiceNumber,
+            iban: draft.ocrOriginalIBAN,
+            dueDate: draft.ocrOriginalDueDate.map { ISO8601DateFormatter().string(from: $0) },
+            category: draft.ocrOriginalCategory
+        )
+        let confirmed = FieldSnapshot(
+            vendor: invoice.vendorName,
+            amount: invoice.amount.map { "\($0)" },
+            invoiceNumber: invoice.invoiceNumber,
+            iban: invoice.iban,
+            dueDate: invoice.dueDate.map { ISO8601DateFormatter().string(from: $0) },
+            category: invoice.category
+        )
+        learningService.recordOutcome(
+            vendorName: invoice.vendorName,
+            suggested: suggested,
+            confirmed: confirmed,
+            modelContext: modelContext
+        )
+
         try modelContext.save()
         return invoice
     }
