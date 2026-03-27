@@ -163,7 +163,7 @@ struct SpatialParser {
         let lower = text.lowercased()
         for label in labels {
             if let range = lower.range(of: label) {
-                var suffix = String(text[range.upperBound...])
+                let suffix = String(text[range.upperBound...])
                     .replacingOccurrences(of: #"^[\s:;-]+"#, with: "", options: .regularExpression)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 if !suffix.isEmpty { return suffix }

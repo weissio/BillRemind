@@ -57,7 +57,7 @@ final class ScanViewModel: ObservableObject {
             }
 
             applyQualityIndicators(to: &parsed)
-            parsingWarning = text.isEmpty ? "Kein Text erkannt. Bitte Daten manuell ergänzen." : nil
+            parsingWarning = text.isEmpty ? L10n.t("Kein Text erkannt. Bitte Daten manuell ergänzen.", "No text detected. Please enter data manually.") : nil
             ocrDebugInfo = ocr.debugSummary
             draft = InvoiceDraft(parsed: parsed, captureMode: mode)
         } catch {
@@ -69,10 +69,10 @@ final class ScanViewModel: ObservableObject {
                 dueDateConfidence: 0,
                 invoiceNumberConfidence: 0,
                 ibanConfidence: 0,
-                reviewHint: "OCR fehlgeschlagen"
+                reviewHint: L10n.t("OCR fehlgeschlagen", "OCR failed")
             )
             draft = InvoiceDraft(parsed: failed, captureMode: mode)
-            parsingWarning = "OCR fehlgeschlagen. Bitte Daten manuell ergänzen."
+            parsingWarning = L10n.t("OCR fehlgeschlagen. Bitte Daten manuell ergänzen.", "OCR failed. Please enter data manually.")
             ocrDebugInfo = nil
         }
     }
@@ -87,7 +87,7 @@ final class ScanViewModel: ObservableObject {
             let text = ocr.text
             var parsed = parsingService.parse(text: text)
             applyQualityIndicators(to: &parsed)
-            parsingWarning = text.isEmpty ? "Kein auswertbarer PDF-Text erkannt. Bitte Daten manuell ergänzen." : nil
+            parsingWarning = text.isEmpty ? L10n.t("Kein auswertbarer PDF-Text erkannt. Bitte Daten manuell ergänzen.", "No readable PDF text detected. Please enter data manually.") : nil
             ocrDebugInfo = ocr.debugSummary
             draft = InvoiceDraft(parsed: parsed, captureMode: .invoice, importKind: .pdfImport)
         } catch {
@@ -99,10 +99,10 @@ final class ScanViewModel: ObservableObject {
                 dueDateConfidence: 0,
                 invoiceNumberConfidence: 0,
                 ibanConfidence: 0,
-                reviewHint: "PDF-Import fehlgeschlagen"
+                reviewHint: L10n.t("PDF-Import fehlgeschlagen", "PDF import failed")
             )
             draft = InvoiceDraft(parsed: failed, captureMode: .invoice, importKind: .pdfImport)
-            parsingWarning = "PDF konnte nicht gelesen werden. Bitte Daten manuell ergänzen."
+            parsingWarning = L10n.t("PDF konnte nicht gelesen werden. Bitte Daten manuell ergänzen.", "Could not read PDF. Please enter data manually.")
             ocrDebugInfo = nil
         }
     }
@@ -272,12 +272,12 @@ final class ScanViewModel: ObservableObject {
         parsed.ocrConfidence = overall
 
         var low: [String] = []
-        if vendorConfidence < 0.7 { low.append("Anbieter") }
-        if amountConfidence < 0.7 { low.append("Betrag") }
-        if !isReceipt && dueDateConfidence < 0.7 { low.append("Fälligkeitsdatum") }
-        if numberConfidence < 0.7 { low.append("Rechnungsnummer") }
+        if vendorConfidence < 0.7 { low.append(L10n.t("Anbieter", "Vendor")) }
+        if amountConfidence < 0.7 { low.append(L10n.t("Betrag", "Amount")) }
+        if !isReceipt && dueDateConfidence < 0.7 { low.append(L10n.t("Fälligkeitsdatum", "Due date")) }
+        if numberConfidence < 0.7 { low.append(L10n.t("Rechnungsnummer", "Invoice number")) }
         if ibanConfidence < 0.7 { low.append("IBAN") }
-        parsed.reviewHint = low.isEmpty ? nil : "Bitte prüfen: \(low.joined(separator: ", "))"
+        parsed.reviewHint = low.isEmpty ? nil : L10n.t("Bitte prüfen: ", "Please review: ") + low.joined(separator: ", ")
     }
 
     private func qualityForVendor(_ vendor: String) -> Double {
