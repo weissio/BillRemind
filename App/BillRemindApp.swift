@@ -16,7 +16,8 @@ struct BillRemindApp: App {
             OCRLearningProfile.self,
             IncomeEntry.self,
             InstallmentPlan.self,
-            InstallmentSpecialRepayment.self
+            InstallmentSpecialRepayment.self,
+            LearnedParsingRule.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -38,14 +39,14 @@ struct BillRemindApp: App {
 
                         if shouldShowLockOverlay {
                             VStack(spacing: 12) {
-                                Text(appLanguageCode == "en" ? "App locked" : "App gesperrt")
+                                Text(L10n.t("App gesperrt", "App locked"))
                                     .font(.headline)
-                                Button(appLanguageCode == "en" ? "Unlock" : "Entsperren") {
+                                Button(L10n.t("Entsperren", "Unlock")) {
                                     authenticate()
                                 }
                                 .buttonStyle(.borderedProminent)
                                 if showingLockError {
-                                    Text(appLanguageCode == "en" ? "Authentication failed." : "Authentifizierung fehlgeschlagen.")
+                                    Text(L10n.t("Authentifizierung fehlgeschlagen.", "Authentication failed."))
                                         .font(.caption)
                                         .foregroundStyle(.red)
                                 }
@@ -98,7 +99,7 @@ struct BillRemindApp: App {
 
         context.evaluatePolicy(
             .deviceOwnerAuthentication,
-            localizedReason: appLanguageCode == "en" ? "Unlock Mnemor" : "Mnemor entsperren"
+            localizedReason: L10n.t("Mnemor entsperren", "Unlock Mnemor")
         ) { success, _ in
             DispatchQueue.main.async {
                 isUnlocked = success
