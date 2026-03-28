@@ -27,7 +27,7 @@ targets:
       path: Resources/Info.plist
       properties:
         CFBundleDisplayName: BillRemind
-        NSCameraUsageDescription: BillRemind benötigt Zugriff auf die Kamera, um Rechnungen zu scannen.
+        NSCameraUsageDescription: BillRemind needs camera access to scan invoices.
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
@@ -35,6 +35,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jonasweiss.BillRemind
         TARGETED_DEVICE_FAMILY: 1
+        MARKETING_VERSION: 1.0.3
+        CURRENT_PROJECT_VERSION: 4
     dependencies: []
   BillRemindTests:
     type: bundle.unit-test

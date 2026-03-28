@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,6 +30,7 @@
 		B8BFBF3BB62C6CD34690A8B4 /* LearnedParsingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */; };
 		B91A39504B608AF5C484DC9B /* ImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EF5F8CACA49E9A369C11D57 /* ImageStore.swift */; };
 		C2B42EA7C133954CE7728CF3 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17EE69E07AB65075F6A7EC04 /* Localization.swift */; };
+		D658AF92660DFA5E1B99292E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C2DE9DC110FDD990EC04A88A /* InfoPlist.strings */; };
 		DDF56EFBBC6909F05F30702D /* BillRemindApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF451840C025CB6EEA0EC8CC /* BillRemindApp.swift */; };
 		E0628DA214118062D09F2EEB /* ReviewInvoiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770ADB0BEEE34083C673D885 /* ReviewInvoiceView.swift */; };
 		E16BAD4FF36610A23E89CFDD /* ParseResultMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3970FE47F5F38E51547ECE65 /* ParseResultMerger.swift */; };
@@ -48,6 +49,7 @@
 
 /* Begin PBXFileReference section */
 		17EE69E07AB65075F6A7EC04 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		1840E6E6A46AA4089DD3FE2E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A383A0637A75F95DD140569 /* ScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewModel.swift; sourceTree = "<group>"; };
 		1DAB6860B09F1E609AEA29D6 /* LearningService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningService.swift; sourceTree = "<group>"; };
 		2618E1871E20FE76E48B5FDF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -75,7 +77,8 @@
 		CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingServiceTests.swift; sourceTree = "<group>"; };
 		DF451840C025CB6EEA0EC8CC /* BillRemindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRemindApp.swift; sourceTree = "<group>"; };
 		E8F9B0776FA86D95E4DCCEC9 /* InvoiceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceDetailView.swift; sourceTree = "<group>"; };
-		F47298C17FE9020C3BA6676B /* BillRemind.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BillRemind.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA61E84EBCBC636AD5C7B786 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F47298C17FE9020C3BA6676B /* BillRemind.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BillRemind.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FFA329ABD169D8AB4575E83D /* InvoiceRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceRowView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -128,6 +131,7 @@
 			children = (
 				2A6FE966878264CD3023BFD0 /* Assets.xcassets */,
 				72AFCF4B74B70C4B50F22451 /* Info.plist */,
+				C2DE9DC110FDD990EC04A88A /* InfoPlist.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -243,10 +247,12 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
 			);
 			mainGroup = F591E6C04DACBD42D82D79A9;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -262,6 +268,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5D603800EAABF5C8A4221BEC /* Assets.xcassets in Resources */,
+				D658AF92660DFA5E1B99292E /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,18 +325,31 @@
 		};
 /* End PBXTargetDependency section */
 
+/* Begin PBXVariantGroup section */
+		C2DE9DC110FDD990EC04A88A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1840E6E6A46AA4089DD3FE2E /* de */,
+				EA61E84EBCBC636AD5C7B786 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		1C161B30962FA89D0A0F0CD9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 2MC6WD97H2;
+				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonasweiss.BillRemind;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -359,12 +379,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 2MC6WD97H2;
+				CURRENT_PROJECT_VERSION = 4;
 				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonasweiss.BillRemind;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
