@@ -1,6 +1,8 @@
 import Foundation
 import UserNotifications
 
+// L10n is defined in Models/Localization.swift
+
 protocol NotificationServicing {
     func requestAuthorization() async -> Bool
     func scheduleReminder(for invoice: Invoice) async
@@ -25,8 +27,8 @@ struct NotificationService: NotificationServicing {
         }
 
         let content = UNMutableNotificationContent()
-        content.title = "Rechnung fällig"
-        content.body = "\(invoice.vendorName) ist bald fällig."
+        content.title = L10n.t("Rechnung fällig", "Invoice due")
+        content.body = L10n.t("\(invoice.vendorName) ist bald fällig.", "\(invoice.vendorName) is due soon.")
         content.sound = .default
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
@@ -44,8 +46,11 @@ struct NotificationService: NotificationServicing {
 
     func scheduleNegativeCashflowAlert(weekLabel: String, projectedBalance: Double) async {
         let content = UNMutableNotificationContent()
-        content.title = "Cashflow Warnung"
-        content.body = "In \(weekLabel) wird ein negativer Kontostand von \(projectedBalance.formatted(.currency(code: "EUR"))) erwartet."
+        content.title = L10n.t("Cashflow Warnung", "Cash flow warning")
+        content.body = L10n.t(
+            "In \(weekLabel) wird ein negativer Kontostand von \(projectedBalance.formatted(.currency(code: "EUR"))) erwartet.",
+            "A negative balance of \(projectedBalance.formatted(.currency(code: "EUR"))) is expected in \(weekLabel)."
+        )
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)

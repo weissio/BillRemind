@@ -239,9 +239,9 @@ struct ReviewInvoiceView: View {
                 sanitizeCriticalIdentifiers()
                 applyLearnedDefaultsIfAvailable()
             }
-            .onChange(of: draft.invoiceDate) { value in
+            .onChange(of: draft.invoiceDate) { _, newValue in
                 guard let offset = draft.dueOffsetDaysHint else { return }
-                draft.dueDate = Calendar.current.date(byAdding: .day, value: offset, to: value)
+                draft.dueDate = Calendar.current.date(byAdding: .day, value: offset, to: newValue)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

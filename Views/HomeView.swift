@@ -1960,21 +1960,21 @@ private struct StatsView: View {
     private func makeWorksheets() -> [(String, [[String]])] {
         let monthMetaRows: [[String]] = {
             let baseRows = [
-                ["Monat", monthLabel(for: selectedMonth)],
+                [L10n.t("Monat", "Month"), monthLabel(for: selectedMonth)],
                 [L10n.t("Datenbasis", "Data scope"), dataScope.title],
-                ["Liquiditäts-Basis", effectiveUseCurrentBalance ? "Aktueller Kontostand" : "Startbestand"],
-                ["Basiswert", numberString(planningBaseBalance)]
+                [L10n.t("Liquiditäts-Basis", "Liquidity basis"), effectiveUseCurrentBalance ? L10n.t("Aktueller Kontostand", "Current balance") : L10n.t("Startbestand", "Starting balance")],
+                [L10n.t("Basiswert", "Base value"), numberString(planningBaseBalance)]
             ]
 
             if mode == .reports {
                 return baseRows + [
-                    ["Einnahmen (\(reportAsOfLabel))", numberString(reportActualIncome)],
-                    ["Ausgaben (\(reportAsOfLabel))", numberString(reportActualExpenses)],
-                    ["Differenz (\(reportAsOfLabel))", numberString(reportActualDifference)],
-                    ["Noch fällig Einnahmen", numberString(reportPendingIncome)],
-                    ["Noch fällig Ausgaben", numberString(reportPendingExpenses)],
-                    ["Noch fällige Differenz", numberString(reportPendingDifference)],
-                    ["Differenz Monatsende", numberString(reportPlannedMonthEndDifference)]
+                    [L10n.t("Einnahmen", "Income") + " (\(reportAsOfLabel))", numberString(reportActualIncome)],
+                    [L10n.t("Ausgaben", "Expenses") + " (\(reportAsOfLabel))", numberString(reportActualExpenses)],
+                    [L10n.t("Differenz", "Difference") + " (\(reportAsOfLabel))", numberString(reportActualDifference)],
+                    [L10n.t("Noch fällig Einnahmen", "Pending income"), numberString(reportPendingIncome)],
+                    [L10n.t("Noch fällig Ausgaben", "Pending expenses"), numberString(reportPendingExpenses)],
+                    [L10n.t("Noch fällige Differenz", "Pending difference"), numberString(reportPendingDifference)],
+                    [L10n.t("Differenz Monatsende", "Month-end difference"), numberString(reportPlannedMonthEndDifference)]
                 ]
             }
 
@@ -2138,21 +2138,21 @@ private struct StatsView: View {
         ]
 
         let installmentsSheetRows: [[String]] =
-            [["Bezeichnung", "Typ", "Modus", "Start", "Ende", "Tag", "Aktiv", "Rate_oder_Tilgung", "Sollzins_pa", "Zins_aktuell", "Tilgung_aktuell"]]
+            [[L10n.t("Bezeichnung", "Name"), L10n.t("Typ", "Type"), L10n.t("Modus", "Mode"), "Start", L10n.t("Ende", "End"), L10n.t("Tag", "Day"), L10n.t("Aktiv", "Active"), L10n.t("Rate_oder_Tilgung", "Rate_or_Repayment"), L10n.t("Sollzins_pa", "Interest_Rate_pa"), L10n.t("Zins_aktuell", "Current_Interest"), L10n.t("Tilgung_aktuell", "Current_Repayment")]]
             + installmentRows
             + [installmentSumRow]
 
         let worksheets: [(String, [[String]])] = [
-            ("Monatsübersicht", [["Feld", "Wert"]] + monthMetaRows),
-            ("Rechnungsdetails", [["Eingang", "Fällig", "Status", "Anbieter", "Kategorie", "Betrag", "Rechnungsnr"]] + invoiceDetailRows + [invoiceDetailTotal]),
-            ("Kategorien_nach_Betrag", [["Kategorie", "Anzahl", "Betrag"]] + categoriesByAmount + [categorySumRow]),
-            ("Kategorien_nach_Name", [["Kategorie", "Anzahl", "Betrag"]] + categoriesByName + [categorySumRow]),
-            ("Liquidität", [["Woche", "Rechnung", "Fixkosten_Kredite", "Ausgaben_total", "Einnahmen", "Prognose"]] + liquidityRows + [liquiditySumRow]),
-            ("Chart_Daten", [["Woche_Start", "Woche_Label", "Einnahmen", "Ausgaben", "Kontostand"]] + chartRows),
-            ("Fixkosten_Kredite", installmentsSheetRows),
-            ("Sondertilgungen", [["Kredit", "Datum", "Betrag"]] + specialRepaymentRows + [specialRepaymentSumRow]),
-            ("Restschuld", [["Bezeichnung", "Anfangsschuld", "Restschuld_heute", "Restschuld_12M", "Tilgung_monat"]] + debtRows),
-            ("Einnahmen", [["Bezeichnung", "Typ", "Start", "Aktiv", "Betrag"]] + incomesRows + [incomesSumAll, incomesSumActive])
+            (L10n.t("Monatsübersicht", "Monthly_Overview"), [[L10n.t("Feld", "Field"), L10n.t("Wert", "Value")]] + monthMetaRows),
+            (L10n.t("Rechnungsdetails", "Invoice_Details"), [[L10n.t("Eingang", "Received"), L10n.t("Fällig", "Due"), "Status", L10n.t("Anbieter", "Vendor"), L10n.t("Kategorie", "Category"), L10n.t("Betrag", "Amount"), L10n.t("Rechnungsnr", "Invoice_No")]] + invoiceDetailRows + [invoiceDetailTotal]),
+            (L10n.t("Kategorien_nach_Betrag", "Categories_by_Amount"), [[L10n.t("Kategorie", "Category"), L10n.t("Anzahl", "Count"), L10n.t("Betrag", "Amount")]] + categoriesByAmount + [categorySumRow]),
+            (L10n.t("Kategorien_nach_Name", "Categories_by_Name"), [[L10n.t("Kategorie", "Category"), L10n.t("Anzahl", "Count"), L10n.t("Betrag", "Amount")]] + categoriesByName + [categorySumRow]),
+            (L10n.t("Liquidität", "Liquidity"), [[L10n.t("Woche", "Week"), L10n.t("Rechnung", "Invoice"), L10n.t("Fixkosten_Kredite", "Fixed_Costs_Loans"), L10n.t("Ausgaben_total", "Expenses_Total"), L10n.t("Einnahmen", "Income"), L10n.t("Prognose", "Forecast")]] + liquidityRows + [liquiditySumRow]),
+            (L10n.t("Chart_Daten", "Chart_Data"), [[L10n.t("Woche_Start", "Week_Start"), L10n.t("Woche_Label", "Week_Label"), L10n.t("Einnahmen", "Income"), L10n.t("Ausgaben", "Expenses"), L10n.t("Kontostand", "Balance")]] + chartRows),
+            (L10n.t("Fixkosten_Kredite", "Fixed_Costs_Loans"), installmentsSheetRows),
+            (L10n.t("Sondertilgungen", "Special_Repayments"), [[L10n.t("Kredit", "Loan"), L10n.t("Datum", "Date"), L10n.t("Betrag", "Amount")]] + specialRepaymentRows + [specialRepaymentSumRow]),
+            (L10n.t("Restschuld", "Remaining_Debt"), [[L10n.t("Bezeichnung", "Name"), L10n.t("Anfangsschuld", "Initial_Debt"), L10n.t("Restschuld_heute", "Remaining_Today"), L10n.t("Restschuld_12M", "Remaining_12M"), L10n.t("Tilgung_monat", "Monthly_Repayment")]] + debtRows),
+            (L10n.t("Einnahmen", "Income"), [[L10n.t("Bezeichnung", "Name"), L10n.t("Typ", "Type"), "Start", L10n.t("Aktiv", "Active"), L10n.t("Betrag", "Amount")]] + incomesRows + [incomesSumAll, incomesSumActive])
         ]
         return worksheets
     }
