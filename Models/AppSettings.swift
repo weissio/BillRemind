@@ -80,12 +80,20 @@ enum AppSettings {
 
     static var appLanguageCode: String {
         get {
-            let value = UserDefaults.standard.string(forKey: appLanguageCodeKey) ?? "en"
-            return ["de", "en"].contains(value) ? value : "en"
+            if let stored = UserDefaults.standard.string(forKey: appLanguageCodeKey) {
+                return ["de", "en"].contains(stored) ? stored : systemPreferredLanguageDefault()
+            }
+            return systemPreferredLanguageDefault()
         }
         set {
             let sanitized = ["de", "en"].contains(newValue) ? newValue : "en"
             UserDefaults.standard.set(sanitized, forKey: appLanguageCodeKey)
         }
+    }
+
+    private static func systemPreferredLanguageDefault() -> String {
+        let preferred = Locale.preferredLanguages.first ?? "en"
+        let code = Locale(identifier: preferred).language.languageCode?.identifier ?? "en"
+        return code == "de" ? "de" : "en"
     }
 }
