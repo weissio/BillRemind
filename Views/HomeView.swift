@@ -695,6 +695,7 @@ private struct StatsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .labelsHidden()
                 } else {
                     Picker(L10n.t("Bereich", "Area"), selection: $selectedReportsTab) {
                         ForEach(ReportsTab.allCases) { tab in
@@ -702,9 +703,14 @@ private struct StatsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
+                    .labelsHidden()
                 }
+            }
+            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+            .listRowBackground(Color.clear)
 
-                if !(mode == .expenses && selectedTab == .fixedCosts) {
+            if !(mode == .expenses && selectedTab == .fixedCosts) {
+                Section {
                     Picker(L10n.t("Monat", "Month"), selection: $selectedMonth) {
                         ForEach(availableMonths, id: \.self) { month in
                             Text(monthLabel(for: month)).tag(month)
