@@ -9,18 +9,27 @@ enum AppTheme {
 /// Hero header used at the top of main screens (Invoices, Expenses, Analytics,
 /// Income). Shows a gradient icon tile next to a bold title and optional
 /// subtitle so each section has a recognizable visual identity instead of the
-/// plain inline navigation title.
-struct AppHeroHeader: View {
+/// plain inline navigation title. Optional trailing slot lets a screen embed
+/// a primary action (e.g. the "+" button on Invoices) without growing taller.
+struct AppHeroHeader<Trailing: View>: View {
     let title: String
     let subtitle: String?
     let icon: String
     let bottomPadding: CGFloat
+    let trailing: Trailing
 
-    init(title: String, subtitle: String? = nil, icon: String, bottomPadding: CGFloat = 10) {
+    init(
+        title: String,
+        subtitle: String? = nil,
+        icon: String,
+        bottomPadding: CGFloat = 10,
+        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
+    ) {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
         self.bottomPadding = bottomPadding
+        self.trailing = trailing()
     }
 
     var body: some View {
@@ -41,6 +50,7 @@ struct AppHeroHeader: View {
                 }
             }
             Spacer(minLength: 8)
+            trailing
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)

@@ -152,7 +152,17 @@ private struct InvoicesScreen: View {
                     title: isEnglish ? "Invoices" : "Rechnungen",
                     subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
                     icon: "tray.full.fill"
-                )
+                ) {
+                    Button {
+                        showQuickScanOptions = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(AppTheme.accent)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(isEnglish ? "Add invoice" : "Rechnung hinzufügen")
+                }
 
                 VStack(spacing: 12) {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -161,6 +171,7 @@ private struct InvoicesScreen: View {
                         dashboardCard(
                             title: isEnglish ? "Overdue" : "Überfällig",
                             value: "\(overdueCount)",
+                            subValue: overdueAmount.formatted(.currency(code: "EUR")),
                             symbol: "exclamationmark.triangle.fill",
                             tint: .red
                         )
@@ -211,16 +222,6 @@ private struct InvoicesScreen: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .tint(AppTheme.accent)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showQuickScanOptions = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                    }
-                }
-            }
             .confirmationDialog(isEnglish ? "Choose scan type" : "Scan wählen", isPresented: $showQuickScanOptions) {
                 Button(isEnglish ? "Scan invoice" : "Scan Rechnung") {
                     scanCaptureMode = .invoice
@@ -295,26 +296,46 @@ private struct InvoicesScreen: View {
         }
     }
 
-    private func dueInNextDaysCount(_ days: Int) -> Int {
+    private func dueInNextDaysInvoices(_ days: Int) -> [Invoice] {
         let start = Calendar.current.startOfDay(for: Date())
         let end = Calendar.current.date(byAdding: .day, value: days, to: start) ?? start
         return invoices.filter { invoice in
             guard invoice.status == .open, let due = invoice.dueDate else { return false }
             let day = Calendar.current.startOfDay(for: due)
             return day >= start && day <= end
-        }.count
+        }
+    }
+
+    private func dueInNextDaysCount(_ days: Int) -> Int {
+        dueInNextDaysInvoices(days).count
+    }
+
+    private func dueInNextDaysAmount(_ days: Int) -> Decimal {
+        dueInNextDaysInvoices(days).reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
+        }
     }
 
     private func dueWindowLabel(days: Int) -> String {
         isEnglish ? "Due in \(days) days" : "Fällig in \(days) Tagen"
     }
 
-    private var overdueCount: Int {
+    private var overdueInvoices: [Invoice] {
         let today = Calendar.current.startOfDay(for: Date())
         return invoices.filter { invoice in
             guard invoice.status == .open, let due = invoice.dueDate else { return false }
             return Calendar.current.startOfDay(for: due) < today
-        }.count
+        }
+    }
+
+    private var overdueCount: Int {
+        overdueInvoices.count
+    }
+
+    private var overdueAmount: Decimal {
+        overdueInvoices.reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
+        }
     }
 
     private var projectedBalance30Days: Double {
@@ -525,7 +546,7 @@ private struct InvoicesScreen: View {
         return duplicates
     }
 
-    private func dashboardCard(title: String, value: String, symbol: String, tint: Color) -> some View {
+    private func dashboardCard(title: String, value: String, subValue: String? = nil, symbol: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Image(systemName: symbol)
                 .font(.caption.weight(.semibold))
@@ -539,6 +560,14 @@ private struct InvoicesScreen: View {
                 .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
+            if let subValue, !subValue.isEmpty {
+                Text(subValue)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .monospacedDigit()
+            }
         }
         .frame(width: 195, alignment: .leading)
         .padding(12)
@@ -585,6 +614,12 @@ private struct InvoicesScreen: View {
                 .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
+            Text(dueInNextDaysAmount(dueWindowDays).formatted(.currency(code: "EUR")))
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .monospacedDigit()
         }
         .frame(width: 195, alignment: .leading)
         .padding(12)
