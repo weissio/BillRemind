@@ -347,7 +347,7 @@
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 2MC6WD97H2;
 				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor Beleg Scanner OCR";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor – Invoice Scanner OCR";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -389,7 +389,7 @@
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 2MC6WD97H2;
 				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor Beleg Scanner OCR";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor – Invoice Scanner OCR";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
