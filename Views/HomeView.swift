@@ -198,7 +198,9 @@ private struct InvoicesScreen: View {
                         systemImage: "doc.text.viewfinder",
                         description: Text(isEnglish ? "Tap Scan, take a photo of an invoice, and review the detected fields." : "Tippe auf Scannen, fotografiere eine Rechnung und prüfe die erkannten Felder.")
                     )
-                } else {
+                } else if viewModel.filter == .open {
+                    // Open bleibt bewusst flach — hier zählt die Reihenfolge nach
+                    // Eingang/Fälligkeit, nicht eine Monatsgliederung.
                     List(filtered) { invoice in
                         let isDuplicate = duplicateInvoiceIDs.contains(invoice.id)
                         NavigationLink {
@@ -209,6 +211,44 @@ private struct InvoicesScreen: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                         .listRowBackground(Color.clear)
+                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .listRowSpacing(8)
+                } else {
+                    // Paid und All: nach Monat gruppieren. Bei Paid steht
+                    // pro Section, was in dem Monat bezahlt wurde; bei All
+                    // wird zusätzlich anhand invoiceDate eingeordnet, damit
+                    // offene Rechnungen ebenfalls einen Monat bekommen.
+                    List {
+                        ForEach(monthlyInvoiceGroups(filtered)) { group in
+                            Section {
+                                ForEach(group.invoices) { invoice in
+                                    let isDuplicate = duplicateInvoiceIDs.contains(invoice.id)
+                                    NavigationLink {
+                                        InvoiceDetailView(invoice: invoice)
+                                    } label: {
+                                        InvoiceRowView(invoice: invoice, isLikelyDuplicate: isDuplicate)
+                                    }
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                    .listRowBackground(Color.clear)
+                                }
+                            } header: {
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(group.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(AppTheme.accent)
+                                    Spacer()
+                                    Text("\(group.invoices.count) · \(group.amount.formatted(.currency(code: "EUR")))")
+                                        .font(.caption.weight(.medium))
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                                .padding(.vertical, 4)
+                                .textCase(nil)
+                            }
+                        }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
@@ -358,6 +398,44 @@ private struct InvoicesScreen: View {
 
     private func paidWindowLabel(days: Int) -> String {
         isEnglish ? "Paid last \(days) days" : "Bezahlt letzte \(days) Tage"
+    }
+
+    private struct MonthlyInvoiceGroup: Identifiable {
+        let id: Date          // Monatsanfang, dient gleichzeitig als Sortier­schlüssel
+        let title: String
+        let invoices: [Invoice]
+        let amount: Decimal
+    }
+
+    /// Gruppiert eine Rechnungsliste nach Monat. Für bezahlte Rechnungen wird
+    /// der Bezahltag verwendet (so steht eine Rechnung in dem Monat, in dem
+    /// sie bezahlt wurde), für offene Rechnungen das Rechnungsdatum bzw. der
+    /// Erfassungszeitpunkt als Fallback. Reihenfolge: neueste Monate oben.
+    private func monthlyInvoiceGroups(_ invoices: [Invoice]) -> [MonthlyInvoiceGroup] {
+        let calendar = Calendar.current
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: isEnglish ? "en_US" : "de_DE")
+        formatter.dateFormat = "LLLL yyyy"
+
+        func referenceDate(for invoice: Invoice) -> Date {
+            invoice.paidAt ?? invoice.invoiceDate ?? invoice.createdAt
+        }
+
+        let grouped = Dictionary(grouping: invoices) { invoice -> Date in
+            let date = referenceDate(for: invoice)
+            let comps = calendar.dateComponents([.year, .month], from: date)
+            return calendar.date(from: comps) ?? date
+        }
+
+        return grouped.map { (monthStart, items) in
+            let sorted = items.sorted { referenceDate(for: $0) > referenceDate(for: $1) }
+            let total = sorted.reduce(Decimal(0)) { partial, invoice in
+                partial + (invoice.amount ?? 0)
+            }
+            let title = formatter.string(from: monthStart)
+            return MonthlyInvoiceGroup(id: monthStart, title: title, invoices: sorted, amount: total)
+        }
+        .sorted { $0.id > $1.id }
     }
 
     private var duplicateInvoiceIDs: Set<UUID> {
