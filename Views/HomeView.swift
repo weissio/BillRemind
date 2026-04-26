@@ -209,7 +209,7 @@ private struct InvoicesScreen: View {
                 }
             }
             .background(warmBackground.ignoresSafeArea())
-            .navigationTitle(isEnglish ? "Invoices" : "Rechnungen")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .tint(AppTheme.accent)
             .toolbar {
@@ -860,7 +860,7 @@ private struct StatsView: View {
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.immediately)
         }
-        .navigationTitle(mode == .expenses ? L10n.t("Ausgaben", "Expenses") : L10n.t("Auswertung", "Analytics"))
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .background(
             LinearGradient(
@@ -3202,7 +3202,7 @@ private struct IncomeManagementView: View {
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.immediately)
         }
-        .navigationTitle(L10n.t("Einnahmen", "Income"))
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .background(
             LinearGradient(
