@@ -687,7 +687,7 @@ private struct StatsView: View {
 
     var body: some View {
         Form {
-            Section(L10n.t("Bereich", "Area")) {
+            Section {
                 if mode == .expenses {
                     Picker(L10n.t("Bereich", "Area"), selection: $selectedTab) {
                         ForEach(StatsTab.allCases) { tab in
