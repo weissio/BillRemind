@@ -50,6 +50,12 @@ struct HomeView: View {
             .tag(4)
         }
         .tint(Color(red: 0.31, green: 0.42, blue: 0.56))
+        .onReceive(NotificationCenter.default.publisher(for: .billRemindDidReceiveExternalDocument)) { _ in
+            // Aktiver Tab-Wechsel auf Rechnungen, sobald von außen eine
+            // PDF/ein Bild geteilt wurde — InvoicesScreen kümmert sich um
+            // OCR und das Review-Sheet.
+            selectedTab = 0
+        }
     }
 
     private var isEnglish: Bool {
@@ -322,7 +328,41 @@ private struct InvoicesScreen: View {
                     break
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .billRemindDidReceiveExternalDocument)) { notification in
+                guard let url = notification.userInfo?["url"] as? URL else { return }
+                Task {
+                    await handleIncomingExternalDocument(url: url)
+                }
+            }
         }
+    }
+
+    /// Verarbeitet ein per Share-Sheet eingegangenes Dokument: PDFs gehen in
+    /// den PDF-Pfad, Bilder durch die OCR-Pipeline. In beiden Fällen öffnet
+    /// sich danach das Review-Sheet wie bei manuellem Scan/Import.
+    private func handleIncomingExternalDocument(url: URL) async {
+        defer {
+            // tmp-Datei aufräumen — der Importer hat Bild bzw. OCR-Text
+            // bereits in den Speicher gezogen.
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        let ext = url.pathExtension.lowercased()
+        if ext == "pdf" {
+            await scanViewModel.processPDF(at: url)
+            showReview = true
+            return
+        }
+
+        if let image = UIImage(contentsOfFile: url.path) {
+            await scanViewModel.processPickedImage(image, mode: .invoice)
+            showReview = true
+            return
+        }
+
+        // Unbekannter Typ — als Notausgang das manuelle Erfassungs-Sheet.
+        scanViewModel.prepareManualEntry()
+        showReview = true
     }
 
     private var isEnglish: Bool {

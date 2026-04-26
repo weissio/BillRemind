@@ -2,6 +2,13 @@ import SwiftUI
 import SwiftData
 import LocalAuthentication
 
+extension Notification.Name {
+    /// Wird gepostet, wenn die App per Share-Sheet / "Kopieren in Mnemor"
+    /// eine PDF oder ein Bild von außen erhalten hat. userInfo enthält unter
+    /// dem Schlüssel "url" eine stabile Kopie im temporären Verzeichnis.
+    static let billRemindDidReceiveExternalDocument = Notification.Name("billRemindDidReceiveExternalDocument")
+}
+
 @main
 struct BillRemindApp: App {
     @Environment(\.scenePhase) private var scenePhase
@@ -81,7 +88,42 @@ struct BillRemindApp: App {
             .tint(Color(red: 0.48, green: 0.31, blue: 0.22))
             .preferredColorScheme(.light)
             .environment(\.locale, Locale(identifier: appLanguageCode))
+            .onOpenURL { url in
+                handleExternalDocument(url: url)
+            }
         }
+    }
+
+    /// Aufgerufen, wenn der Nutzer im Share-Sheet "Kopieren in Mnemor"
+    /// (oder "In Mnemor öffnen") wählt — z. B. mit einer PDF aus Mail.
+    /// Der eingehende URL ist potenziell security-scoped und wird daher
+    /// in unseren tmp-Ordner kopiert; danach wandert er per Notification
+    /// an HomeView/InvoicesScreen, die den Tab wechseln und das OCR
+    /// anwerfen.
+    private func handleExternalDocument(url: URL) {
+        let didStartAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccess { url.stopAccessingSecurityScopedResource() }
+        }
+
+        let tmpDir = FileManager.default.temporaryDirectory
+        let ext = url.pathExtension.isEmpty ? "tmp" : url.pathExtension
+        let dest = tmpDir.appendingPathComponent("incoming-\(UUID().uuidString).\(ext)")
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: url, to: dest)
+        } catch {
+            NSLog("Mnemor: external document copy failed: \(error.localizedDescription)")
+            return
+        }
+
+        NotificationCenter.default.post(
+            name: .billRemindDidReceiveExternalDocument,
+            object: nil,
+            userInfo: ["url": dest]
+        )
     }
 
     private var shouldShowLockOverlay: Bool {
