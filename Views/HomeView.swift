@@ -205,7 +205,7 @@ private struct InvoicesScreen: View {
             .background(warmBackground.ignoresSafeArea())
             .navigationTitle(isEnglish ? "Invoices" : "Rechnungen")
             .navigationBarTitleDisplayMode(.inline)
-            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+            .tint(AppTheme.accent)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -713,7 +713,7 @@ private struct StatsView: View {
     }
 
     private func segmentButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        let accent = Color(red: 0.54, green: 0.35, blue: 0.25)
+        let accent = AppTheme.accent
         return Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
@@ -852,7 +852,7 @@ private struct StatsView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -1208,7 +1208,7 @@ private struct StatsView: View {
                 .chartForegroundStyleScale([
                     L10n.t("Ausgaben", "Expenses"): .red.opacity(0.55),
                     L10n.t("Einnahmen", "Income"): .green.opacity(0.55),
-                    L10n.t("Kontostand", "Balance"): Color(red: 0.54, green: 0.35, blue: 0.25)
+                    L10n.t("Kontostand", "Balance"): AppTheme.accent
                 ])
                 .chartLegend(position: .bottom, alignment: .leading, spacing: 12)
                 .chartYAxis {
@@ -1269,7 +1269,7 @@ private struct StatsView: View {
                             if selectedWeekStart == row.weekStart {
                                 Text(L10n.t("Ausgewählt", "Selected"))
                                     .font(.caption2)
-                                    .foregroundStyle(Color(red: 0.54, green: 0.35, blue: 0.25))
+                                    .foregroundStyle(AppTheme.accent)
                             }
                             Spacer()
                             Text(row.totalOutgoing.formatted(.currency(code: "EUR")))
@@ -1526,7 +1526,7 @@ private struct StatsView: View {
                             } label: {
                                 Text(L10n.t("Bearbeiten", "Edit"))
                             }
-                            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+                            .tint(AppTheme.accent)
                             Button(role: .destructive) {
                                 modelContext.delete(plan)
                                 do {
@@ -3158,7 +3158,7 @@ private struct IncomeManagementView: View {
                             } label: {
                                 Text(L10n.t("Bearbeiten", "Edit"))
                             }
-                            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+                            .tint(AppTheme.accent)
                             Button(role: .destructive) {
                                 modelContext.delete(income)
                                 do {
@@ -3185,7 +3185,7 @@ private struct IncomeManagementView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {

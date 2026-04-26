@@ -12,6 +12,7 @@
 		13F53798F28DCEBC0C7BCCAA /* InvoiceDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81604466521AA1510AAEB66D /* InvoiceDetailViewModel.swift */; };
 		1677D41468AB70AA2C8C1E19 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDCC6CC21EDAC5AD87A5A5A /* NotificationService.swift */; };
 		2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */; };
+		2151FD9767A9BF8361ED96CD /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */; };
 		2310704C6DBC0E5876BED37B /* ParsingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD88E620A2B65DEC03380A10 /* ParsingService.swift */; };
 		246A6B22638CB8394E68EF00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2618E1871E20FE76E48B5FDF /* SettingsView.swift */; };
 		30F01E1C39FF5EBC0BCD69FF /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A2349042DBE16443941B61 /* Invoice.swift */; };
@@ -73,6 +74,7 @@
 		9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnedParsingRule.swift; sourceTree = "<group>"; };
 		A0DB5AC01D912C98578F7324 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		BD88E620A2B65DEC03380A10 /* ParsingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingService.swift; sourceTree = "<group>"; };
 		CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingServiceTests.swift; sourceTree = "<group>"; };
 		DF451840C025CB6EEA0EC8CC /* BillRemindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRemindApp.swift; sourceTree = "<group>"; };
@@ -105,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */,
+				AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */,
 				51A2349042DBE16443941B61 /* Invoice.swift */,
 				9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */,
 				17EE69E07AB65075F6A7EC04 /* Localization.swift */,
@@ -279,6 +282,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */,
+				2151FD9767A9BF8361ED96CD /* AppTheme.swift in Sources */,
 				DDF56EFBBC6909F05F30702D /* BillRemindApp.swift in Sources */,
 				03084A52586F94C2AAE28A9D /* CameraPicker.swift in Sources */,
 				B893E83C70548CC6DAD24738 /* FullScreenImageView.swift in Sources */,

@@ -177,7 +177,7 @@ struct SettingsView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(isEnglish ? "Back" : "Zurück") {
@@ -359,7 +359,7 @@ struct FeedbackView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(L10n.t("Zurück", "Back")) {
@@ -445,7 +445,7 @@ struct HelpView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(L10n.t("Zurück", "Back")) {

@@ -238,7 +238,7 @@ struct ReviewInvoiceView: View {
                 )
                 .ignoresSafeArea()
             )
-            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+            .tint(AppTheme.accent)
             .onAppear {
                 sanitizeCriticalIdentifiers()
                 applyLearnedDefaultsIfAvailable()
