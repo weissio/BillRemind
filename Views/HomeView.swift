@@ -659,6 +659,7 @@ private struct StatsView: View {
     @State private var specialRepaymentPlanForSheet: InstallmentPlan?
     @State private var planningWeeks: Int = 12
     @State private var selectedWeekStart: Date?
+    @FocusState private var isAmountFieldFocused: Bool
     private let notificationService = NotificationService()
 
     private let calendar = Calendar.current
@@ -791,10 +792,12 @@ private struct StatsView: View {
             .ignoresSafeArea()
         )
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
@@ -830,6 +833,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("z. B. 420,00", value: $editInstallmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                         }
                         HStack {
                             Text(L10n.t("Typ", "Type"))
@@ -867,6 +871,7 @@ private struct StatsView: View {
                                         .foregroundStyle(.secondary)
                                     TextField("z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                         .keyboardType(.decimalPad)
+                                        .focused($isAmountFieldFocused)
                                     Text(L10n.t("Pflichtfeld bei fester Tilgung.", "Required for fixed principal mode."))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -878,6 +883,7 @@ private struct StatsView: View {
                                         .foregroundStyle(.secondary)
                                     TextField("optional, z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                         .keyboardType(.decimalPad)
+                                        .focused($isAmountFieldFocused)
                                     Text(L10n.t("Für Restschuld-Berechnung empfohlen.", "Recommended for remaining principal calculation."))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -889,6 +895,7 @@ private struct StatsView: View {
                                     .foregroundStyle(.secondary)
                                 TextField("optional, z. B. 18000,00", value: $editInstallmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
                                     .keyboardType(.decimalPad)
+                                    .focused($isAmountFieldFocused)
                             }
                             if editInstallmentLoanRepaymentMode == .annuity {
                                 Text(L10n.t("Für Restschuld-Anzeige bitte Anfangsschuld und Sollzins eintragen.", "For remaining principal display, please enter initial principal and nominal interest."))
@@ -903,6 +910,7 @@ private struct StatsView: View {
                             DatePicker(L10n.t("Datum", "Date"), selection: $editSpecialRepaymentDate, displayedComponents: .date)
                             TextField(L10n.t("Betrag in EUR", "Amount in EUR"), text: $editSpecialRepaymentAmountText)
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
 
                             Button(L10n.t("Sondertilgung hinzufügen", "Add special repayment")) {
                                 addSpecialRepayment(to: plan)
@@ -966,6 +974,7 @@ private struct StatsView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
@@ -979,6 +988,7 @@ private struct StatsView: View {
                         DatePicker(L10n.t("Datum", "Date"), selection: $editSpecialRepaymentDate, displayedComponents: .date)
                         TextField(L10n.t("Betrag in EUR", "Amount in EUR"), text: $editSpecialRepaymentAmountText)
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
 
                         Button(L10n.t("Sondertilgung hinzufügen", "Add special repayment")) {
                             addSpecialRepayment(to: plan)
@@ -1030,6 +1040,7 @@ private struct StatsView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
@@ -1053,9 +1064,11 @@ private struct StatsView: View {
                 if useCurrentBalance {
                     TextField(L10n.t("Aktueller Kontostand", "Current balance"), value: $currentBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 } else {
                     TextField(L10n.t("Startbestand", "Starting balance"), value: $startBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
 
                 if !effectiveUseCurrentBalance && overdueOpenAmount > 0 {
@@ -1316,6 +1329,7 @@ private struct StatsView: View {
                         .foregroundStyle(.secondary)
                     TextField("z. B. 420,00", value: $installmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
 
                 if installmentKind == .loan {
@@ -1333,6 +1347,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("z. B. 5,49", value: $installmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                             Text(L10n.t("Pflichtfeld bei fester Tilgung.", "Required for fixed principal mode."))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -1344,6 +1359,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("optional, z. B. 5,49", value: $installmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                             Text(L10n.t("Für Restschuld-Berechnung empfohlen.", "Recommended for remaining principal calculation."))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -1355,6 +1371,7 @@ private struct StatsView: View {
                             .foregroundStyle(.secondary)
                         TextField("optional, z. B. 18000,00", value: $installmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     if installmentLoanRepaymentMode == .annuity {
                         Text(L10n.t("Für Restschuld-Anzeige bitte Anfangsschuld und Sollzins eintragen.", "For remaining principal display, please enter initial principal and nominal interest."))
@@ -3003,6 +3020,7 @@ private struct IncomeManagementView: View {
     @State private var editIncomeStartDate: Date = Date()
     @State private var editIncomeMonthlyDay: Int = 1
     @State private var isShowingEditIncomeSheet = false
+    @FocusState private var isAmountFieldFocused: Bool
 
     var body: some View {
         Form {
@@ -3019,6 +3037,7 @@ private struct IncomeManagementView: View {
                         .foregroundStyle(.secondary)
                     TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $incomeAmount, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
                 Picker(L10n.t("Typ", "Type"), selection: $incomeKind) {
                     ForEach(IncomeEntry.Kind.allCases) { kind in
@@ -3100,10 +3119,12 @@ private struct IncomeManagementView: View {
             .ignoresSafeArea()
         )
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
@@ -3129,6 +3150,7 @@ private struct IncomeManagementView: View {
                             .foregroundStyle(.secondary)
                         TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $editIncomeAmount, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     DatePicker(editIncomeDateLabel, selection: $editIncomeStartDate, displayedComponents: .date)
                     if editIncomeKind == .monthlyFixed {
@@ -3155,6 +3177,7 @@ private struct IncomeManagementView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }

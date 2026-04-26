@@ -20,6 +20,7 @@ struct ReviewInvoiceView: View {
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
     @AppStorage(AppSettings.reviewConfidenceThresholdKey) private var reviewConfidenceThreshold: Double = AppSettings.reviewConfidenceThreshold
     @AppStorage(AppSettings.ocrDebugVisibleKey) private var ocrDebugVisible: Bool = AppSettings.ocrDebugVisible
+    @FocusState private var isAmountFieldFocused: Bool
     private let notificationService = NotificationService()
 
     init(scanViewModel: ScanViewModel, onSaved: @escaping () -> Void) {
@@ -140,6 +141,7 @@ struct ReviewInvoiceView: View {
                     highlightedField(title: L10n.t("Betrag", "Amount"), confidence: draft.amountConfidence) {
                         TextField(L10n.t("z. B. 49,99", "e.g. 49.99"), value: $draft.amount, format: .number)
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     if draft.importKind != .scanReceipt {
                         highlightedField(title: L10n.t("Fälligkeitsdatum", "Due date"), confidence: draft.dueDateConfidence) {
@@ -225,6 +227,7 @@ struct ReviewInvoiceView: View {
             }
             .navigationTitle(L10n.t("Review", "Review"))
             .navigationBarTitleDisplayMode(.inline)
+            .scrollDismissesKeyboard(.immediately)
             .scrollContentBackground(.hidden)
             .background(
                 LinearGradient(
@@ -266,6 +269,7 @@ struct ReviewInvoiceView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button(L10n.t("Fertig", "Done")) {
+                        isAmountFieldFocused = false
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }

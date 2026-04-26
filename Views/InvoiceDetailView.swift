@@ -14,6 +14,7 @@ struct InvoiceDetailView: View {
     @State private var ibanCopied = false
     @State private var customCategoryInput = ""
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
+    @FocusState private var isAmountFieldFocused: Bool
 
     var body: some View {
         Form {
@@ -51,6 +52,7 @@ struct InvoiceDetailView: View {
                 }
                 TextField(L10n.t("Betrag", "Amount"), value: $invoice.amount, format: .number)
                     .keyboardType(.decimalPad)
+                    .focused($isAmountFieldFocused)
                 HStack {
                     Button(L10n.t("+7 Tage", "+7 days")) {
                         applyDueDate(offsetDays: 7)
@@ -153,10 +155,12 @@ struct InvoiceDetailView: View {
         }
         .navigationTitle(invoice.vendorName)
         .navigationBarTitleDisplayMode(.inline)
+        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
