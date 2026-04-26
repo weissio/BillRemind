@@ -130,8 +130,6 @@ private struct MoreView: View {
 private struct InvoicesScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var invoices: [Invoice]
-    @Query private var incomeEntries: [IncomeEntry]
-    @Query private var installmentPlans: [InstallmentPlan]
     @StateObject private var viewModel = HomeViewModel()
     @StateObject private var scanViewModel = ScanViewModel()
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
@@ -142,8 +140,9 @@ private struct InvoicesScreen: View {
     @State private var showQuickScanOptions = false
     @State private var scanCaptureMode: ScanCaptureMode = .invoice
     @State private var dueWindowDays: Int = 7
+    @State private var paidWindowDays: Int = 7
 
-    private static let dueWindowOptions: [Int] = [7, 14, 30, 60, 90]
+    private static let windowOptions: [Int] = [7, 14, 30, 60, 90]
 
     var body: some View {
         NavigationStack {
@@ -175,12 +174,7 @@ private struct InvoicesScreen: View {
                             symbol: "exclamationmark.triangle.fill",
                             tint: .red
                         )
-                        dashboardCard(
-                            title: isEnglish ? "Balance in 30 days" : "Kontostand in 30 Tagen",
-                            value: projectedBalance30Days.formatted(.currency(code: "EUR")),
-                            symbol: "chart.line.uptrend.xyaxis",
-                            tint: .blue
-                        )
+                        dashboardPaidCard()
                     }
                     .padding(.horizontal)
                 }
@@ -338,184 +332,28 @@ private struct InvoicesScreen: View {
         }
     }
 
-    private var projectedBalance30Days: Double {
-        let defaults = UserDefaults.standard
-        let useCurrentBalance = defaults.bool(forKey: "liquidity.useCurrentBalance")
-        let currentBalance = defaults.double(forKey: "liquidity.currentBalance")
-        let startBalance = defaults.double(forKey: "liquidity.startBalance")
-        let effectiveUseCurrentBalance = currentBalance != 0 || useCurrentBalance
-        let base = effectiveUseCurrentBalance ? currentBalance : startBalance
+    private func paidInLastDaysInvoices(_ days: Int) -> [Invoice] {
         let today = Calendar.current.startOfDay(for: Date())
-        let end = Calendar.current.date(byAdding: .day, value: 30, to: today) ?? today
-
-        let invoiceOutgoing = invoices.reduce(0.0) { partial, invoice in
-            guard invoice.status == .open, let due = invoice.dueDate else { return partial }
-            let day = Calendar.current.startOfDay(for: due)
-            guard day >= today && day <= end else { return partial }
-            return partial + (invoice.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0)
-        }
-
-        let installmentOutgoing = installmentPlans
-            .filter(\.isActive)
-            .reduce(0.0) { partial, plan in
-                partial + projectedInstallmentAmount(for: plan, start: today, endInclusive: end)
-            }
-
-        let incomeIncoming = incomeEntries
-            .filter(\.isActive)
-            .reduce(0.0) { partial, income in
-                partial + projectedIncomeAmount(for: income, start: today, endInclusive: end)
-            }
-
-        return base + incomeIncoming - invoiceOutgoing - installmentOutgoing
-    }
-
-    private func projectedInstallmentAmount(for plan: InstallmentPlan, start: Date, endInclusive: Date) -> Double {
-        let calendar = Calendar.current
-        guard start <= endInclusive else { return 0 }
-        let planStart = calendar.startOfDay(for: plan.startDate)
-        let planEnd = plan.endDate.map { calendar.startOfDay(for: $0) }
-        let monthAnchors = projectedUniqueMonthsBetween(start: start, endInclusive: endInclusive)
-        var total = 0.0
-
-        for monthAnchor in monthAnchors {
-            guard let monthInterval = calendar.dateInterval(of: .month, for: monthAnchor) else { continue }
-            let dayRange = calendar.range(of: .day, in: .month, for: monthAnchor) ?? 1..<29
-            let paymentDay = min(max(plan.paymentDay, 1), dayRange.count)
-            guard let paymentDate = calendar.date(byAdding: .day, value: paymentDay - 1, to: monthInterval.start) else { continue }
-            let due = calendar.startOfDay(for: paymentDate)
-            guard due >= start && due <= endInclusive else { continue }
-            guard due >= planStart else { continue }
-            if let planEnd, due > planEnd { continue }
-            total += projectedInstallmentTotalAmount(for: plan, dueDate: due)
-        }
-        return total
-    }
-
-    private func projectedInstallmentTotalAmount(for plan: InstallmentPlan, dueDate: Date) -> Double {
-        if plan.kind == .fixedCost {
-            return NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
-        }
-        let remainingBefore = projectedRemainingPrincipalBeforeDue(of: plan, dueDate: dueDate)
-        let split = projectedInstallmentSplit(plan: plan, remainingBefore: remainingBefore)
-        return split.interest + split.principal
-    }
-
-    private func projectedRemainingPrincipalBeforeDue(of plan: InstallmentPlan, dueDate: Date) -> Double? {
-        guard plan.kind == .loan else { return nil }
-        guard let initial = plan.initialPrincipal else { return nil }
-
-        let dueDay = Calendar.current.startOfDay(for: dueDate)
-        guard let dayBeforeDue = Calendar.current.date(byAdding: .day, value: -1, to: dueDay) else {
-            return NSDecimalNumber(decimal: initial).doubleValue
-        }
-
-        var remaining = NSDecimalNumber(decimal: initial).doubleValue
-        for paidDate in projectedInstallmentDueDates(for: plan, upTo: dayBeforeDue) {
-            let split = projectedInstallmentSplit(plan: plan, remainingBefore: remaining)
-            remaining = max(0, remaining - split.principal)
-            if remaining <= 0 { break }
-            if let endDate = plan.endDate, paidDate > Calendar.current.startOfDay(for: endDate) { break }
-        }
-        return remaining
-    }
-
-    private func projectedInstallmentDueDates(for plan: InstallmentPlan, upTo referenceDate: Date) -> [Date] {
-        let calendar = Calendar.current
-        let reference = calendar.startOfDay(for: referenceDate)
-        let start = calendar.startOfDay(for: plan.startDate)
-        guard reference >= start else { return [] }
-
-        var dueDates: [Date] = []
-        var cursor = startOfMonth(start)
-        while cursor <= reference {
-            if let monthInterval = calendar.dateInterval(of: .month, for: cursor) {
-                let dayRange = calendar.range(of: .day, in: .month, for: cursor) ?? 1..<29
-                let day = min(max(plan.paymentDay, 1), dayRange.count)
-                if let payoutDate = calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start) {
-                    if payoutDate >= start && payoutDate <= reference {
-                        if let endDate = plan.endDate, payoutDate > calendar.startOfDay(for: endDate) {
-                            break
-                        }
-                        dueDates.append(payoutDate)
-                    }
-                }
-            }
-            guard let next = calendar.date(byAdding: .month, value: 1, to: cursor) else { break }
-            cursor = next
-        }
-        return dueDates
-    }
-
-    private func projectedInstallmentSplit(plan: InstallmentPlan, remainingBefore: Double?) -> (interest: Double, principal: Double) {
-        let baseAmount = NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
-        guard plan.kind == .loan else {
-            return (0, max(0, baseAmount))
-        }
-
-        let computedInterest: Double = {
-            if let rate = plan.annualInterestRatePercentValue, let remainingBefore {
-                return max(0, remainingBefore * rate / 100.0 / 12.0)
-            }
-            return max(0, NSDecimalNumber(decimal: plan.monthlyInterest).doubleValue)
-        }()
-
-        switch plan.loanRepaymentMode {
-        case .annuity:
-            let cappedInterest = min(baseAmount, computedInterest)
-            let principal = max(0, baseAmount - cappedInterest)
-            return (cappedInterest, principal)
-        case .fixedPrincipal:
-            let desiredPrincipal = max(0, baseAmount)
-            let principal = max(0, min(desiredPrincipal, remainingBefore ?? desiredPrincipal))
-            return (max(0, computedInterest), principal)
+        let start = Calendar.current.date(byAdding: .day, value: -days, to: today) ?? today
+        return invoices.filter { invoice in
+            guard invoice.status == .paid, let paid = invoice.paidAt else { return false }
+            let day = Calendar.current.startOfDay(for: paid)
+            return day >= start && day <= today
         }
     }
 
-    private func projectedIncomeAmount(for income: IncomeEntry, start: Date, endInclusive: Date) -> Double {
-        let calendar = Calendar.current
-        guard start <= endInclusive else { return 0 }
-        switch income.kind {
-        case .oneTime:
-            let day = calendar.startOfDay(for: income.startDate)
-            guard day >= start && day <= endInclusive else { return 0 }
-            return NSDecimalNumber(decimal: income.amount).doubleValue
-        case .monthlyFixed:
-            let monthAnchors = projectedUniqueMonthsBetween(start: start, endInclusive: endInclusive)
-            let dayOfMonth = calendar.component(.day, from: income.startDate)
-            var total = 0.0
-            for monthAnchor in monthAnchors {
-                guard let interval = calendar.dateInterval(of: .month, for: monthAnchor) else { continue }
-                let dayRange = calendar.range(of: .day, in: .month, for: monthAnchor) ?? 1..<29
-                let targetDay = min(dayOfMonth, dayRange.count)
-                guard let payoutDate = calendar.date(byAdding: .day, value: targetDay - 1, to: interval.start) else { continue }
-                let payout = calendar.startOfDay(for: payoutDate)
-                guard payout >= start && payout <= endInclusive else { continue }
-                guard payout >= calendar.startOfDay(for: income.startDate) else { continue }
-                total += NSDecimalNumber(decimal: income.amount).doubleValue
-            }
-            return total
+    private func paidInLastDaysCount(_ days: Int) -> Int {
+        paidInLastDaysInvoices(days).count
+    }
+
+    private func paidInLastDaysAmount(_ days: Int) -> Decimal {
+        paidInLastDaysInvoices(days).reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
         }
     }
 
-    private func projectedUniqueMonthsBetween(start: Date, endInclusive: Date) -> [Date] {
-        let calendar = Calendar.current
-        guard start <= endInclusive else { return [] }
-        var months: [Date] = []
-        var current = startOfMonth(start)
-        let endMonth = startOfMonth(endInclusive)
-        while current <= endMonth {
-            months.append(current)
-            guard let next = calendar.date(byAdding: .month, value: 1, to: current) else { break }
-            current = next
-        }
-        return months
-    }
-
-    private func startOfMonth(_ date: Date) -> Date {
-        let calendar = Calendar.current
-        let comps = calendar.dateComponents([.year, .month], from: date)
-        return calendar.date(from: comps) ?? date
+    private func paidWindowLabel(days: Int) -> String {
+        isEnglish ? "Paid last \(days) days" : "Bezahlt letzte \(days) Tage"
     }
 
     private var duplicateInvoiceIDs: Set<UUID> {
@@ -586,7 +424,7 @@ private struct InvoicesScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
             Menu {
-                ForEach(Self.dueWindowOptions, id: \.self) { days in
+                ForEach(Self.windowOptions, id: \.self) { days in
                     Button {
                         dueWindowDays = days
                     } label: {
@@ -615,6 +453,58 @@ private struct InvoicesScreen: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text(dueInNextDaysAmount(dueWindowDays).formatted(.currency(code: "EUR")))
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .monospacedDigit()
+        }
+        .frame(width: 195, alignment: .leading)
+        .padding(12)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(red: 0.82, green: 0.86, blue: 0.91), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
+    }
+
+    private func dashboardPaidCard() -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
+            Menu {
+                ForEach(Self.windowOptions, id: \.self) { days in
+                    Button {
+                        paidWindowDays = days
+                    } label: {
+                        if days == paidWindowDays {
+                            Label(paidWindowLabel(days: days), systemImage: "checkmark")
+                        } else {
+                            Text(paidWindowLabel(days: days))
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Text(paidWindowLabel(days: paidWindowDays))
+                        .font(.caption2)
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                        .lineLimit(2)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                }
+            }
+            .buttonStyle(.plain)
+            Text("\(paidInLastDaysCount(paidWindowDays))")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(paidInLastDaysAmount(paidWindowDays).formatted(.currency(code: "EUR")))
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
                 .lineLimit(1)
