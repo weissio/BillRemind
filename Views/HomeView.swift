@@ -142,7 +142,11 @@ private struct InvoicesScreen: View {
     @State private var dueWindowDays: Int = 7
     @State private var paidWindowDays: Int = 7
 
-    private static let windowOptions: [Int] = [7, 14, 30, 60, 90]
+    private static let dueWindowOptions: [Int] = [7, 14, 30, 60, 90]
+    // Paid hat zusätzlich 180/360 Tage für Halbjahres-/Jahresreview.
+    // Sobald die App ein zweites Jahr läuft, kann hier ggf. eine
+    // monatliche Cluster-Ansicht ergänzt werden (z. B. bei Paid und All).
+    private static let paidWindowOptions: [Int] = [7, 14, 30, 60, 90, 180, 360]
 
     var body: some View {
         NavigationStack {
@@ -424,7 +428,7 @@ private struct InvoicesScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
             Menu {
-                ForEach(Self.windowOptions, id: \.self) { days in
+                ForEach(Self.dueWindowOptions, id: \.self) { days in
                     Button {
                         dueWindowDays = days
                     } label: {
@@ -476,7 +480,7 @@ private struct InvoicesScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
             Menu {
-                ForEach(Self.windowOptions, id: \.self) { days in
+                ForEach(Self.paidWindowOptions, id: \.self) { days in
                     Button {
                         paidWindowDays = days
                     } label: {
