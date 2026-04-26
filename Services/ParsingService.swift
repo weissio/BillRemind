@@ -820,7 +820,7 @@ struct ParsingService {
             }
 
             let raw = nsText.substring(with: match.range)
-            let compact = raw.replacingOccurrences(of: " ", with: "")
+            let compact = raw.components(separatedBy: .whitespacesAndNewlines).joined()
             let hasComma = compact.contains(",")
             let hasDot = compact.contains(".")
             let normalized: String
@@ -1835,6 +1835,7 @@ struct ParsingService {
 
 private extension String {
     func matches(for pattern: String) -> [String] {
+        guard count <= 500_000 else { return [] }
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
         let nsRange = NSRange(startIndex..<endIndex, in: self)
         return regex.matches(in: self, range: nsRange).compactMap { result in
@@ -1844,6 +1845,7 @@ private extension String {
     }
 
     func firstCaptureGroup(for pattern: String) -> String? {
+        guard count <= 500_000 else { return nil }
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
         let nsRange = NSRange(startIndex..<endIndex, in: self)
         guard let match = regex.firstMatch(in: self, range: nsRange),

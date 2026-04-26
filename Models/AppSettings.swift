@@ -80,11 +80,11 @@ enum AppSettings {
 
     static var appLanguageCode: String {
         get {
-            let value = UserDefaults.standard.string(forKey: appLanguageCodeKey) ?? "de"
-            return ["de", "en"].contains(value) ? value : "de"
+            let value = UserDefaults.standard.string(forKey: appLanguageCodeKey) ?? "en"
+            return ["de", "en"].contains(value) ? value : "en"
         }
         set {
-            let sanitized = ["de", "en"].contains(newValue) ? newValue : "de"
+            let sanitized = ["de", "en"].contains(newValue) ? newValue : "en"
             UserDefaults.standard.set(sanitized, forKey: appLanguageCodeKey)
         }
     }
