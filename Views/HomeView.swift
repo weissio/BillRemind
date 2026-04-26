@@ -144,13 +144,15 @@ private struct InvoicesScreen: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 AppHeroHeader(
                     title: isEnglish ? "Invoices" : "Rechnungen",
                     subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
-                    icon: "tray.full.fill"
+                    icon: "tray.full.fill",
+                    bottomPadding: 0
                 )
 
+                VStack(spacing: 12) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         dashboardCard(
@@ -174,7 +176,6 @@ private struct InvoicesScreen: View {
                     }
                     .padding(.horizontal)
                 }
-                .padding(.top, 4)
 
                 Picker("Filter", selection: $viewModel.filter) {
                     ForEach(InvoiceFilter.allCases) { filter in
@@ -207,6 +208,8 @@ private struct InvoicesScreen: View {
                     .scrollContentBackground(.hidden)
                     .listRowSpacing(8)
                 }
+                }
+                .padding(.top, 6)
             }
             .background(warmBackground.ignoresSafeArea())
             .navigationTitle("")

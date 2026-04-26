@@ -14,11 +14,13 @@ struct AppHeroHeader: View {
     let title: String
     let subtitle: String?
     let icon: String
+    let bottomPadding: CGFloat
 
-    init(title: String, subtitle: String? = nil, icon: String) {
+    init(title: String, subtitle: String? = nil, icon: String, bottomPadding: CGFloat = 10) {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
+        self.bottomPadding = bottomPadding
     }
 
     var body: some View {
@@ -42,7 +44,7 @@ struct AppHeroHeader: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
-        .padding(.bottom, 10)
+        .padding(.bottom, bottomPadding)
     }
 
     private var iconTile: some View {
