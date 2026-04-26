@@ -141,6 +141,9 @@ private struct InvoicesScreen: View {
     @State private var showPDFImporter = false
     @State private var showQuickScanOptions = false
     @State private var scanCaptureMode: ScanCaptureMode = .invoice
+    @State private var dueWindowDays: Int = 7
+
+    private static let dueWindowOptions: [Int] = [7, 14, 30, 60, 90]
 
     var body: some View {
         NavigationStack {
@@ -148,19 +151,13 @@ private struct InvoicesScreen: View {
                 AppHeroHeader(
                     title: isEnglish ? "Invoices" : "Rechnungen",
                     subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
-                    icon: "tray.full.fill",
-                    bottomPadding: 0
+                    icon: "tray.full.fill"
                 )
 
                 VStack(spacing: 12) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        dashboardCard(
-                            title: isEnglish ? "Due in 7 days" : "Fällig in 7 Tagen",
-                            value: "\(dueInNext7DaysCount)",
-                            symbol: "calendar.badge.clock",
-                            tint: .orange
-                        )
+                        dashboardDueCard()
                         dashboardCard(
                             title: isEnglish ? "Overdue" : "Überfällig",
                             value: "\(overdueCount)",
@@ -209,7 +206,6 @@ private struct InvoicesScreen: View {
                     .listRowSpacing(8)
                 }
                 }
-                .padding(.top, 6)
             }
             .background(warmBackground.ignoresSafeArea())
             .navigationTitle("")
@@ -299,14 +295,18 @@ private struct InvoicesScreen: View {
         }
     }
 
-    private var dueInNext7DaysCount: Int {
+    private func dueInNextDaysCount(_ days: Int) -> Int {
         let start = Calendar.current.startOfDay(for: Date())
-        let end = Calendar.current.date(byAdding: .day, value: 7, to: start) ?? start
+        let end = Calendar.current.date(byAdding: .day, value: days, to: start) ?? start
         return invoices.filter { invoice in
             guard invoice.status == .open, let due = invoice.dueDate else { return false }
             let day = Calendar.current.startOfDay(for: due)
             return day >= start && day <= end
         }.count
+    }
+
+    private func dueWindowLabel(days: Int) -> String {
+        isEnglish ? "Due in \(days) days" : "Fällig in \(days) Tagen"
     }
 
     private var overdueCount: Int {
@@ -535,6 +535,52 @@ private struct InvoicesScreen: View {
                 .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
                 .lineLimit(2)
             Text(value)
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(width: 195, alignment: .leading)
+        .padding(12)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(red: 0.82, green: 0.86, blue: 0.91), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
+    }
+
+    private func dashboardDueCard() -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
+            Menu {
+                ForEach(Self.dueWindowOptions, id: \.self) { days in
+                    Button {
+                        dueWindowDays = days
+                    } label: {
+                        if days == dueWindowDays {
+                            Label(dueWindowLabel(days: days), systemImage: "checkmark")
+                        } else {
+                            Text(dueWindowLabel(days: days))
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Text(dueWindowLabel(days: dueWindowDays))
+                        .font(.caption2)
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                        .lineLimit(2)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                }
+            }
+            .buttonStyle(.plain)
+            Text("\(dueInNextDaysCount(dueWindowDays))")
                 .font(.headline)
                 .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
                 .lineLimit(1)
