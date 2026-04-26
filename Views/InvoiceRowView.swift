@@ -4,6 +4,7 @@ struct InvoiceRowView: View {
     let invoice: Invoice
     var isLikelyDuplicate: Bool = false
     @AppStorage(AppSettings.urgencySoonDaysKey) private var urgencySoonDays: Int = AppSettings.urgencySoonDays
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     private let calendar = Calendar.current
 
     var body: some View {

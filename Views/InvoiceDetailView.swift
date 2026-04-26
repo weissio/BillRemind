@@ -14,6 +14,7 @@ struct InvoiceDetailView: View {
     @State private var ibanCopied = false
     @State private var customCategoryInput = ""
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @FocusState private var isAmountFieldFocused: Bool
 
     var body: some View {

@@ -20,6 +20,7 @@ struct ReviewInvoiceView: View {
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
     @AppStorage(AppSettings.reviewConfidenceThresholdKey) private var reviewConfidenceThreshold: Double = AppSettings.reviewConfidenceThreshold
     @AppStorage(AppSettings.ocrDebugVisibleKey) private var ocrDebugVisible: Bool = AppSettings.ocrDebugVisible
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @FocusState private var isAmountFieldFocused: Bool
     private let notificationService = NotificationService()
 

@@ -619,6 +619,9 @@ private struct StatsView: View {
     @State private var selectedMonth: Date = Date()
     @State private var dataScope: DataScope = .open
     @State private var reportInvoiceStatusScope: ReportInvoiceStatusScope = .all
+    // Observed so the view re-renders when the language is toggled in Settings
+    // (otherwise enum-driven Picker labels stay stuck in the previous language).
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @AppStorage(AppSettings.exportFormatKey) private var exportFormat: String = AppSettings.exportFormat
     @AppStorage("liquidity.startBalance") private var startBalance: Double = 0
     @AppStorage("liquidity.useCurrentBalance") private var useCurrentBalance: Bool = false
@@ -2795,17 +2798,22 @@ private struct StatsView: View {
 
     private func rateSubtitle(_ plan: InstallmentPlan) -> String {
         let start = dateString(plan.startDate)
-        let end = plan.endDate.map(dateString) ?? "offen"
+        let end = plan.endDate.map(dateString) ?? L10n.t("offen", "open-ended")
+        let from = L10n.t("ab", "from")
+        let endLabel = L10n.t("Ende", "end")
+        let dayLabel = L10n.t("am", "on day")
+        let scheduleLine = "\(from) \(start), \(endLabel) \(end), \(dayLabel) \(plan.paymentDay)."
         if plan.kind == .fixedCost {
-            return "ab \(start), Ende \(end), am \(plan.paymentDay)."
+            return scheduleLine
         }
         let repaymentText = plan.loanRepaymentMode == .fixedPrincipal
             ? L10n.t("Feste Tilgung", "Fixed principal")
             : L10n.t("Annuität", "Annuity")
+        let interestLabel = L10n.t("Sollzins", "Nominal interest")
         let rateText = plan.loanRepaymentMode == .fixedPrincipal
-            ? (plan.annualInterestRatePercent.map { "Sollzins \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("Sollzins fehlt", "Nominal interest missing"))
-            : (plan.annualInterestRatePercent.map { "Sollzins \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("feste Monatsrate", "fixed monthly payment"))
-        return "ab \(start), Ende \(end), am \(plan.paymentDay). · \(repaymentText) · \(rateText)"
+            ? (plan.annualInterestRatePercent.map { "\(interestLabel) \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("Sollzins fehlt", "Nominal interest missing"))
+            : (plan.annualInterestRatePercent.map { "\(interestLabel) \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("feste Monatsrate", "fixed monthly payment"))
+        return "\(scheduleLine) · \(repaymentText) · \(rateText)"
     }
 
     private func remainingPrincipal(of plan: InstallmentPlan, at referenceDate: Date) -> Decimal? {
@@ -3021,6 +3029,8 @@ private struct IncomeManagementView: View {
     @State private var editIncomeMonthlyDay: Int = 1
     @State private var isShowingEditIncomeSheet = false
     @FocusState private var isAmountFieldFocused: Bool
+    // See StatsView: observe so the view re-renders on language toggle.
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     var body: some View {
         Form {
