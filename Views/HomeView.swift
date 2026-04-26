@@ -137,7 +137,6 @@ private struct InvoicesScreen: View {
     @State private var showScanner = false
     @State private var showReview = false
     @State private var showPDFImporter = false
-    @State private var showQuickScanOptions = false
     @State private var scanCaptureMode: ScanCaptureMode = .invoice
     @State private var dueWindowDays: Int = 7
     @State private var paidWindowDays: Int = 7
@@ -156,14 +155,38 @@ private struct InvoicesScreen: View {
                     subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
                     icon: "tray.full.fill"
                 ) {
-                    Button {
-                        showQuickScanOptions = true
+                    // Menü statt confirmationDialog: das Popover ankert direkt
+                    // unter dem +-Tile, statt iOS-typisch unten am Bildschirm
+                    // aufzuklappen — kürzerer Weg vom Antippen zur Auswahl.
+                    Menu {
+                        Button {
+                            scanCaptureMode = .invoice
+                            showScanner = true
+                        } label: {
+                            Label(isEnglish ? "Scan invoice" : "Scan Rechnung", systemImage: "doc.text.viewfinder")
+                        }
+                        Button {
+                            scanCaptureMode = .receipt
+                            showScanner = true
+                        } label: {
+                            Label(isEnglish ? "Scan receipt" : "Scan Kassenbon", systemImage: "scroll")
+                        }
+                        Button {
+                            scanViewModel.prepareManualEntry()
+                            showReview = true
+                        } label: {
+                            Label(isEnglish ? "Manual entry" : "Manuell erfassen", systemImage: "square.and.pencil")
+                        }
+                        Button {
+                            showPDFImporter = true
+                        } label: {
+                            Label(isEnglish ? "Import PDF" : "PDF Import", systemImage: "doc.fill")
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                             .foregroundStyle(AppTheme.accent)
                     }
-                    .buttonStyle(.plain)
                     .accessibilityLabel(isEnglish ? "Add invoice" : "Rechnung hinzufügen")
                 }
 
@@ -260,24 +283,6 @@ private struct InvoicesScreen: View {
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .tint(AppTheme.accent)
-            .confirmationDialog(isEnglish ? "Choose scan type" : "Scan wählen", isPresented: $showQuickScanOptions) {
-                Button(isEnglish ? "Scan invoice" : "Scan Rechnung") {
-                    scanCaptureMode = .invoice
-                    showScanner = true
-                }
-                Button(isEnglish ? "Scan receipt" : "Scan Kassenbon") {
-                    scanCaptureMode = .receipt
-                    showScanner = true
-                }
-                Button(isEnglish ? "Manual entry" : "Manuell erfassen") {
-                    scanViewModel.prepareManualEntry()
-                    showReview = true
-                }
-                Button(isEnglish ? "Import PDF" : "PDF Import") {
-                    showPDFImporter = true
-                }
-                Button(isEnglish ? "Cancel" : "Abbrechen", role: .cancel) {}
-            }
             .sheet(isPresented: $showScanner) {
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
                     CameraPicker { image in
