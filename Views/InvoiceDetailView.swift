@@ -153,6 +153,14 @@ struct InvoiceDetailView: View {
         }
         .navigationTitle(invoice.vendorName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(L10n.t("Fertig", "Done")) {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
+        }
         .confirmationDialog(L10n.t("Rechnung löschen?", "Delete invoice?"), isPresented: $showDeleteConfirm) {
             Button(L10n.t("Löschen", "Delete"), role: .destructive) {
                 viewModel.delete(invoice: invoice, modelContext: modelContext)

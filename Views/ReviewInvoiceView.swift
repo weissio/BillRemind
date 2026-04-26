@@ -238,6 +238,13 @@ struct ReviewInvoiceView: View {
             .onAppear {
                 sanitizeCriticalIdentifiers()
                 applyLearnedDefaultsIfAvailable()
+                // Commit displayed due date so the value the user sees in the picker
+                // is what gets saved — even if they don't interact with the picker.
+                // The DatePicker visually falls back to invoiceDate when dueDate is nil,
+                // which previously caused saves with no Fälligkeit set.
+                if draft.importKind != .scanReceipt, draft.dueDate == nil {
+                    draft.dueDate = draft.invoiceDate
+                }
             }
             .onChange(of: draft.invoiceDate) { _, newValue in
                 guard let offset = draft.dueOffsetDaysHint else { return }
@@ -255,6 +262,12 @@ struct ReviewInvoiceView: View {
                         save()
                     }
                     .fontWeight(.semibold)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(L10n.t("Fertig", "Done")) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
             .alert(L10n.t("Mögliche Dublette", "Possible duplicate"), isPresented: $showDuplicateAlert) {

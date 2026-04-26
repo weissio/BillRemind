@@ -19,42 +19,58 @@ struct OCRService: OCRServicing {
         let orientation = cgImageOrientation(for: image.imageOrientation)
 
         var variants: [(name: String, image: CGImage)] = [("Original", baseCGImage)]
+        // Enhanced variants (contrast/brightness)
         if let enhanced = makeEnhancedOCRImage(from: baseCGImage, strong: false) {
             variants.append(("Enhanced", enhanced))
         }
         if let strong = makeEnhancedOCRImage(from: baseCGImage, strong: true) {
             variants.append(("HighContrast", strong))
         }
+        // Denoised variant (optional noise reduction)
+        if let denoised = makeEnhancedOCRImage(from: baseCGImage, strong: false, applyDenoise: true) {
+            variants.append(("Denoised", denoised))
+        }
+        // Binarized variant (thresholded image)
+        if let binarized = makeEnhancedOCRImage(from: baseCGImage, strong: false, makeBinarized: true) {
+            variants.append(("Binarized", binarized))
+        }
 
         var best: OCRCandidate?
         var lastError: Error?
         var attempted: [OCRCandidate] = []
 
-        for variant in variants {
-            do {
-                let corrected = try await recognizeText(
-                    from: variant.image,
-                    orientation: orientation,
-                    variantName: "\(variant.name)-corrected",
-                    usesLanguageCorrection: true
-                )
-                attempted.append(corrected)
-                if best == nil || corrected.score > best!.score {
-                    best = corrected
+        await withTaskGroup(of: (OCRCandidate?, OCRCandidate?).self) { group in
+            for variant in variants {
+                group.addTask {
+                    do {
+                        let corrected = try await self.recognizeText(
+                            from: variant.image,
+                            orientation: orientation,
+                            variantName: "\(variant.name)-corrected",
+                            usesLanguageCorrection: true
+                        )
+                        let raw = try await self.recognizeText(
+                            from: variant.image,
+                            orientation: orientation,
+                            variantName: "\(variant.name)-raw",
+                            usesLanguageCorrection: false
+                        )
+                        return (corrected, raw)
+                    } catch {
+                        lastError = error
+                        return (nil, nil)
+                    }
                 }
-
-                let raw = try await recognizeText(
-                    from: variant.image,
-                    orientation: orientation,
-                    variantName: "\(variant.name)-raw",
-                    usesLanguageCorrection: false
-                )
-                attempted.append(raw)
-                if best == nil || raw.score > best!.score {
-                    best = raw
+            }
+            for await result in group {
+                if let corrected = result.0 {
+                    attempted.append(corrected)
+                    if best == nil || corrected.score > best!.score { best = corrected }
                 }
-            } catch {
-                lastError = error
+                if let raw = result.1 {
+                    attempted.append(raw)
+                    if best == nil || raw.score > best!.score { best = raw }
+                }
             }
         }
 
@@ -238,11 +254,38 @@ struct OCRService: OCRServicing {
         }
     }
 
-    private func makeEnhancedOCRImage(from cgImage: CGImage, strong: Bool) -> CGImage? {
+    private func makeEnhancedOCRImage(from cgImage: CGImage, strong: Bool, applyDenoise: Bool = false, makeBinarized: Bool = false) -> CGImage? {
         let input = CIImage(cgImage: cgImage)
-
+        var workingImage = input
+        // Optional denoise step
+        if applyDenoise, let denoise = CIFilter(name: "CINoiseReduction") {
+            denoise.setValue(workingImage, forKey: kCIInputImageKey)
+            denoise.setValue(0.02, forKey: "inputNoiseLevel")
+            denoise.setValue(0.40, forKey: "inputSharpness")
+            if let out = denoise.outputImage { workingImage = out }
+        }
+        // Optional binarization step (simple threshold)
+        if makeBinarized {
+            // Convert to grayscale first
+            if let gray = CIFilter(name: "CIColorControls") {
+                gray.setValue(workingImage, forKey: kCIInputImageKey)
+                gray.setValue(0.0, forKey: kCIInputSaturationKey)
+                if let grayOut = gray.outputImage { workingImage = grayOut }
+            }
+            // Apply a harsh contrast to approximate binary image
+            if let contrast = CIFilter(name: "CIColorMatrix") {
+                contrast.setValue(workingImage, forKey: kCIInputImageKey)
+                // Increase contrast dramatically
+                contrast.setValue(CIVector(x: 10, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                contrast.setValue(CIVector(x: 0, y: 10, z: 0, w: 0), forKey: "inputGVector")
+                contrast.setValue(CIVector(x: 0, y: 0, z: 10, w: 0), forKey: "inputBVector")
+                contrast.setValue(CIVector(x: -5, y: -5, z: -5, w: 1), forKey: "inputBiasVector")
+                if let binOut = contrast.outputImage { workingImage = binOut }
+            }
+        }
+        // Continue with original contrast/brightness/sharpen pipeline
         guard let colorControls = CIFilter(name: "CIColorControls") else { return nil }
-        colorControls.setValue(input, forKey: kCIInputImageKey)
+        colorControls.setValue(workingImage, forKey: kCIInputImageKey)
         colorControls.setValue(0.0, forKey: kCIInputSaturationKey)
         colorControls.setValue(strong ? 1.85 : 1.35, forKey: kCIInputContrastKey)
         colorControls.setValue(strong ? 0.03 : 0.01, forKey: kCIInputBrightnessKey)
@@ -446,6 +489,7 @@ struct OCRExtractionResult {
 
 private extension String {
     func matches(for pattern: String) -> [String] {
+        guard count <= 500_000 else { return [] }
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
         let nsRange = NSRange(startIndex..<endIndex, in: self)
         return regex.matches(in: self, range: nsRange).compactMap { result in

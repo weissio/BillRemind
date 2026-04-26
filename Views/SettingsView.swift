@@ -217,7 +217,11 @@ struct SettingsView: View {
             backupURL = url
             infoMessage = L10n.t("Backup erstellt.", "Backup created.")
         } catch {
-            infoMessage = L10n.t("Backup fehlgeschlagen.", "Backup failed.")
+            NSLog("Mnemor: backup failed: \(error.localizedDescription)")
+            infoMessage = L10n.t(
+                "Backup fehlgeschlagen: \(error.localizedDescription)",
+                "Backup failed: \(error.localizedDescription)"
+            )
         }
     }
 
@@ -258,8 +262,30 @@ struct SettingsView: View {
 
             try modelContext.save()
             infoMessage = L10n.t("Backup wiederhergestellt.", "Backup restored.")
+        } catch let DecodingError.dataCorrupted(context) {
+            NSLog("Mnemor: restore decoding failed: \(context.debugDescription)")
+            infoMessage = L10n.t(
+                "Restore fehlgeschlagen: Backup-Datei beschädigt oder ungültig.",
+                "Restore failed: backup file is corrupted or invalid."
+            )
+        } catch let DecodingError.keyNotFound(key, _) {
+            NSLog("Mnemor: restore missing key: \(key.stringValue)")
+            infoMessage = L10n.t(
+                "Restore fehlgeschlagen: Feld \(key.stringValue) fehlt im Backup.",
+                "Restore failed: field \(key.stringValue) missing in backup."
+            )
+        } catch let DecodingError.typeMismatch(_, context) {
+            NSLog("Mnemor: restore type mismatch: \(context.debugDescription)")
+            infoMessage = L10n.t(
+                "Restore fehlgeschlagen: Backup-Format inkompatibel.",
+                "Restore failed: backup format is incompatible."
+            )
         } catch {
-            infoMessage = L10n.t("Restore fehlgeschlagen.", "Restore failed.")
+            NSLog("Mnemor: restore failed: \(error.localizedDescription)")
+            infoMessage = L10n.t(
+                "Restore fehlgeschlagen: \(error.localizedDescription)",
+                "Restore failed: \(error.localizedDescription)"
+            )
         }
     }
 

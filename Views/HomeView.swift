@@ -5,7 +5,129 @@ import UniformTypeIdentifiers
 import UIKit
 
 struct HomeView: View {
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+
+    @State private var selectedTab: Int = 0
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            InvoicesScreen()
+                .tabItem {
+                    Label(isEnglish ? "Invoices" : "Rechnungen", systemImage: "house.fill")
+                }
+                .tag(0)
+
+            NavigationStack {
+                StatsView(mode: .expenses)
+            }
+            .tabItem {
+                Label(isEnglish ? "Expenses" : "Ausgaben", systemImage: "chart.pie.fill")
+            }
+            .tag(1)
+
+            NavigationStack {
+                IncomeManagementView()
+            }
+            .tabItem {
+                Label(isEnglish ? "Income" : "Einnahmen", systemImage: "eurosign.circle.fill")
+            }
+            .tag(2)
+
+            NavigationStack {
+                StatsView(mode: .reports)
+            }
+            .tabItem {
+                Label(isEnglish ? "Analytics" : "Auswertung", systemImage: "chart.line.uptrend.xyaxis")
+            }
+            .tag(3)
+
+            NavigationStack {
+                MoreView()
+            }
+            .tabItem {
+                Label(isEnglish ? "More" : "Mehr", systemImage: "square.grid.2x2.fill")
+            }
+            .tag(4)
+        }
+        .tint(Color(red: 0.31, green: 0.42, blue: 0.56))
+    }
+
+    private var isEnglish: Bool {
+        appLanguageCode == "en"
+    }
+}
+
+private struct MoreView: View {
     @Environment(\.openURL) private var openURL
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @State private var supportInfoMessage: String?
+
+    var body: some View {
+        List {
+            Section {
+                NavigationLink(isEnglish ? "Guide" : "Anleitung") {
+                    HelpView()
+                }
+                NavigationLink("Settings") {
+                    SettingsView()
+                }
+                NavigationLink(isEnglish ? "Feedback" : "Feedback") {
+                    FeedbackView()
+                }
+            }
+            Section {
+                Button(L10n.t("Problem melden", "Report issue")) {
+                    openBugReportMail()
+                }
+                Button(L10n.t("Debug-Infos kopieren", "Copy debug info")) {
+                    copyDebugInfo()
+                }
+            }
+        }
+        .navigationTitle(isEnglish ? "More" : "Mehr")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert(
+            L10n.t("Hinweis", "Info"),
+            isPresented: Binding(
+                get: { supportInfoMessage != nil },
+                set: { newValue in
+                    if !newValue { supportInfoMessage = nil }
+                }
+            ),
+            actions: {
+                Button(L10n.t("OK", "OK"), role: .cancel) {}
+            },
+            message: {
+                Text(supportInfoMessage ?? "")
+            }
+        )
+    }
+
+    private var isEnglish: Bool {
+        appLanguageCode == "en"
+    }
+
+    private func openBugReportMail() {
+        guard let url = SupportMailService.bugReportURL(
+            isEnglish: isEnglish,
+            source: "MoreMenu"
+        ) else {
+            supportInfoMessage = L10n.t(
+                "Bug-Mail konnte nicht vorbereitet werden.",
+                "Could not prepare bug email."
+            )
+            return
+        }
+        openURL(url)
+    }
+
+    private func copyDebugInfo() {
+        UIPasteboard.general.string = SupportMailService.debugInfoText(source: "MoreMenu")
+        supportInfoMessage = L10n.t("Debug-Infos kopiert.", "Debug info copied.")
+    }
+}
+
+private struct InvoicesScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var invoices: [Invoice]
     @Query private var incomeEntries: [IncomeEntry]
@@ -19,7 +141,6 @@ struct HomeView: View {
     @State private var showPDFImporter = false
     @State private var showQuickScanOptions = false
     @State private var scanCaptureMode: ScanCaptureMode = .invoice
-    @State private var supportInfoMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -86,59 +207,14 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
             .toolbar {
-                ToolbarItemGroup(placement: .topBarLeading) {
-                    Text(isEnglish ? "Invoices" : "Rechnungen")
-                        .fontWeight(.semibold)
-                    NavigationLink(isEnglish ? "Expenses" : "Ausgaben") {
-                        StatsView(mode: .expenses)
-                    }
-                    NavigationLink(isEnglish ? "Analytics" : "Auswertung") {
-                        StatsView(mode: .reports)
-                    }
-                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        NavigationLink(isEnglish ? "Income" : "Einnahmen") {
-                            IncomeManagementView()
-                        }
-                        NavigationLink(isEnglish ? "Guide" : "Anleitung") {
-                            HelpView()
-                        }
-                        NavigationLink("Settings") {
-                            SettingsView()
-                        }
-                        NavigationLink(isEnglish ? "Feedback" : "Feedback") {
-                            FeedbackView()
-                        }
-                        Button(L10n.t("Problem melden", "Report issue")) {
-                            openBugReportMail()
-                        }
-                        Button(L10n.t("Debug-Infos kopieren", "Copy debug info")) {
-                            copyDebugInfo()
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                            .font(.title3)
-                    }
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                HStack(spacing: 12) {
-                    Button(isEnglish ? "Scan" : "Scan") {
+                    Button {
                         showQuickScanOptions = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
                     }
-                    .buttonStyle(WarmPrimaryButtonStyle(background: Color(red: 0.31, green: 0.42, blue: 0.56), foreground: .white))
-
-                    Button(isEnglish ? "Manual" : "Manuell") {
-                        scanViewModel.prepareManualEntry()
-                        showReview = true
-                    }
-                    .buttonStyle(WarmPrimaryButtonStyle(background: Color(red: 0.13, green: 0.22, blue: 0.33), foreground: .white))
                 }
-                .padding(.horizontal)
-                .padding(.top, 6)
-                .padding(.bottom, 10)
-                .background(.ultraThinMaterial.opacity(0.001))
             }
             .confirmationDialog(isEnglish ? "Choose scan type" : "Scan wählen", isPresented: $showQuickScanOptions) {
                 Button(isEnglish ? "Scan invoice" : "Scan Rechnung") {
@@ -148,6 +224,10 @@ struct HomeView: View {
                 Button(isEnglish ? "Scan receipt" : "Scan Kassenbon") {
                     scanCaptureMode = .receipt
                     showScanner = true
+                }
+                Button(isEnglish ? "Manual entry" : "Manuell erfassen") {
+                    scanViewModel.prepareManualEntry()
+                    showReview = true
                 }
                 Button(isEnglish ? "Import PDF" : "PDF Import") {
                     showPDFImporter = true
@@ -193,21 +273,6 @@ struct HomeView: View {
                     break
                 }
             }
-            .alert(
-                L10n.t("Hinweis", "Info"),
-                isPresented: Binding(
-                    get: { supportInfoMessage != nil },
-                    set: { newValue in
-                        if !newValue { supportInfoMessage = nil }
-                    }
-                ),
-                actions: {
-                    Button(L10n.t("OK", "OK"), role: .cancel) {}
-                },
-                message: {
-                    Text(supportInfoMessage ?? "")
-                }
-            )
         }
     }
 
@@ -295,25 +360,6 @@ struct HomeView: View {
             total += projectedInstallmentTotalAmount(for: plan, dueDate: due)
         }
         return total
-    }
-
-    private func openBugReportMail() {
-        guard let url = SupportMailService.bugReportURL(
-            isEnglish: isEnglish,
-            source: "HomeMenu"
-        ) else {
-            supportInfoMessage = L10n.t(
-                "Bug-Mail konnte nicht vorbereitet werden.",
-                "Could not prepare bug email."
-            )
-            return
-        }
-        openURL(url)
-    }
-
-    private func copyDebugInfo() {
-        UIPasteboard.general.string = SupportMailService.debugInfoText(source: "HomeMenu")
-        supportInfoMessage = L10n.t("Debug-Infos kopiert.", "Debug info copied.")
     }
 
     private func projectedInstallmentTotalAmount(for plan: InstallmentPlan, dueDate: Date) -> Double {
@@ -445,8 +491,14 @@ struct HomeView: View {
     private var duplicateInvoiceIDs: Set<UUID> {
         var groups: [String: [UUID]] = [:]
         for invoice in invoices {
-            let vendor = invoice.vendorName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            let number = (invoice.invoiceNumber ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let vendor = invoice.vendorName
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .decomposedStringWithCanonicalMapping
+                .lowercased()
+            let number = (invoice.invoiceNumber ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .decomposedStringWithCanonicalMapping
+                .lowercased()
             let amount = invoice.amount.map { NSDecimalNumber(decimal: $0).stringValue } ?? "-"
             let key: String
             if !number.isEmpty {
@@ -488,24 +540,6 @@ struct HomeView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
-    }
-}
-
-private struct WarmPrimaryButtonStyle: ButtonStyle {
-    let background: Color
-    let foreground: Color
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(maxWidth: .infinity)
-            .font(.title3.weight(.medium))
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(background.opacity(configuration.isPressed ? 0.85 : 1))
-            )
-            .foregroundStyle(foreground)
-            .scaleEffect(configuration.isPressed ? 0.99 : 1)
     }
 }
 
@@ -665,10 +699,8 @@ private struct StatsView: View {
                     }
                     .pickerStyle(.segmented)
                 }
-            }
 
-            if !(mode == .expenses && selectedTab == .fixedCosts) {
-                Section(L10n.t("Monat", "Month")) {
+                if !(mode == .expenses && selectedTab == .fixedCosts) {
                     Picker(L10n.t("Monat", "Month"), selection: $selectedMonth) {
                         ForEach(availableMonths, id: \.self) { month in
                             Text(monthLabel(for: month)).tag(month)
@@ -691,7 +723,6 @@ private struct StatsView: View {
                         }
                         .pickerStyle(.segmented)
                     }
-
                 }
             }
 
@@ -750,7 +781,6 @@ private struct StatsView: View {
         }
         .navigationTitle(mode == .expenses ? L10n.t("Ausgaben", "Expenses") : L10n.t("Auswertung", "Analytics"))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
@@ -762,27 +792,10 @@ private struct StatsView: View {
         )
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(L10n.t("Zurück", "Back")) {
-                    dismiss()
-                }
-            }
-            if mode == .reports {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(L10n.t("Export erstellen", "Create export")) {
-                        if refreshExportFile() {
-                            exportStatusMessage = L10n.t("Export erstellt. Jetzt auf 'Teilen' tippen.", "Export created. Tap 'Share' now.")
-                        } else {
-                            exportStatusMessage = L10n.t("Export fehlgeschlagen. Bitte Format auf CSV stellen und erneut versuchen.", "Export failed. Set format to CSV and try again.")
-                        }
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    if let exportURL {
-                        ShareLink(item: exportURL) {
-                            Text(L10n.t("Teilen", "Share"))
-                        }
-                    }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(L10n.t("Fertig", "Done")) {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
         }
@@ -796,16 +809,6 @@ private struct StatsView: View {
         }
         .task(id: weeklyPlanRowsSignature) {
             await updateNegativeCashflowAlertIfNeeded()
-        }
-        .overlay(alignment: .bottom) {
-            if let exportStatusMessage {
-                Text(exportStatusMessage)
-                    .font(.caption)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(.ultraThinMaterial, in: Capsule())
-                    .padding(.bottom, 10)
-            }
         }
         .sheet(isPresented: $isShowingEditInstallmentSheet) {
             NavigationStack {
@@ -926,7 +929,11 @@ private struct StatsView: View {
                                     .swipeActions {
                                         Button(role: .destructive) {
                                             modelContext.delete(repayment)
-                                            try? modelContext.save()
+                                            do {
+                                                try modelContext.save()
+                                            } catch {
+                                                NSLog("Mnemor: delete special repayment failed: \(error.localizedDescription)")
+                                            }
                                             refreshExportFile()
                                         } label: {
                                             Text(L10n.t("Löschen", "Delete"))
@@ -954,6 +961,12 @@ private struct StatsView: View {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(L10n.t("Speichern", "Save")) {
                             saveEditedInstallmentPlan()
+                        }
+                    }
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button(L10n.t("Fertig", "Done")) {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
                 }
@@ -992,7 +1005,11 @@ private struct StatsView: View {
                                 .swipeActions {
                                     Button(role: .destructive) {
                                         modelContext.delete(repayment)
-                                        try? modelContext.save()
+                                        do {
+                                            try modelContext.save()
+                                        } catch {
+                                            NSLog("Mnemor: delete special repayment failed: \(error.localizedDescription)")
+                                        }
                                         refreshExportFile()
                                     } label: {
                                         Text(L10n.t("Löschen", "Delete"))
@@ -1008,6 +1025,12 @@ private struct StatsView: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(L10n.t("Abbrechen", "Cancel")) {
                             specialRepaymentPlanForSheet = nil
+                        }
+                    }
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button(L10n.t("Fertig", "Done")) {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
                 }
@@ -1041,14 +1064,16 @@ private struct StatsView: View {
                 }
 
                 ForEach(weeklyPlanRows) { row in
+                    let netDelta = row.income - row.totalOutgoing
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Text(row.label)
                                 .font(.subheadline)
                             Spacer()
-                            Text(row.totalOutgoing.formatted(.currency(code: "EUR")))
-                                .fontWeight(.medium)
+                            Text(row.projectedBalance.formatted(.currency(code: "EUR")))
+                                .fontWeight(.semibold)
                                 .monospacedDigit()
+                                .foregroundStyle(row.projectedBalance < 0 ? .red : .primary)
                         }
                         HStack {
                             Text("\(L10n.t("Rechnung", "Invoice")) \(row.invoiceOutgoing.formatted(.currency(code: "EUR"))) · \(L10n.t("Fixkosten/Kredite", "Fixed costs/Loans")) \(row.installmentOutgoing.formatted(.currency(code: "EUR"))) · \(L10n.t("Einnahmen", "Income")) \(row.income.formatted(.currency(code: "EUR")))")
@@ -1057,14 +1082,14 @@ private struct StatsView: View {
                             Spacer()
                         }
                         HStack {
-                            Text(L10n.t("Prognose", "Forecast"))
+                            Text(L10n.t("Saldo Woche", "Weekly net"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(row.projectedBalance.formatted(.currency(code: "EUR")))
+                            Text(netDelta.formatted(.currency(code: "EUR").sign(strategy: .always())))
                                 .font(.caption)
                                 .monospacedDigit()
-                                .foregroundStyle(row.projectedBalance < 0 ? .red : .secondary)
+                                .foregroundStyle(netDelta < 0 ? .red : .green)
                         }
                     }
                     .padding(.vertical, 2)
@@ -1077,32 +1102,30 @@ private struct StatsView: View {
 
             Section("Chart (\(planningWeeks) \(L10n.t("Wochen", "weeks")))") {
                 Chart {
+                    ForEach(weeklyCashflowBars) { bar in
+                        BarMark(
+                            x: .value("Woche", bar.weekStart, unit: .weekOfYear),
+                            y: .value("Betrag", bar.amount),
+                            width: .ratio(0.9)
+                        )
+                        .foregroundStyle(by: .value("Typ", bar.type))
+                        .position(by: .value("Typ", bar.type), axis: .horizontal, span: .ratio(1))
+                    }
+
                     ForEach(weeklyPlanRows) { row in
-                        BarMark(
-                            x: .value("Woche", row.weekStart),
-                            y: .value("Ausgaben", row.totalOutgoing)
-                        )
-                        .foregroundStyle(by: .value("Typ", "Ausgaben"))
-
-                        BarMark(
-                            x: .value("Woche", row.weekStart),
-                            y: .value("Einnahmen", row.income)
-                        )
-                        .foregroundStyle(by: .value("Typ", "Einnahmen"))
-
                         LineMark(
                             x: .value("Woche", row.weekStart),
-                            y: .value("Kontostand", row.projectedBalance)
+                            y: .value("Betrag", row.projectedBalance)
                         )
                         .interpolationMethod(.catmullRom)
-                        .foregroundStyle(by: .value("Typ", "Kontostand"))
+                        .foregroundStyle(by: .value("Typ", L10n.t("Kontostand", "Balance")))
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
 
                         PointMark(
                             x: .value("Woche", row.weekStart),
-                            y: .value("Kontostand", row.projectedBalance)
+                            y: .value("Betrag", row.projectedBalance)
                         )
-                        .foregroundStyle(by: .value("Typ", "Kontostand"))
+                        .foregroundStyle(by: .value("Typ", L10n.t("Kontostand", "Balance")))
                     }
 
                     RuleMark(y: .value("Null", 0))
@@ -1110,9 +1133,9 @@ private struct StatsView: View {
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                 }
                 .chartForegroundStyleScale([
-                    "Ausgaben": .red.opacity(0.45),
-                    "Einnahmen": .green.opacity(0.45),
-                    "Kontostand": Color(red: 0.54, green: 0.35, blue: 0.25)
+                    L10n.t("Ausgaben", "Expenses"): .red.opacity(0.55),
+                    L10n.t("Einnahmen", "Income"): .green.opacity(0.55),
+                    L10n.t("Kontostand", "Balance"): Color(red: 0.54, green: 0.35, blue: 0.25)
                 ])
                 .chartLegend(position: .bottom, alignment: .leading, spacing: 12)
                 .chartYAxis {
@@ -1429,7 +1452,11 @@ private struct StatsView: View {
                             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
                             Button(role: .destructive) {
                                 modelContext.delete(plan)
-                                try? modelContext.save()
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    NSLog("Mnemor: delete installment plan failed: \(error.localizedDescription)")
+                                }
                                 refreshExportFile()
                             } label: {
                                 Text(L10n.t("Löschen", "Delete"))
@@ -1538,7 +1565,7 @@ private struct StatsView: View {
                 return MonthlyInstallmentOccurrence(
                     planName: plan.name,
                     dueDate: dueDay,
-                    amount: Decimal(installmentTotalAmount(for: plan, dueDate: dueDay)),
+                    amount: installmentTotalAmount(for: plan, dueDate: dueDay),
                     isOpen: dueDay >= today
                 )
             }
@@ -1795,6 +1822,15 @@ private struct StatsView: View {
         return "\(negativeCashflowAlertEnabled)|\(negativeCashflowAlertWeeks)|\(balances)"
     }
 
+    private var weeklyCashflowBars: [WeeklyCashflowBar] {
+        weeklyPlanRows.flatMap { row in
+            [
+                WeeklyCashflowBar(weekStart: row.weekStart, type: L10n.t("Ausgaben", "Expenses"), amount: row.totalOutgoing),
+                WeeklyCashflowBar(weekStart: row.weekStart, type: L10n.t("Einnahmen", "Income"), amount: row.income)
+            ]
+        }
+    }
+
     private func updateNegativeCashflowAlertIfNeeded() async {
         guard negativeCashflowAlertEnabled else {
             notificationService.cancelNegativeCashflowAlert()
@@ -1877,7 +1913,7 @@ private struct StatsView: View {
             guard paymentDate >= start && paymentDate < endExclusive else { continue }
             guard paymentDate >= planStart else { continue }
             if let planEnd, paymentDate > planEnd { continue }
-            total += installmentTotalAmount(for: plan, dueDate: paymentDate)
+            total += NSDecimalNumber(decimal: installmentTotalAmount(for: plan, dueDate: paymentDate)).doubleValue
         }
         return total
     }
@@ -2621,6 +2657,7 @@ private struct StatsView: View {
         installmentPaymentDay = 1
         installmentValidationMessage = nil
         refreshExportFile()
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func beginEditingInstallmentPlan(_ plan: InstallmentPlan, forcedKind: InstallmentPlan.Kind? = nil) {
@@ -2736,6 +2773,7 @@ private struct StatsView: View {
         refreshExportFile()
         editInstallmentValidationMessage = nil
         isShowingEditInstallmentSheet = false
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func rateSubtitle(_ plan: InstallmentPlan) -> String {
@@ -2756,14 +2794,15 @@ private struct StatsView: View {
     private func remainingPrincipal(of plan: InstallmentPlan, at referenceDate: Date) -> Decimal? {
         guard plan.kind == .loan else { return nil }
         guard let initial = plan.initialPrincipal else { return nil }
-        var remaining = NSDecimalNumber(decimal: initial).doubleValue
-        for dueDate in installmentDueDates(for: plan, upTo: referenceDate) {
+        var remaining = initial
+        for (index, dueDate) in installmentDueDates(for: plan, upTo: referenceDate).enumerated() {
+            guard index < 1200 else { break }
             let split = installmentSplit(plan: plan, remainingBefore: remaining)
-            remaining = max(0, remaining - split.principal)
+            remaining = max(Decimal.zero, remaining - split.principal)
             if remaining <= 0 { break }
             if let endDate = plan.endDate, dueDate > calendar.startOfDay(for: endDate) { break }
         }
-        return Decimal(remaining)
+        return remaining
     }
 
     private func installmentDueDates(for plan: InstallmentPlan, upTo referenceDate: Date) -> [Date] {
@@ -2792,68 +2831,82 @@ private struct StatsView: View {
         return dueDates
     }
 
-    private func installmentSplit(plan: InstallmentPlan, remainingBefore: Double?) -> (interest: Double, principal: Double) {
-        let baseAmount = NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
+    private func installmentSplit(plan: InstallmentPlan, remainingBefore: Decimal?) -> (interest: Decimal, principal: Decimal) {
+        let baseAmount = max(Decimal.zero, plan.monthlyPayment)
         guard plan.kind == .loan else {
-            return (0, max(0, baseAmount))
+            return (0, baseAmount)
         }
-        let computedInterest: Double = {
-            if let rate = plan.annualInterestRatePercentValue, let remainingBefore {
-                return max(0, remainingBefore * rate / 100.0 / 12.0)
+        let computedInterest: Decimal = {
+            if let rate = plan.annualInterestRatePercent, let remainingBefore {
+                let monthly = remainingBefore * rate / Decimal(100) / Decimal(12)
+                return max(Decimal.zero, monthly)
             }
-            return max(0, NSDecimalNumber(decimal: plan.monthlyInterest).doubleValue)
+            return max(Decimal.zero, plan.monthlyInterest)
         }()
 
         switch plan.loanRepaymentMode {
         case .annuity:
             let cappedInterest = min(baseAmount, computedInterest)
-            let principal = max(0, baseAmount - cappedInterest)
+            let principal = max(Decimal.zero, baseAmount - cappedInterest)
             return (cappedInterest, principal)
         case .fixedPrincipal:
-            let desiredPrincipal = max(0, baseAmount)
-            let principal = max(0, min(desiredPrincipal, remainingBefore ?? desiredPrincipal))
-            return (max(0, computedInterest), principal)
+            let desiredPrincipal = baseAmount
+            let principal = max(Decimal.zero, min(desiredPrincipal, remainingBefore ?? desiredPrincipal))
+            return (max(Decimal.zero, computedInterest), principal)
         }
     }
 
-    private func remainingPrincipalBeforeDue(of plan: InstallmentPlan, dueDate: Date) -> Double? {
+    private func remainingPrincipalBeforeDue(of plan: InstallmentPlan, dueDate: Date) -> Decimal? {
         guard plan.kind == .loan else { return nil }
         guard let initial = plan.initialPrincipal else { return nil }
 
         let dueDay = calendar.startOfDay(for: dueDate)
         guard let dayBeforeDue = calendar.date(byAdding: .day, value: -1, to: dueDay) else {
-            return NSDecimalNumber(decimal: initial).doubleValue
+            return initial
         }
 
-        var remaining = NSDecimalNumber(decimal: initial).doubleValue
-        for paidDate in installmentDueDates(for: plan, upTo: dayBeforeDue) {
+        var remaining = initial
+        for (index, paidDate) in installmentDueDates(for: plan, upTo: dayBeforeDue).enumerated() {
+            guard index < 1200 else { break }
             let split = installmentSplit(plan: plan, remainingBefore: remaining)
-            remaining = max(0, remaining - split.principal)
+            remaining = max(Decimal.zero, remaining - split.principal)
             if remaining <= 0 { break }
             if let endDate = plan.endDate, paidDate > calendar.startOfDay(for: endDate) { break }
         }
 
-        let specialRepaymentsTotal = NSDecimalNumber(decimal: specialRepaymentTotal(for: plan, upTo: dayBeforeDue)).doubleValue
-        remaining = max(0, remaining - specialRepaymentsTotal)
+        let specialRepaymentsTotal = specialRepaymentTotal(for: plan, upTo: dayBeforeDue)
+        remaining = max(Decimal.zero, remaining - specialRepaymentsTotal)
         return remaining
     }
 
-    private func installmentTotalAmount(for plan: InstallmentPlan, dueDate: Date) -> Double {
+    private func installmentTotalAmount(for plan: InstallmentPlan, dueDate: Date) -> Decimal {
+        if let endDate = plan.endDate, calendar.startOfDay(for: dueDate) > calendar.startOfDay(for: endDate) {
+            return 0
+        }
         if plan.kind == .fixedCost {
-            return NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
+            return plan.monthlyPayment
         }
         let remainingBefore = remainingPrincipalBeforeDue(of: plan, dueDate: dueDate)
+        if let remainingBefore, remainingBefore <= 0 {
+            return 0
+        }
         let split = installmentSplit(plan: plan, remainingBefore: remainingBefore)
         return split.interest + split.principal
     }
 
     private func currentInstallmentSplit(for plan: InstallmentPlan) -> (interest: Decimal, principal: Decimal) {
-        let split = installmentSplit(plan: plan, remainingBefore: remainingPrincipalBeforeDue(of: plan, dueDate: Date()))
-        return (Decimal(split.interest), Decimal(split.principal))
+        if let endDate = plan.endDate, calendar.startOfDay(for: Date()) > calendar.startOfDay(for: endDate) {
+            return (0, 0)
+        }
+        let remainingBefore = remainingPrincipalBeforeDue(of: plan, dueDate: Date())
+        if plan.kind == .loan, let remainingBefore, remainingBefore <= 0 {
+            return (0, 0)
+        }
+        return installmentSplit(plan: plan, remainingBefore: remainingBefore)
     }
 
     private func currentInstallmentTotal(for plan: InstallmentPlan) -> Decimal {
-        Decimal(installmentTotalAmount(for: plan, dueDate: Date()))
+        installmentTotalAmount(for: plan, dueDate: Date())
     }
 
     private func specialRepaymentTotal(for plan: InstallmentPlan, upTo referenceDate: Date) -> Decimal {
@@ -2871,13 +2924,22 @@ private struct StatsView: View {
 
     private func addSpecialRepayment(to plan: InstallmentPlan) {
         guard plan.kind == .loan,
-              let amount = parsedSpecialRepaymentAmount(),
-              amount > 0
+              let rawAmount = parsedSpecialRepaymentAmount(),
+              rawAmount > 0
         else { return }
+
+        let cappedAmount: Decimal
+        if let remaining = remainingPrincipalAfterSpecialRepayments(of: plan, at: editSpecialRepaymentDate), remaining > 0 {
+            cappedAmount = min(rawAmount, remaining)
+        } else if remainingPrincipalAfterSpecialRepayments(of: plan, at: editSpecialRepaymentDate) == 0 {
+            return
+        } else {
+            cappedAmount = rawAmount
+        }
 
         let repayment = InstallmentSpecialRepayment(
             planID: plan.id,
-            amount: amount,
+            amount: cappedAmount,
             repaymentDate: editSpecialRepaymentDate
         )
         modelContext.insert(repayment)
@@ -2886,6 +2948,7 @@ private struct StatsView: View {
         editSpecialRepaymentAmountText = ""
         editSpecialRepaymentDate = Date()
         refreshExportFile()
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func parsedSpecialRepaymentAmount() -> Decimal? {
@@ -3012,7 +3075,11 @@ private struct IncomeManagementView: View {
                             .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
                             Button(role: .destructive) {
                                 modelContext.delete(income)
-                                try? modelContext.save()
+                                do {
+                                    try modelContext.save()
+                                } catch {
+                                    NSLog("Mnemor: delete income failed: \(error.localizedDescription)")
+                                }
                             } label: {
                                 Text(L10n.t("Löschen", "Delete"))
                             }
@@ -3023,7 +3090,6 @@ private struct IncomeManagementView: View {
         }
         .navigationTitle(L10n.t("Einnahmen", "Income"))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
@@ -3035,9 +3101,10 @@ private struct IncomeManagementView: View {
         )
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(L10n.t("Zurück", "Back")) {
-                    dismiss()
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(L10n.t("Fertig", "Done")) {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
         }
@@ -3085,6 +3152,12 @@ private struct IncomeManagementView: View {
                             saveEditedIncome()
                         }
                     }
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button(L10n.t("Fertig", "Done")) {
+                            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                        }
+                    }
                 }
             }
         }
@@ -3130,6 +3203,7 @@ private struct IncomeManagementView: View {
         incomeKind = .monthlyFixed
         incomeStartDate = Date()
         incomeMonthlyDay = 1
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private var editIncomeDateLabel: String {
@@ -3165,6 +3239,7 @@ private struct IncomeManagementView: View {
             : editIncomeStartDate
         try? modelContext.save()
         isShowingEditIncomeSheet = false
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     private func normalizedMonthlyIncomeStartDate(baseDate: Date, day: Int) -> Date {
@@ -3209,6 +3284,13 @@ private struct WeeklyLiquidityRow: Identifiable {
 private struct BreakdownItem: Identifiable {
     let id = UUID()
     let name: String
+    let amount: Double
+}
+
+private struct WeeklyCashflowBar: Identifiable {
+    let id = UUID()
+    let weekStart: Date
+    let type: String
     let amount: Double
 }
 
