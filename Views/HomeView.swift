@@ -145,6 +145,12 @@ private struct InvoicesScreen: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
+                AppHeroHeader(
+                    title: isEnglish ? "Invoices" : "Rechnungen",
+                    subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
+                    icon: "tray.full.fill"
+                )
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         dashboardCard(
@@ -753,10 +759,22 @@ private struct StatsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            AppHeroHeader(
+                title: mode == .expenses
+                    ? L10n.t("Ausgaben", "Expenses")
+                    : L10n.t("Auswertung", "Analytics"),
+                subtitle: mode == .expenses
+                    ? L10n.t("Kosten und Fixkosten im Überblick", "Costs and fixed costs at a glance")
+                    : L10n.t("Einnahmen, Ausgaben und Saldo", "Income, expenses and balance"),
+                icon: mode == .expenses
+                    ? "creditcard.fill"
+                    : "chart.bar.doc.horizontal.fill"
+            )
+
             topSegmentBar
                 .padding(.horizontal, 16)
-                .padding(.top, 6)
-                .padding(.bottom, 4)
+                .padding(.top, 2)
+                .padding(.bottom, 6)
 
             Form {
             if !(mode == .expenses && selectedTab == .fixedCosts) {
@@ -3090,7 +3108,14 @@ private struct IncomeManagementView: View {
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     var body: some View {
-        Form {
+        VStack(spacing: 0) {
+            AppHeroHeader(
+                title: L10n.t("Einnahmen", "Income"),
+                subtitle: L10n.t("Fixe und variable Einnahmen verwalten", "Manage fixed and variable income"),
+                icon: "banknote.fill"
+            )
+
+            Form {
             Section(L10n.t("Neue Einnahme", "New income")) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L10n.t("Bezeichnung", "Name"))
@@ -3173,10 +3198,12 @@ private struct IncomeManagementView: View {
                     }
                 }
             }
+            }
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.immediately)
         }
         .navigationTitle(L10n.t("Einnahmen", "Income"))
         .navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
@@ -3186,7 +3213,6 @@ private struct IncomeManagementView: View {
             .ignoresSafeArea()
         )
         .tint(AppTheme.accent)
-        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
