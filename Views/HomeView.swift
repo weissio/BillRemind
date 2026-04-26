@@ -685,30 +685,80 @@ private struct StatsView: View {
         editingKind == .loan
     }
 
-    var body: some View {
-        Form {
-            Section {
-                if mode == .expenses {
-                    Picker(L10n.t("Bereich", "Area"), selection: $selectedTab) {
-                        ForEach(StatsTab.allCases) { tab in
-                            Text(tab.title).tag(tab)
-                        }
+    @ViewBuilder
+    private var topSegmentBar: some View {
+        HStack(spacing: 8) {
+            if mode == .expenses {
+                ForEach(StatsTab.allCases) { tab in
+                    segmentButton(
+                        title: tab.title,
+                        icon: iconName(for: tab),
+                        isSelected: selectedTab == tab
+                    ) {
+                        selectedTab = tab
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                } else {
-                    Picker(L10n.t("Bereich", "Area"), selection: $selectedReportsTab) {
-                        ForEach(ReportsTab.allCases) { tab in
-                            Text(tab.title).tag(tab)
-                        }
+                }
+            } else {
+                ForEach(ReportsTab.allCases) { tab in
+                    segmentButton(
+                        title: tab.title,
+                        icon: iconName(for: tab),
+                        isSelected: selectedReportsTab == tab
+                    ) {
+                        selectedReportsTab = tab
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
                 }
             }
-            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-            .listRowBackground(Color.clear)
+        }
+    }
 
+    private func segmentButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        let accent = Color(red: 0.54, green: 0.35, blue: 0.25)
+        return Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.subheadline.weight(.semibold))
+                Text(title)
+                    .font(.subheadline.weight(isSelected ? .semibold : .medium))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isSelected ? accent.opacity(0.18) : Color(.tertiarySystemFill))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isSelected ? accent.opacity(0.45) : Color.clear, lineWidth: 1)
+            )
+            .foregroundStyle(isSelected ? accent : Color.secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func iconName(for tab: StatsTab) -> String {
+        switch tab {
+        case .analysis: return "chart.bar.fill"
+        case .fixedCosts: return "calendar.badge.clock"
+        }
+    }
+
+    private func iconName(for tab: ReportsTab) -> String {
+        switch tab {
+        case .total: return "chart.line.uptrend.xyaxis"
+        case .invoices: return "doc.text.fill"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            topSegmentBar
+                .padding(.horizontal, 16)
+                .padding(.top, 6)
+                .padding(.bottom, 4)
+
+            Form {
             if !(mode == .expenses && selectedTab == .fixedCosts) {
                 Section {
                     Picker(L10n.t("Monat", "Month"), selection: $selectedMonth) {
@@ -788,10 +838,12 @@ private struct StatsView: View {
             reportsInvoiceSections
 
             fixedCostSections
+            }
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.immediately)
         }
         .navigationTitle(mode == .expenses ? L10n.t("Ausgaben", "Expenses") : L10n.t("Auswertung", "Analytics"))
         .navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
@@ -801,7 +853,6 @@ private struct StatsView: View {
             .ignoresSafeArea()
         )
         .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
-        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
