@@ -165,6 +165,12 @@ struct ReviewInvoiceView: View {
                                 .buttonStyle(.bordered)
                                 .tint(isDuePresetSelected(30) ? Color.accentColor : Color.secondary)
                             }
+                            Text(L10n.t(
+                                "Erneut tippen entfernt die Fälligkeit – z. B. wenn bereits per PayPal bezahlt.",
+                                "Tap again to clear the due date — e.g. when already paid via PayPal."
+                            ))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                             DatePicker(L10n.t("Fällig am", "Due date"), selection: dueDateBinding, displayedComponents: .date)
                         }
                     }
@@ -413,12 +419,28 @@ struct ReviewInvoiceView: View {
     }
 
     private func applyDueDate(offsetDays: Int) {
+        // Bereits aktiv? Dann wirkt erneutes Antippen als Toggle und entfernt
+        // die Fälligkeit. Sinnvoll z. B. wenn die Rechnung bereits per PayPal
+        // bezahlt ist und kein Fälligkeitsdatum gefuehrt werden soll, oder
+        // wenn die OCR ein falsches +7/+14/+30 erkannt hat und der Nutzer
+        // wirklich kein Faelligkeitsdatum will.
+        if isDuePresetSelected(offsetDays) {
+            clearDueDate()
+            return
+        }
         let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: draft.invoiceDate) ?? draft.invoiceDate
         draft.dueDate = due
         draft.dueOffsetDaysHint = offsetDays
         if draft.reminderDate == nil || draft.reminderEnabled {
             draft.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: due)
         }
+    }
+
+    private func clearDueDate() {
+        draft.dueDate = nil
+        draft.dueOffsetDaysHint = nil
+        // Reminder bewusst nicht angefasst — den schaltet der Nutzer separat,
+        // falls er ihn wirklich gesetzt haben moechte.
     }
 
     private func isDuePresetSelected(_ offsetDays: Int) -> Bool {
