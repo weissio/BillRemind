@@ -221,7 +221,11 @@ private struct InvoicesScreen: View {
 
                 Picker("Filter", selection: $viewModel.filter) {
                     ForEach(InvoiceFilter.allCases) { filter in
-                        Text(filter.title).tag(filter)
+                        // appLanguageCode hier explizit referenzieren, damit
+                        // SwiftUI die Abhaengigkeit erkennt und bei Sprach-
+                        // wechsel sofort neu rendert.
+                        Text(filter.localizedTitle(isEnglish: appLanguageCode == "en"))
+                            .tag(filter)
                     }
                 }
                 .pickerStyle(.segmented)
