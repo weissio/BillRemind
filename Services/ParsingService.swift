@@ -1364,11 +1364,15 @@ struct ParsingService {
     }
 
     private func extractPaymentRecipient(from lines: [String]) -> String {
+        // QA-Audit E2: paymentRecipient lief am trimAddressTailFromCompanyName-
+        // Helper vorbei. Effekt: vendor war "SCANSHOP UG", paymentRecipient
+        // aber "SCANSHOP UG (haftungsbeschraenkt) Hauptstrasse 7 12345 Berlin".
+        // Beide Pfade ziehen nun denselben Trim durch.
         if let labeledRecipient = extractLabeledEntity(
             from: lines,
             labels: ["zahlungsempfanger", "zahlungsempfaenger", "zahlungsempfänger", "payment recipient", "kontoinhaber", "beguenstigter", "begünstigter"]
         ) {
-            return labeledRecipient
+            return trimAddressTailFromCompanyName(labeledRecipient)
         }
 
         for line in lines {
@@ -1378,7 +1382,7 @@ struct ParsingService {
             if isLikelyCustomerLine(lower) { continue }
             if isLikelyReceiptLineItemNoise(lower) { continue }
             if containsCompanyMarker(lower) && !hasCustomerMarker(lower) {
-                return cleaned
+                return trimAddressTailFromCompanyName(cleaned)
             }
         }
         return extractVendorName(from: lines)

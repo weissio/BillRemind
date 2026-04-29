@@ -222,6 +222,21 @@ final class ParsingServiceTests: XCTestCase {
         XCTAssertEqual(formatter.string(from: parsed.invoiceDate ?? .distantPast), "2026-04-22")
     }
 
+    /// QA-Audit E2: paymentRecipient lief am trimAddressTailFromCompanyName-
+    /// Helper vorbei und enthielt die Adresse, waehrend vendorName sauber
+    /// war. Beide Pfade muessen jetzt konsistent abschneiden.
+    func testTrimsAddressTailAlsoFromPaymentRecipient() {
+        let text = """
+        Rechnungsnummer: SC-2026-0091
+        Rechnungsdatum: 20.02.2026
+        SCANSHOP UG Hauptstrasse 7 12345 Berlin
+        IBAN: DE11370400440532013000
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.vendorName, "SCANSHOP UG")
+        XCTAssertEqual(parsed.paymentRecipient, "SCANSHOP UG")
+    }
+
     /// QA-Report Risiko: Adresse rutschte ins vendorName-Feld mit
     /// ("NORDSCHUTZ Versicherung AG Policenring 8 50667 Koeln").
     /// Die Trimming-Logik schneidet jetzt am letzten Legal-Suffix ab,
