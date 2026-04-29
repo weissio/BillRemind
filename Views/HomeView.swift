@@ -6,6 +6,7 @@ import UIKit
 
 struct HomeView: View {
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @EnvironmentObject private var pendingDocumentInbox: PendingDocumentInbox
 
     @State private var selectedTab: Int = 0
 
@@ -50,11 +51,16 @@ struct HomeView: View {
             .tag(4)
         }
         .tint(Color(red: 0.31, green: 0.42, blue: 0.56))
-        .onReceive(NotificationCenter.default.publisher(for: .billRemindDidReceiveExternalDocument)) { _ in
+        .onChange(of: pendingDocumentInbox.pendingURL) { _, newValue in
             // Aktiver Tab-Wechsel auf Rechnungen, sobald von außen eine
             // PDF/ein Bild geteilt wurde — InvoicesScreen kümmert sich um
             // OCR und das Review-Sheet.
-            selectedTab = 0
+            if newValue != nil { selectedTab = 0 }
+        }
+        .onAppear {
+            // Cold-Start-Fall: URL kann bereits in der Inbox liegen, bevor die
+            // View angeschlossen wurde. Dann wuerde .onChange nicht feuern.
+            if pendingDocumentInbox.pendingURL != nil { selectedTab = 0 }
         }
     }
 
@@ -139,6 +145,7 @@ private struct InvoicesScreen: View {
     @StateObject private var viewModel = HomeViewModel()
     @StateObject private var scanViewModel = ScanViewModel()
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @EnvironmentObject private var pendingDocumentInbox: PendingDocumentInbox
 
     @State private var showScanner = false
     @State private var showReview = false
@@ -328,10 +335,17 @@ private struct InvoicesScreen: View {
                     break
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .billRemindDidReceiveExternalDocument)) { notification in
-                guard let url = notification.userInfo?["url"] as? URL else { return }
-                Task {
-                    await handleIncomingExternalDocument(url: url)
+            .onChange(of: pendingDocumentInbox.pendingURL) { _, newValue in
+                guard let url = newValue else { return }
+                pendingDocumentInbox.pendingURL = nil
+                Task { await handleIncomingExternalDocument(url: url) }
+            }
+            .onAppear {
+                // Cold-Start: URL kann bereits in der Inbox liegen, bevor diese
+                // View ihren .onChange-Subscriber aufgehaengt hat.
+                if let url = pendingDocumentInbox.pendingURL {
+                    pendingDocumentInbox.pendingURL = nil
+                    Task { await handleIncomingExternalDocument(url: url) }
                 }
             }
         }

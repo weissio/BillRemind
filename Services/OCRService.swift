@@ -155,8 +155,11 @@ struct OCRService: OCRServicing {
                 }
 
                 // Region rescue: header/footer crops often contain metadata blocks (invoice number/date/IBAN).
-                // Use a larger render target for metadata OCR even when page OCR is otherwise strong.
-                let metadataSourceImage = renderImage(for: page, maxSide: 5600) ?? rescueSourceImage
+                // Render at 2800px (statt frueher 5600px) — Metadaten-Schrift bleibt lesbar,
+                // aber Render-Kosten und Speicherbedarf sinken um Faktor 4. Die OCR auf den
+                // Crop-Zonen laeuft jetzt single-pass (siehe supplementalMetadataText), nicht
+                // mehr im 10-Varianten-Modus.
+                let metadataSourceImage = renderImage(for: page, maxSide: 2800) ?? rescueSourceImage
                 if let rescueText = try await supplementalMetadataText(from: metadataSourceImage),
                    !rescueText.isEmpty {
                     let merged = [trimmed, rescueText]
@@ -406,13 +409,23 @@ struct OCRService: OCRServicing {
             CGRect(x: 0, y: CGFloat(height) * 0.46, width: CGFloat(width), height: CGFloat(height) * 0.30) // middle strip for shifted bank block
         ]
 
+        // Single-Pass-OCR pro Crop-Zone (frueher: 10-Varianten-Pipeline pro Zone =
+        // 70 Vision-OCR-Requests pro PDF-Seite). Bei 7 Zonen sind das jetzt 7
+        // Requests pro Seite — Faktor 10 schneller, ohne dass Metadaten-Erkennung
+        // (Rechnungsnr/IBAN/Datum) spuerbar leidet, weil die Crops ohnehin sauber
+        // gerendert sind und Vision dort kaum vom Multi-Variant-Vorprocessing
+        // profitiert.
         var snippets: [String] = []
         for zone in zones {
             let cropRect = zone.integral
             guard let crop = cgImage.cropping(to: cropRect) else { continue }
-            let cropImage = UIImage(cgImage: crop)
-            let ocr = try await recognizeText(from: cropImage)
-            let text = ocr.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let candidate = try await recognizeText(
+                from: crop,
+                orientation: .up,
+                variantName: "MetadataRescue",
+                usesLanguageCorrection: false
+            )
+            let text = candidate.text.trimmingCharacters(in: .whitespacesAndNewlines)
             if !text.isEmpty {
                 snippets.append(text)
             }

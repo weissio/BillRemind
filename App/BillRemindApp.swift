@@ -2,11 +2,15 @@ import SwiftUI
 import SwiftData
 import LocalAuthentication
 
-extension Notification.Name {
-    /// Wird gepostet, wenn die App per Share-Sheet / "Kopieren in Mnemor"
-    /// eine PDF oder ein Bild von außen erhalten hat. userInfo enthält unter
-    /// dem Schlüssel "url" eine stabile Kopie im temporären Verzeichnis.
-    static let billRemindDidReceiveExternalDocument = Notification.Name("billRemindDidReceiveExternalDocument")
+/// Puffert eine extern eingegangene PDF/Bild-URL (per "Kopieren in Mnemor"
+/// aus dem Share-Sheet) zwischen onOpenURL und dem Verarbeiter in
+/// InvoicesScreen. Notwendig, weil bei einem Kaltstart aus dem Share-Sheet
+/// onOpenURL feuern kann, bevor die SwiftUI-View-Hierarchie inkl. Subscriber
+/// fertig aufgebaut ist — eine Notification waere in dem Fall verloren,
+/// ein @Published-Wert bleibt erhalten und wird beim Verbinden ausgelesen.
+@MainActor
+final class PendingDocumentInbox: ObservableObject {
+    @Published var pendingURL: URL?
 }
 
 @main
@@ -15,6 +19,7 @@ struct BillRemindApp: App {
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @State private var isUnlocked = false
     @State private var showingLockError = false
+    @StateObject private var pendingDocumentInbox = PendingDocumentInbox()
 
     private var sharedModelContainer: ModelContainer? = {
         let schema = Schema([
@@ -88,6 +93,7 @@ struct BillRemindApp: App {
             .tint(Color(red: 0.48, green: 0.31, blue: 0.22))
             .preferredColorScheme(.light)
             .environment(\.locale, Locale(identifier: appLanguageCode))
+            .environmentObject(pendingDocumentInbox)
             .onOpenURL { url in
                 handleExternalDocument(url: url)
             }
@@ -119,11 +125,10 @@ struct BillRemindApp: App {
             return
         }
 
-        NotificationCenter.default.post(
-            name: .billRemindDidReceiveExternalDocument,
-            object: nil,
-            userInfo: ["url": dest]
-        )
+        // In die Inbox legen — InvoicesScreen liest beim ersten Subscriben oder
+        // beim naechsten .onChange aus. So geht keine URL verloren, selbst wenn
+        // der Subscriber beim Kaltstart noch nicht attached ist.
+        pendingDocumentInbox.pendingURL = dest
     }
 
     private var shouldShowLockOverlay: Bool {
