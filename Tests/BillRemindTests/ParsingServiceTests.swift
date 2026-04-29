@@ -176,6 +176,82 @@ final class ParsingServiceTests: XCTestCase {
         XCTAssertEqual(parsed.dueOffsetDaysHint, 7)
     }
 
+    /// Bug #2 aus QA-Report Release 104: bei einer Zeile mit zwei Labels
+    /// hintereinander ("Rechnungsnummer: TS-2026-55209 Bestellnummer: ORD-...")
+    /// wurde die Whitespace-tolerante Capture-Group bis zum Ende verbraucht
+    /// und produzierte den Frankenstein-Wert "TS-2026-55209BESTELLNUMMER...".
+    func testExtractsInvoiceNumberAndStopsAtNextLabel() {
+        let text = """
+        Rechnungsnummer: TS-2026-55209 Bestellnummer: ORD-7785001
+        Rechnungsdatum: 20.02.2026
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.invoiceNumber, "TS-2026-55209")
+    }
+
+    /// Bug #1 aus QA-Report Release 104: extractDueDate hatte umlautlos
+    /// "Faellig" / "Faellig am" nicht in der Keyword-Liste, obwohl die
+    /// anderen Due-Pfade es kannten.
+    func testExtractsDueDateFromUmlautFreeFaellig() {
+        let text = """
+        Rechnungsnummer: TS-2026-55209
+        Rechnungsdatum: 20.02.2026
+        Faellig am: 05.03.2026 Status: Offen
+        """
+        let parsed = service.parse(text: text)
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Europe/Berlin")
+        formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertEqual(formatter.string(from: parsed.dueDate ?? .distantPast), "2026-03-05")
+    }
+
+    /// QA-Report 🟡: Calendar.current war zeitzonen-abhaengig. Wenn das
+    /// iPhone z. B. auf Asia/Tokyo steht, war "22.04.2026" abhaengig vom
+    /// Vergleichs-Timezone mal valide, mal nicht. Der Parser pinnt jetzt
+    /// alle Datums-Operationen auf Europe/Berlin — der Test formatiert mit
+    /// derselben Timezone und sollte konsistent "2026-04-22" sehen.
+    func testInvoiceDateParsingIsTimezoneStable() {
+        let text = """
+        Rechnungsnummer: TS-2026-00001
+        Rechnungsdatum: 22.04.2026
+        """
+        let parsed = service.parse(text: text)
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Europe/Berlin")
+        formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertEqual(formatter.string(from: parsed.invoiceDate ?? .distantPast), "2026-04-22")
+    }
+
+    /// QA-Audit E2: paymentRecipient lief am trimAddressTailFromCompanyName-
+    /// Helper vorbei und enthielt die Adresse, waehrend vendorName sauber
+    /// war. Beide Pfade muessen jetzt konsistent abschneiden.
+    func testTrimsAddressTailAlsoFromPaymentRecipient() {
+        let text = """
+        Rechnungsnummer: SC-2026-0091
+        Rechnungsdatum: 20.02.2026
+        SCANSHOP UG Hauptstrasse 7 12345 Berlin
+        IBAN: DE11370400440532013000
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.vendorName, "SCANSHOP UG")
+        XCTAssertEqual(parsed.paymentRecipient, "SCANSHOP UG")
+    }
+
+    /// QA-Report Risiko: Adresse rutschte ins vendorName-Feld mit
+    /// ("NORDSCHUTZ Versicherung AG Policenring 8 50667 Koeln").
+    /// Die Trimming-Logik schneidet jetzt am letzten Legal-Suffix ab,
+    /// wenn danach eine PLZ folgt.
+    func testTrimsAddressTailFromCompanyName() {
+        let text = """
+        Rechnungsnummer: VS-2026-1148
+        Rechnungsdatum: 20.02.2026
+        NORDSCHUTZ Versicherung AG Policenring 8 50667 Koeln
+        IBAN: DE11370400440532013000
+        """
+        let parsed = service.parse(text: text)
+        XCTAssertEqual(parsed.vendorName, "NORDSCHUTZ Versicherung AG")
+    }
+
     func testExtractsLooseGermanIBANFromNoisyBankLine() {
         let text = "ZAN: DE:317556830430148960 - BIC: DEUTDEFYX"
         let iban = service.extractIBAN(from: text)

@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "01_stadtwerke_rechnung.pdf",
+  "expected": {
+    "vendor_name": "STADTWERKE NORD GmbH",
+    "payment_recipient": "STADTWERKE NORD GmbH",
+    "amount_value": 76.86,
+    "category": "Wohnen",
+    "due_date": "2026-03-05",
+    "due_offset_days_hint": null,
+    "status_suggestion": "open",
+    "invoice_number": "SW-2026-0301",
+    "iban": "DE98200505501122334466"
+  }
+}

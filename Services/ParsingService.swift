@@ -26,10 +26,30 @@ struct ParsedInvoiceData {
     var invoiceNumberConfidence: Double?
     var ibanConfidence: Double?
     var reviewHint: String?
+    /// Wenn die Rechnung explizit auf bereits erfolgte Zahlung per
+    /// PayPal/ApplePay/etc. hinweist ("Die Zahlung wurde per Paypal
+    /// beglichen."), wird hier der erkannte Anbieter (z. B. "PayPal")
+    /// hinterlegt. Das Review-Sheet zeigt daraus einen Vorschlag-Banner —
+    /// die Auto-Markierung als bezahlt geschieht aber NUR auf Klick des
+    /// Nutzers, nicht implizit.
+    var alreadyPaidProviderHint: String?
 }
 
 struct ParsingService {
-    private let calendar = Calendar.current
+    /// Fixe Zeitzone Europe/Berlin fuer alle Datums-Operationen im Parser.
+    /// Vorher: Calendar.current — abhaengig von der System-Zeitzone des Nutzers.
+    /// Effekt: Wer mit dem iPhone in Tokio (UTC+9) eine deutsche Rechnung
+    /// scannt, deren Rechnungsdatum "22.04.2026" ist, bekam u. U. einen
+    /// Vergleich "22.04.2026 00:00 Tokyo > heute (Berlin)" und damit
+    /// invoiceDate=nil. Mit fixiertem TZ ist das Verhalten reproduzierbar
+    /// und entspricht der Lokalzeit, die auf der Rechnung gemeint war.
+    private static let parserTimeZone: TimeZone = TimeZone(identifier: "Europe/Berlin") ?? TimeZone(secondsFromGMT: 0)!
+    private let calendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = ParsingService.parserTimeZone
+        cal.locale = Locale(identifier: "de_DE")
+        return cal
+    }()
     private struct HeaderSignals {
         var invoiceNumber: String?
         var invoiceDate: Date?
@@ -64,8 +84,45 @@ struct ParsingService {
             invoiceNumber: documentType == .receipt ? nil : (headerSignals.invoiceNumber ?? extractInvoiceNumber(from: lines)),
             iban: extractIBAN(from: lines, fullText: normalizedText),
             note: nil,
-            extractedText: normalizedText
+            extractedText: normalizedText,
+            alreadyPaidProviderHint: extractAlreadyPaidProviderHint(from: normalizedText)
         )
+    }
+
+    /// Erkennt explizite Hinweise, dass die Rechnung bereits ueber einen
+    /// Online-Bezahldienst beglichen wurde — nur sehr enge Phrasen, damit
+    /// keine falschen Vorschlaege bei "Wir akzeptieren PayPal" entstehen.
+    private func extractAlreadyPaidProviderHint(from text: String) -> String? {
+        let lower = text.lowercased()
+
+        // Provider in der Reihenfolge ihrer Auflistung — der erste Treffer gewinnt.
+        let providers: [(label: String, needles: [String])] = [
+            ("PayPal", ["paypal"]),
+            ("Apple Pay", ["apple pay", "applepay"]),
+            ("Google Pay", ["google pay", "googlepay", "gpay"]),
+            ("Klarna", ["klarna"]),
+            ("Stripe", ["stripe"]),
+            ("Amazon Pay", ["amazon pay", "amazonpay"]),
+            ("Sofortueberweisung", ["sofortueberweisung", "sofortüberweisung", "sofort überweisung"]),
+            ("Kreditkarte", ["kreditkarte", "credit card"])
+        ]
+
+        // Nur wenn der Provider zusammen mit einem Begleichungs-Verb auftaucht.
+        // Das schliesst neutrale Erwaehnungen ("Wir akzeptieren PayPal") aus.
+        let paidVerbs = [
+            "beglichen", "bezahlt", "abgewickelt", "vereinnahmt",
+            "paid", "settled", "charged", "completed"
+        ]
+
+        for provider in providers {
+            for needle in provider.needles {
+                guard lower.contains(needle) else { continue }
+                if paidVerbs.contains(where: { lower.contains($0) }) {
+                    return provider.label
+                }
+            }
+        }
+        return nil
     }
 
     private func normalizeOCRText(_ text: String) -> String {
@@ -93,7 +150,10 @@ struct ParsingService {
 
     private func extractHeaderSignals(from lines: [String]) -> HeaderSignals {
         var signals = HeaderSignals.empty
-        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "invoice no", "invoice number", "invoice nr", "belegnr", "rg nr"]
+        // "rechnung #" / "invoice #" decken zusaetzlich die Schreibweise mit
+        // Hash-Symbol ab, die viele Online-Shops (z. B. sunday.de, Amazon)
+        // nutzen ("RECHNUNG # INV/2026/2463032").
+        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "rechnung #", "invoice no", "invoice number", "invoice nr", "invoice #", "belegnr", "rg nr"]
         let dateLabels = ["rechnungsdatum", "rechnung vom", "invoice date", "issue date", "belegdatum", "date:"]
         let dueLabels = ["zahlungsziel", "zahlbar", "fällig", "faellig", "due", "terms", "payment terms", "netto"]
         let serviceKeywords = ["leistungsdatum", "service date", "delivery date", "lieferdatum", "bestelldatum", "versanddatum"]
@@ -104,7 +164,13 @@ struct ParsingService {
             let valueRange = idx...min(idx + 3, normalizedLines.count - 1)
 
             if signals.invoiceNumber == nil, numberLabels.contains(where: { lower.contains($0) }) {
-                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
+                // Erweitert: matched jetzt auch "Rechnung #"/"Invoice #" als Label
+                // und akzeptiert mehrteilige Slash-Werte wie "INV/2026/2463032".
+                // Capture-Set ohne \s — sonst frisst die Regex bei
+                // "Rechnungsnummer: TS-2026-55209 Bestellnummer: ORD-7785001"
+                // bis zum Zeilenende und produziert "TS-2026-55209BESTELLNUMMER..."
+                // nach Whitespace-Collapse.
+                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.]{2,})"#),
                    let normalized = normalizeInvoiceNumberCandidate(sameLine) {
                     signals.invoiceNumber = normalized
                 } else {
@@ -858,12 +924,18 @@ struct ParsingService {
     }
 
     func extractDueDate(from lines: [String]) -> Date? {
-        let keywords = ["zahlbar bis", "fällig am", "fällig", "zahlungsziel", "due", "due date"]
+        // Umlautlose Varianten ("faellig"/"faellig am") sind hier ausdruecklich
+        // mit drin — die anderen Due-Pfade (extractHeaderSignals,
+        // extractDueOffsetDaysHint) hatten sie bereits, nur diese Liste hatte
+        // sie vergessen, was bei OCR-/PDFs ohne saubere Umlaute alle
+        // Faelligkeitsdaten verschluckt hat.
+        let keywords = ["zahlbar bis", "fällig am", "faellig am", "fällig", "faellig", "zahlungsziel", "due", "due date"]
         let formats = ["dd.MM.yyyy", "dd.MM.yy", "yyyy-MM-dd"]
         let datePattern = #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#
 
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "de_DE")
+        dateFormatter.timeZone = Self.parserTimeZone
 
         let keywordLines = lines.filter { line in
             let lower = line.lowercased()
@@ -1001,10 +1073,12 @@ struct ParsingService {
 
         let deFormatter = DateFormatter()
         deFormatter.locale = Locale(identifier: "de_DE")
+        deFormatter.timeZone = Self.parserTimeZone
         deFormatter.isLenient = true
 
         let enFormatter = DateFormatter()
         enFormatter.locale = Locale(identifier: "en_US_POSIX")
+        enFormatter.timeZone = Self.parserTimeZone
         enFormatter.isLenient = true
 
         let deFormats = [
@@ -1046,7 +1120,8 @@ struct ParsingService {
             line.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
         }
 
-        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#
+        // Capture-Set ohne \s — siehe Begruendung in extractHeaderSignals.
+        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.]{2,})"#
         for line in normalizedLines {
             if let match = line.firstCaptureGroup(for: pattern) {
                 let normalized = normalizeInvoiceNumberCandidate(match)
@@ -1077,6 +1152,8 @@ struct ParsingService {
             #"\bRE\s*\d{4}\s*[-/]\s*\d{3,5}\b"#,
             #"\bINV-\d{3,6}\b"#,
             #"\bINV\s*\d{3,6}\b"#,
+            // Slash-getrennte Mehrteiler wie "INV/2026/2463032" (Online-Shops).
+            #"(?i)\b(?:INV|RE|RG)[/\-]\d{2,6}[/\-]\d{3,12}\b"#,
             #"\bRG\d{4,6}\b"#,
             #"\bRG\s*\d{4,6}\b"#,
             #"\bR\d{6,10}\b"#,
@@ -1096,6 +1173,9 @@ struct ParsingService {
     private func firstStandaloneInvoiceNumberToken(in line: String) -> String? {
         let upper = line.uppercased()
         let patterns = [
+            // Mehrteilige Slash-/Bindestrich-Formate zuerst pruefen, damit "INV/2026/2463032"
+            // nicht durch das einfachere "INV/...."-Pattern auf "INV/2026" verkuerzt wird.
+            #"\b(?:INV|RE|RG)[-/\s]\d{2,6}[-/]\d{3,12}\b"#,
             #"\b(?:INV|RE|RG)[-\s]?\d{3,10}(?:[-/]\d{2,8})?\b"#,
             #"\bR\d{6,10}\b"#,
             #"\b\d{4}\s*/\s*\d{3,8}\b"#,
@@ -1124,8 +1204,10 @@ struct ParsingService {
         guard !value.isEmpty else { return nil }
 
         // Cut off obvious trailing fields frequently adjacent in OCR output.
+        // BESTELLNUMMER/KUNDENNUMMER/REFERENZ kommen in Online-Shop-Rechnungen
+        // haeufig in derselben Zeile direkt nach der Rechnungsnummer.
         value = value.replacingOccurrences(
-            of: #"(?i)(RECHNUNGSDATUM|DATUM|INVOICE|IBAN|TOTAL|NETTO|BRUTTO).*$"#,
+            of: #"(?i)(RECHNUNGSDATUM|DATUM|INVOICE|IBAN|TOTAL|NETTO|BRUTTO|BESTELLNUMMER|BESTELLNR|KUNDENNUMMER|KUNDENNR|REFERENZ|VERWENDUNGSZWECK).*$"#,
             with: "",
             options: .regularExpression
         ).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1282,11 +1364,15 @@ struct ParsingService {
     }
 
     private func extractPaymentRecipient(from lines: [String]) -> String {
+        // QA-Audit E2: paymentRecipient lief am trimAddressTailFromCompanyName-
+        // Helper vorbei. Effekt: vendor war "SCANSHOP UG", paymentRecipient
+        // aber "SCANSHOP UG (haftungsbeschraenkt) Hauptstrasse 7 12345 Berlin".
+        // Beide Pfade ziehen nun denselben Trim durch.
         if let labeledRecipient = extractLabeledEntity(
             from: lines,
             labels: ["zahlungsempfanger", "zahlungsempfaenger", "zahlungsempfänger", "payment recipient", "kontoinhaber", "beguenstigter", "begünstigter"]
         ) {
-            return labeledRecipient
+            return trimAddressTailFromCompanyName(labeledRecipient)
         }
 
         for line in lines {
@@ -1296,7 +1382,7 @@ struct ParsingService {
             if isLikelyCustomerLine(lower) { continue }
             if isLikelyReceiptLineItemNoise(lower) { continue }
             if containsCompanyMarker(lower) && !hasCustomerMarker(lower) {
-                return cleaned
+                return trimAddressTailFromCompanyName(cleaned)
             }
         }
         return extractVendorName(from: lines)
@@ -1312,10 +1398,31 @@ struct ParsingService {
             }
             if isLikelyCustomerLine(lower) { continue }
             if hasLegalEntitySuffix(lower) {
-                return cleaned
+                return trimAddressTailFromCompanyName(cleaned)
             }
         }
         return nil
+    }
+
+    /// PDF-Layouts flatten oft eine Firmen-Zeile zusammen mit der direkt
+    /// dahinter stehenden Adresse ("NORDSCHUTZ Versicherung AG Policenring 8
+    /// 50667 Koeln"). Wir kuerzen die Zeile am Ende des LETZTEN Legal-Entity-
+    /// Suffixes (GmbH/AG/UG/...). Wenn keine PLZ folgt, lassen wir den Wert
+    /// unveraendert — ein Vendor wie "Stadtwerke" ohne Suffix soll nicht
+    /// abgeschnitten werden.
+    private func trimAddressTailFromCompanyName(_ raw: String) -> String {
+        let pattern = #"(?i)\b(gmbh|ag|se|kg|ug|ltd|llc|inc|e\.\s*v\.?|e\.\s*k\.?)\b"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return raw }
+        let nsRange = NSRange(raw.startIndex..<raw.endIndex, in: raw)
+        let matches = regex.matches(in: raw, range: nsRange)
+        guard let lastMatch = matches.last,
+              let range = Range(lastMatch.range, in: raw) else { return raw }
+        // Nur kuerzen, wenn nach dem Suffix tatsaechlich Adressbestandteile
+        // folgen (PLZ als deutlichstes Indiz). Sonst Zeile so lassen.
+        let tail = String(raw[range.upperBound...])
+        guard tail.range(of: #"\b\d{5}\b"#, options: .regularExpression) != nil else { return raw }
+        let head = String(raw[..<range.upperBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return head.isEmpty ? raw : head
     }
 
     private func extractSellerOfRecord(from lines: [String]) -> String? {
@@ -1558,7 +1665,12 @@ struct ParsingService {
         ]
         let strongInvoiceKeywords = [
             "rechnungsnr", "rechnungsnummer", "rechnungsdatum", "zahlungsziel", "leistungsdatum",
-            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms"
+            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms",
+            // "Rechnungsadresse" / "Versandadresse" sind eindeutige Invoice-Marker —
+            // Kassenbons fuehren sowas nicht. Genauso eine UStId/USt-IdNr ist ein
+            // legales Pflicht-Element von Rechnungen, das auf Bons nicht erscheint.
+            "rechnungsadresse", "versandadresse", "ust-id", "ust id", "ustid",
+            "usteridnr", "ust-idnr", "ust idnr"
         ]
 
         let receiptHits = receiptKeywords.filter { containsKeyword($0) }.count

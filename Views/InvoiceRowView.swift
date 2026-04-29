@@ -4,6 +4,7 @@ struct InvoiceRowView: View {
     let invoice: Invoice
     var isLikelyDuplicate: Bool = false
     @AppStorage(AppSettings.urgencySoonDaysKey) private var urgencySoonDays: Int = AppSettings.urgencySoonDays
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     private let calendar = Calendar.current
 
     var body: some View {
@@ -20,11 +21,11 @@ struct InvoiceRowView: View {
                         .monospacedDigit()
                 }
                 if let dueDate = invoice.dueDate {
-                    Text("\(L10n.t("Fällig", "Due")): \(dueDate.formatted(date: .abbreviated, time: .omitted))")
+                    Text("\(L10n.t("Fällig", "Due")): \(dueDate.formatted(abbreviatedDateStyle))")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color(red: 0.39, green: 0.47, blue: 0.58))
                 } else if invoice.status == .paid, let paidAt = invoice.paidAt {
-                    Text("\(L10n.t("Bezahlt", "Paid")): \(paidAt.formatted(date: .abbreviated, time: .omitted))")
+                    Text("\(L10n.t("Bezahlt", "Paid")): \(paidAt.formatted(abbreviatedDateStyle))")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(Color(red: 0.39, green: 0.47, blue: 0.58))
                 }
@@ -65,6 +66,17 @@ struct InvoiceRowView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
+    }
+
+    /// Date.FormatStyle, der die App-Sprache statt System-Sprache verwendet.
+    /// appLanguageCode wird hier referenziert -> SwiftUI rendert bei
+    /// Sprachwechsel automatisch neu.
+    private var abbreviatedDateStyle: Date.FormatStyle {
+        Date.FormatStyle(
+            date: .abbreviated,
+            time: .omitted,
+            locale: Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+        )
     }
 
     private var urgencyText: String? {

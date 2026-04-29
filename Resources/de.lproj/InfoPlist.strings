@@ -1,1 +1,2 @@
-"NSCameraUsageDescription" = "BillRemind benötigt Zugriff auf die Kamera, um Rechnungen zu scannen.";
+"NSCameraUsageDescription" = "Mnemor benötigt Zugriff auf die Kamera, um Rechnungen und Belege zu scannen.";
+"CFBundleDisplayName" = "Mnemor";

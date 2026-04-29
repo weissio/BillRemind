@@ -12,6 +12,7 @@
 		13F53798F28DCEBC0C7BCCAA /* InvoiceDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81604466521AA1510AAEB66D /* InvoiceDetailViewModel.swift */; };
 		1677D41468AB70AA2C8C1E19 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDCC6CC21EDAC5AD87A5A5A /* NotificationService.swift */; };
 		2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */; };
+		2151FD9767A9BF8361ED96CD /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */; };
 		2310704C6DBC0E5876BED37B /* ParsingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD88E620A2B65DEC03380A10 /* ParsingService.swift */; };
 		246A6B22638CB8394E68EF00 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2618E1871E20FE76E48B5FDF /* SettingsView.swift */; };
 		30F01E1C39FF5EBC0BCD69FF /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A2349042DBE16443941B61 /* Invoice.swift */; };
@@ -25,6 +26,7 @@
 		8D2CF1AC8C353717B4726BB1 /* SpatialParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936CCFE2FF4A3EE116C820EE /* SpatialParser.swift */; };
 		98139D301005341363001DAE /* LayoutAwareOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4279ABC9E2A23C0BC8C7C4EE /* LayoutAwareOCR.swift */; };
 		B1527C6067FEBC5CCEE7B792 /* ParsingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */; };
+		AA98E12FD06A1B2C3D4E5F6A /* OCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */; };
 		B5148B646105139C9E139CF5 /* InvoiceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F9B0776FA86D95E4DCCEC9 /* InvoiceDetailView.swift */; };
 		B893E83C70548CC6DAD24738 /* FullScreenImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CCC850F55E9D2C1B87C035 /* FullScreenImageView.swift */; };
 		B8BFBF3BB62C6CD34690A8B4 /* LearnedParsingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */; };
@@ -73,8 +75,10 @@
 		9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnedParsingRule.swift; sourceTree = "<group>"; };
 		A0DB5AC01D912C98578F7324 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		BD88E620A2B65DEC03380A10 /* ParsingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingService.swift; sourceTree = "<group>"; };
 		CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingServiceTests.swift; sourceTree = "<group>"; };
+		AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceTests.swift; sourceTree = "<group>"; };
 		DF451840C025CB6EEA0EC8CC /* BillRemindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRemindApp.swift; sourceTree = "<group>"; };
 		E8F9B0776FA86D95E4DCCEC9 /* InvoiceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceDetailView.swift; sourceTree = "<group>"; };
 		EA61E84EBCBC636AD5C7B786 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -88,6 +92,7 @@
 			children = (
 				3E6ADFD852B430E2FFF67C6C /* ParserFixtures.swift */,
 				CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */,
+				AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */,
 			);
 			name = BillRemindTests;
 			path = Tests/BillRemindTests;
@@ -105,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				AF93AB26D1F6B2630F46BA41 /* AppSettings.swift */,
+				AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */,
 				51A2349042DBE16443941B61 /* Invoice.swift */,
 				9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */,
 				17EE69E07AB65075F6A7EC04 /* Localization.swift */,
@@ -279,6 +285,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2151FD9767A9BF8361ED96CC /* AppSettings.swift in Sources */,
+				2151FD9767A9BF8361ED96CD /* AppTheme.swift in Sources */,
 				DDF56EFBBC6909F05F30702D /* BillRemindApp.swift in Sources */,
 				03084A52586F94C2AAE28A9D /* CameraPicker.swift in Sources */,
 				B893E83C70548CC6DAD24738 /* FullScreenImageView.swift in Sources */,
@@ -311,6 +318,7 @@
 			files = (
 				F8A63F890A4DBBB950E2179E /* ParserFixtures.swift in Sources */,
 				B1527C6067FEBC5CCEE7B792 /* ParsingServiceTests.swift in Sources */,
+				AA98E12FD06A1B2C3D4E5F6A /* OCRServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,16 +352,16 @@
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 2MC6WD97H2;
 				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor Beleg Scanner OCR";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor – Invoice Scanner OCR";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonasweiss.BillRemind;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -386,16 +394,16 @@
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 2MC6WD97H2;
 				INFOPLIST_FILE = Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor Beleg Scanner OCR";
+				INFOPLIST_KEY_CFBundleDisplayName = "Mnemor – Invoice Scanner OCR";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jonasweiss.BillRemind;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;

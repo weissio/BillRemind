@@ -2,12 +2,24 @@ import SwiftUI
 import SwiftData
 import LocalAuthentication
 
+/// Puffert eine extern eingegangene PDF/Bild-URL (per "Kopieren in Mnemor"
+/// aus dem Share-Sheet) zwischen onOpenURL und dem Verarbeiter in
+/// InvoicesScreen. Notwendig, weil bei einem Kaltstart aus dem Share-Sheet
+/// onOpenURL feuern kann, bevor die SwiftUI-View-Hierarchie inkl. Subscriber
+/// fertig aufgebaut ist — eine Notification waere in dem Fall verloren,
+/// ein @Published-Wert bleibt erhalten und wird beim Verbinden ausgelesen.
+@MainActor
+final class PendingDocumentInbox: ObservableObject {
+    @Published var pendingURL: URL?
+}
+
 @main
 struct BillRemindApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @State private var isUnlocked = false
     @State private var showingLockError = false
+    @StateObject private var pendingDocumentInbox = PendingDocumentInbox()
 
     private var sharedModelContainer: ModelContainer? = {
         let schema = Schema([
@@ -81,7 +93,42 @@ struct BillRemindApp: App {
             .tint(Color(red: 0.48, green: 0.31, blue: 0.22))
             .preferredColorScheme(.light)
             .environment(\.locale, Locale(identifier: appLanguageCode))
+            .environmentObject(pendingDocumentInbox)
+            .onOpenURL { url in
+                handleExternalDocument(url: url)
+            }
         }
+    }
+
+    /// Aufgerufen, wenn der Nutzer im Share-Sheet "Kopieren in Mnemor"
+    /// (oder "In Mnemor öffnen") wählt — z. B. mit einer PDF aus Mail.
+    /// Der eingehende URL ist potenziell security-scoped und wird daher
+    /// in unseren tmp-Ordner kopiert; danach wandert er per Notification
+    /// an HomeView/InvoicesScreen, die den Tab wechseln und das OCR
+    /// anwerfen.
+    private func handleExternalDocument(url: URL) {
+        let didStartAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccess { url.stopAccessingSecurityScopedResource() }
+        }
+
+        let tmpDir = FileManager.default.temporaryDirectory
+        let ext = url.pathExtension.isEmpty ? "tmp" : url.pathExtension
+        let dest = tmpDir.appendingPathComponent("incoming-\(UUID().uuidString).\(ext)")
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: url, to: dest)
+        } catch {
+            NSLog("Mnemor: external document copy failed: \(error.localizedDescription)")
+            return
+        }
+
+        // In die Inbox legen — InvoicesScreen liest beim ersten Subscriben oder
+        // beim naechsten .onChange aus. So geht keine URL verloren, selbst wenn
+        // der Subscriber beim Kaltstart noch nicht attached ist.
+        pendingDocumentInbox.pendingURL = dest
     }
 
     private var shouldShowLockOverlay: Bool {

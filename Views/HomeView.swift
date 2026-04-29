@@ -6,6 +6,7 @@ import UIKit
 
 struct HomeView: View {
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @EnvironmentObject private var pendingDocumentInbox: PendingDocumentInbox
 
     @State private var selectedTab: Int = 0
 
@@ -50,6 +51,17 @@ struct HomeView: View {
             .tag(4)
         }
         .tint(Color(red: 0.31, green: 0.42, blue: 0.56))
+        .onChange(of: pendingDocumentInbox.pendingURL) { _, newValue in
+            // Aktiver Tab-Wechsel auf Rechnungen, sobald von außen eine
+            // PDF/ein Bild geteilt wurde — InvoicesScreen kümmert sich um
+            // OCR und das Review-Sheet.
+            if newValue != nil { selectedTab = 0 }
+        }
+        .onAppear {
+            // Cold-Start-Fall: URL kann bereits in der Inbox liegen, bevor die
+            // View angeschlossen wurde. Dann wuerde .onChange nicht feuern.
+            if pendingDocumentInbox.pendingURL != nil { selectedTab = 0 }
+        }
     }
 
     private var isEnglish: Bool {
@@ -130,49 +142,90 @@ private struct MoreView: View {
 private struct InvoicesScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var invoices: [Invoice]
-    @Query private var incomeEntries: [IncomeEntry]
-    @Query private var installmentPlans: [InstallmentPlan]
     @StateObject private var viewModel = HomeViewModel()
     @StateObject private var scanViewModel = ScanViewModel()
     @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @EnvironmentObject private var pendingDocumentInbox: PendingDocumentInbox
 
     @State private var showScanner = false
     @State private var showReview = false
     @State private var showPDFImporter = false
-    @State private var showQuickScanOptions = false
     @State private var scanCaptureMode: ScanCaptureMode = .invoice
+    @State private var dueWindowDays: Int = 7
+    @State private var paidWindowDays: Int = 7
+
+    private static let dueWindowOptions: [Int] = [7, 14, 30, 60, 90]
+    // Paid hat zusätzlich 180/360 Tage für Halbjahres-/Jahresreview.
+    // Sobald die App ein zweites Jahr läuft, kann hier ggf. eine
+    // monatliche Cluster-Ansicht ergänzt werden (z. B. bei Paid und All).
+    private static let paidWindowOptions: [Int] = [7, 14, 30, 60, 90, 180, 360]
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
+                AppHeroHeader(
+                    title: isEnglish ? "Invoices" : "Rechnungen",
+                    subtitle: isEnglish ? "Scan, organize, pay" : "Scannen, ordnen, bezahlen",
+                    icon: "tray.full.fill"
+                ) {
+                    // Menü statt confirmationDialog: das Popover ankert direkt
+                    // unter dem +-Tile, statt iOS-typisch unten am Bildschirm
+                    // aufzuklappen — kürzerer Weg vom Antippen zur Auswahl.
+                    Menu {
+                        Button {
+                            scanCaptureMode = .invoice
+                            showScanner = true
+                        } label: {
+                            Label(isEnglish ? "Scan invoice" : "Scan Rechnung", systemImage: "doc.text.viewfinder")
+                        }
+                        Button {
+                            scanCaptureMode = .receipt
+                            showScanner = true
+                        } label: {
+                            Label(isEnglish ? "Scan receipt" : "Scan Kassenbon", systemImage: "scroll")
+                        }
+                        Button {
+                            scanViewModel.prepareManualEntry()
+                            showReview = true
+                        } label: {
+                            Label(isEnglish ? "Manual entry" : "Manuell erfassen", systemImage: "square.and.pencil")
+                        }
+                        Button {
+                            showPDFImporter = true
+                        } label: {
+                            Label(isEnglish ? "Import PDF" : "PDF Import", systemImage: "doc.fill")
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(AppTheme.accent)
+                    }
+                    .accessibilityLabel(isEnglish ? "Add invoice" : "Rechnung hinzufügen")
+                }
+
+                VStack(spacing: 12) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        dashboardCard(
-                            title: isEnglish ? "Due in 7 days" : "Fällig in 7 Tagen",
-                            value: "\(dueInNext7DaysCount)",
-                            symbol: "calendar.badge.clock",
-                            tint: .orange
-                        )
+                        dashboardDueCard()
                         dashboardCard(
                             title: isEnglish ? "Overdue" : "Überfällig",
                             value: "\(overdueCount)",
+                            subValue: overdueAmount.formatted(.currency(code: "EUR")),
                             symbol: "exclamationmark.triangle.fill",
                             tint: .red
                         )
-                        dashboardCard(
-                            title: isEnglish ? "Balance in 30 days" : "Kontostand in 30 Tagen",
-                            value: projectedBalance30Days.formatted(.currency(code: "EUR")),
-                            symbol: "chart.line.uptrend.xyaxis",
-                            tint: .blue
-                        )
+                        dashboardPaidCard()
                     }
                     .padding(.horizontal)
                 }
-                .padding(.top, 4)
 
                 Picker("Filter", selection: $viewModel.filter) {
                     ForEach(InvoiceFilter.allCases) { filter in
-                        Text(filter.title).tag(filter)
+                        // appLanguageCode hier explizit referenzieren, damit
+                        // SwiftUI die Abhaengigkeit erkennt und bei Sprach-
+                        // wechsel sofort neu rendert.
+                        Text(filter.localizedTitle(isEnglish: appLanguageCode == "en"))
+                            .tag(filter)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -185,7 +238,9 @@ private struct InvoicesScreen: View {
                         systemImage: "doc.text.viewfinder",
                         description: Text(isEnglish ? "Tap Scan, take a photo of an invoice, and review the detected fields." : "Tippe auf Scannen, fotografiere eine Rechnung und prüfe die erkannten Felder.")
                     )
-                } else {
+                } else if viewModel.filter == .open {
+                    // Open bleibt bewusst flach — hier zählt die Reihenfolge nach
+                    // Eingang/Fälligkeit, nicht eine Monatsgliederung.
                     List(filtered) { invoice in
                         let isDuplicate = duplicateInvoiceIDs.contains(invoice.id)
                         NavigationLink {
@@ -200,40 +255,51 @@ private struct InvoicesScreen: View {
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .listRowSpacing(8)
+                } else {
+                    // Paid und All: nach Monat gruppieren. Bei Paid steht
+                    // pro Section, was in dem Monat bezahlt wurde; bei All
+                    // wird zusätzlich anhand invoiceDate eingeordnet, damit
+                    // offene Rechnungen ebenfalls einen Monat bekommen.
+                    List {
+                        ForEach(monthlyInvoiceGroups(filtered)) { group in
+                            Section {
+                                ForEach(group.invoices) { invoice in
+                                    let isDuplicate = duplicateInvoiceIDs.contains(invoice.id)
+                                    NavigationLink {
+                                        InvoiceDetailView(invoice: invoice)
+                                    } label: {
+                                        InvoiceRowView(invoice: invoice, isLikelyDuplicate: isDuplicate)
+                                    }
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                    .listRowBackground(Color.clear)
+                                }
+                            } header: {
+                                HStack(alignment: .firstTextBaseline) {
+                                    Text(group.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(AppTheme.accent)
+                                    Spacer()
+                                    Text("\(group.invoices.count) · \(group.amount.formatted(.currency(code: "EUR")))")
+                                        .font(.caption.weight(.medium))
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                                .padding(.vertical, 4)
+                                .textCase(nil)
+                            }
+                        }
+                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .listRowSpacing(8)
+                }
                 }
             }
             .background(warmBackground.ignoresSafeArea())
-            .navigationTitle(isEnglish ? "Invoices" : "Rechnungen")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
-            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showQuickScanOptions = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                    }
-                }
-            }
-            .confirmationDialog(isEnglish ? "Choose scan type" : "Scan wählen", isPresented: $showQuickScanOptions) {
-                Button(isEnglish ? "Scan invoice" : "Scan Rechnung") {
-                    scanCaptureMode = .invoice
-                    showScanner = true
-                }
-                Button(isEnglish ? "Scan receipt" : "Scan Kassenbon") {
-                    scanCaptureMode = .receipt
-                    showScanner = true
-                }
-                Button(isEnglish ? "Manual entry" : "Manuell erfassen") {
-                    scanViewModel.prepareManualEntry()
-                    showReview = true
-                }
-                Button(isEnglish ? "Import PDF" : "PDF Import") {
-                    showPDFImporter = true
-                }
-                Button(isEnglish ? "Cancel" : "Abbrechen", role: .cancel) {}
-            }
+            .tint(AppTheme.accent)
             .sheet(isPresented: $showScanner) {
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
                     CameraPicker { image in
@@ -273,7 +339,48 @@ private struct InvoicesScreen: View {
                     break
                 }
             }
+            .onChange(of: pendingDocumentInbox.pendingURL) { _, newValue in
+                guard let url = newValue else { return }
+                pendingDocumentInbox.pendingURL = nil
+                Task { await handleIncomingExternalDocument(url: url) }
+            }
+            .onAppear {
+                // Cold-Start: URL kann bereits in der Inbox liegen, bevor diese
+                // View ihren .onChange-Subscriber aufgehaengt hat.
+                if let url = pendingDocumentInbox.pendingURL {
+                    pendingDocumentInbox.pendingURL = nil
+                    Task { await handleIncomingExternalDocument(url: url) }
+                }
+            }
         }
+    }
+
+    /// Verarbeitet ein per Share-Sheet eingegangenes Dokument: PDFs gehen in
+    /// den PDF-Pfad, Bilder durch die OCR-Pipeline. In beiden Fällen öffnet
+    /// sich danach das Review-Sheet wie bei manuellem Scan/Import.
+    private func handleIncomingExternalDocument(url: URL) async {
+        defer {
+            // tmp-Datei aufräumen — der Importer hat Bild bzw. OCR-Text
+            // bereits in den Speicher gezogen.
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        let ext = url.pathExtension.lowercased()
+        if ext == "pdf" {
+            await scanViewModel.processPDF(at: url)
+            showReview = true
+            return
+        }
+
+        if let image = UIImage(contentsOfFile: url.path) {
+            await scanViewModel.processPickedImage(image, mode: .invoice)
+            showReview = true
+            return
+        }
+
+        // Unbekannter Typ — als Notausgang das manuelle Erfassungs-Sheet.
+        scanViewModel.prepareManualEntry()
+        showReview = true
     }
 
     private var isEnglish: Bool {
@@ -290,202 +397,108 @@ private struct InvoicesScreen: View {
         }
     }
 
-    private var dueInNext7DaysCount: Int {
+    private func dueInNextDaysInvoices(_ days: Int) -> [Invoice] {
         let start = Calendar.current.startOfDay(for: Date())
-        let end = Calendar.current.date(byAdding: .day, value: 7, to: start) ?? start
+        let end = Calendar.current.date(byAdding: .day, value: days, to: start) ?? start
         return invoices.filter { invoice in
             guard invoice.status == .open, let due = invoice.dueDate else { return false }
             let day = Calendar.current.startOfDay(for: due)
             return day >= start && day <= end
-        }.count
+        }
     }
 
-    private var overdueCount: Int {
+    private func dueInNextDaysCount(_ days: Int) -> Int {
+        dueInNextDaysInvoices(days).count
+    }
+
+    private func dueInNextDaysAmount(_ days: Int) -> Decimal {
+        dueInNextDaysInvoices(days).reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
+        }
+    }
+
+    private func dueWindowLabel(days: Int) -> String {
+        isEnglish ? "Due in \(days) days" : "Fällig in \(days) Tagen"
+    }
+
+    private var overdueInvoices: [Invoice] {
         let today = Calendar.current.startOfDay(for: Date())
         return invoices.filter { invoice in
             guard invoice.status == .open, let due = invoice.dueDate else { return false }
             return Calendar.current.startOfDay(for: due) < today
-        }.count
+        }
     }
 
-    private var projectedBalance30Days: Double {
-        let defaults = UserDefaults.standard
-        let useCurrentBalance = defaults.bool(forKey: "liquidity.useCurrentBalance")
-        let currentBalance = defaults.double(forKey: "liquidity.currentBalance")
-        let startBalance = defaults.double(forKey: "liquidity.startBalance")
-        let effectiveUseCurrentBalance = currentBalance != 0 || useCurrentBalance
-        let base = effectiveUseCurrentBalance ? currentBalance : startBalance
+    private var overdueCount: Int {
+        overdueInvoices.count
+    }
+
+    private var overdueAmount: Decimal {
+        overdueInvoices.reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
+        }
+    }
+
+    private func paidInLastDaysInvoices(_ days: Int) -> [Invoice] {
         let today = Calendar.current.startOfDay(for: Date())
-        let end = Calendar.current.date(byAdding: .day, value: 30, to: today) ?? today
-
-        let invoiceOutgoing = invoices.reduce(0.0) { partial, invoice in
-            guard invoice.status == .open, let due = invoice.dueDate else { return partial }
-            let day = Calendar.current.startOfDay(for: due)
-            guard day >= today && day <= end else { return partial }
-            return partial + (invoice.amount.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0)
+        let start = Calendar.current.date(byAdding: .day, value: -days, to: today) ?? today
+        return invoices.filter { invoice in
+            guard invoice.status == .paid, let paid = invoice.paidAt else { return false }
+            let day = Calendar.current.startOfDay(for: paid)
+            return day >= start && day <= today
         }
-
-        let installmentOutgoing = installmentPlans
-            .filter(\.isActive)
-            .reduce(0.0) { partial, plan in
-                partial + projectedInstallmentAmount(for: plan, start: today, endInclusive: end)
-            }
-
-        let incomeIncoming = incomeEntries
-            .filter(\.isActive)
-            .reduce(0.0) { partial, income in
-                partial + projectedIncomeAmount(for: income, start: today, endInclusive: end)
-            }
-
-        return base + incomeIncoming - invoiceOutgoing - installmentOutgoing
     }
 
-    private func projectedInstallmentAmount(for plan: InstallmentPlan, start: Date, endInclusive: Date) -> Double {
+    private func paidInLastDaysCount(_ days: Int) -> Int {
+        paidInLastDaysInvoices(days).count
+    }
+
+    private func paidInLastDaysAmount(_ days: Int) -> Decimal {
+        paidInLastDaysInvoices(days).reduce(Decimal(0)) { partial, invoice in
+            partial + (invoice.amount ?? 0)
+        }
+    }
+
+    private func paidWindowLabel(days: Int) -> String {
+        isEnglish ? "Paid last \(days) days" : "Bezahlt letzte \(days) Tage"
+    }
+
+    private struct MonthlyInvoiceGroup: Identifiable {
+        let id: Date          // Monatsanfang, dient gleichzeitig als Sortier­schlüssel
+        let title: String
+        let invoices: [Invoice]
+        let amount: Decimal
+    }
+
+    /// Gruppiert eine Rechnungsliste nach Monat. Für bezahlte Rechnungen wird
+    /// der Bezahltag verwendet (so steht eine Rechnung in dem Monat, in dem
+    /// sie bezahlt wurde), für offene Rechnungen das Rechnungsdatum bzw. der
+    /// Erfassungszeitpunkt als Fallback. Reihenfolge: neueste Monate oben.
+    private func monthlyInvoiceGroups(_ invoices: [Invoice]) -> [MonthlyInvoiceGroup] {
         let calendar = Calendar.current
-        guard start <= endInclusive else { return 0 }
-        let planStart = calendar.startOfDay(for: plan.startDate)
-        let planEnd = plan.endDate.map { calendar.startOfDay(for: $0) }
-        let monthAnchors = projectedUniqueMonthsBetween(start: start, endInclusive: endInclusive)
-        var total = 0.0
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: isEnglish ? "en_US" : "de_DE")
+        formatter.dateFormat = "LLLL yyyy"
 
-        for monthAnchor in monthAnchors {
-            guard let monthInterval = calendar.dateInterval(of: .month, for: monthAnchor) else { continue }
-            let dayRange = calendar.range(of: .day, in: .month, for: monthAnchor) ?? 1..<29
-            let paymentDay = min(max(plan.paymentDay, 1), dayRange.count)
-            guard let paymentDate = calendar.date(byAdding: .day, value: paymentDay - 1, to: monthInterval.start) else { continue }
-            let due = calendar.startOfDay(for: paymentDate)
-            guard due >= start && due <= endInclusive else { continue }
-            guard due >= planStart else { continue }
-            if let planEnd, due > planEnd { continue }
-            total += projectedInstallmentTotalAmount(for: plan, dueDate: due)
-        }
-        return total
-    }
-
-    private func projectedInstallmentTotalAmount(for plan: InstallmentPlan, dueDate: Date) -> Double {
-        if plan.kind == .fixedCost {
-            return NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
-        }
-        let remainingBefore = projectedRemainingPrincipalBeforeDue(of: plan, dueDate: dueDate)
-        let split = projectedInstallmentSplit(plan: plan, remainingBefore: remainingBefore)
-        return split.interest + split.principal
-    }
-
-    private func projectedRemainingPrincipalBeforeDue(of plan: InstallmentPlan, dueDate: Date) -> Double? {
-        guard plan.kind == .loan else { return nil }
-        guard let initial = plan.initialPrincipal else { return nil }
-
-        let dueDay = Calendar.current.startOfDay(for: dueDate)
-        guard let dayBeforeDue = Calendar.current.date(byAdding: .day, value: -1, to: dueDay) else {
-            return NSDecimalNumber(decimal: initial).doubleValue
+        func referenceDate(for invoice: Invoice) -> Date {
+            invoice.paidAt ?? invoice.invoiceDate ?? invoice.createdAt
         }
 
-        var remaining = NSDecimalNumber(decimal: initial).doubleValue
-        for paidDate in projectedInstallmentDueDates(for: plan, upTo: dayBeforeDue) {
-            let split = projectedInstallmentSplit(plan: plan, remainingBefore: remaining)
-            remaining = max(0, remaining - split.principal)
-            if remaining <= 0 { break }
-            if let endDate = plan.endDate, paidDate > Calendar.current.startOfDay(for: endDate) { break }
+        let grouped = Dictionary(grouping: invoices) { invoice -> Date in
+            let date = referenceDate(for: invoice)
+            let comps = calendar.dateComponents([.year, .month], from: date)
+            return calendar.date(from: comps) ?? date
         }
-        return remaining
-    }
 
-    private func projectedInstallmentDueDates(for plan: InstallmentPlan, upTo referenceDate: Date) -> [Date] {
-        let calendar = Calendar.current
-        let reference = calendar.startOfDay(for: referenceDate)
-        let start = calendar.startOfDay(for: plan.startDate)
-        guard reference >= start else { return [] }
-
-        var dueDates: [Date] = []
-        var cursor = startOfMonth(start)
-        while cursor <= reference {
-            if let monthInterval = calendar.dateInterval(of: .month, for: cursor) {
-                let dayRange = calendar.range(of: .day, in: .month, for: cursor) ?? 1..<29
-                let day = min(max(plan.paymentDay, 1), dayRange.count)
-                if let payoutDate = calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start) {
-                    if payoutDate >= start && payoutDate <= reference {
-                        if let endDate = plan.endDate, payoutDate > calendar.startOfDay(for: endDate) {
-                            break
-                        }
-                        dueDates.append(payoutDate)
-                    }
-                }
+        return grouped.map { (monthStart, items) in
+            let sorted = items.sorted { referenceDate(for: $0) > referenceDate(for: $1) }
+            let total = sorted.reduce(Decimal(0)) { partial, invoice in
+                partial + (invoice.amount ?? 0)
             }
-            guard let next = calendar.date(byAdding: .month, value: 1, to: cursor) else { break }
-            cursor = next
+            let title = formatter.string(from: monthStart)
+            return MonthlyInvoiceGroup(id: monthStart, title: title, invoices: sorted, amount: total)
         }
-        return dueDates
-    }
-
-    private func projectedInstallmentSplit(plan: InstallmentPlan, remainingBefore: Double?) -> (interest: Double, principal: Double) {
-        let baseAmount = NSDecimalNumber(decimal: plan.monthlyPayment).doubleValue
-        guard plan.kind == .loan else {
-            return (0, max(0, baseAmount))
-        }
-
-        let computedInterest: Double = {
-            if let rate = plan.annualInterestRatePercentValue, let remainingBefore {
-                return max(0, remainingBefore * rate / 100.0 / 12.0)
-            }
-            return max(0, NSDecimalNumber(decimal: plan.monthlyInterest).doubleValue)
-        }()
-
-        switch plan.loanRepaymentMode {
-        case .annuity:
-            let cappedInterest = min(baseAmount, computedInterest)
-            let principal = max(0, baseAmount - cappedInterest)
-            return (cappedInterest, principal)
-        case .fixedPrincipal:
-            let desiredPrincipal = max(0, baseAmount)
-            let principal = max(0, min(desiredPrincipal, remainingBefore ?? desiredPrincipal))
-            return (max(0, computedInterest), principal)
-        }
-    }
-
-    private func projectedIncomeAmount(for income: IncomeEntry, start: Date, endInclusive: Date) -> Double {
-        let calendar = Calendar.current
-        guard start <= endInclusive else { return 0 }
-        switch income.kind {
-        case .oneTime:
-            let day = calendar.startOfDay(for: income.startDate)
-            guard day >= start && day <= endInclusive else { return 0 }
-            return NSDecimalNumber(decimal: income.amount).doubleValue
-        case .monthlyFixed:
-            let monthAnchors = projectedUniqueMonthsBetween(start: start, endInclusive: endInclusive)
-            let dayOfMonth = calendar.component(.day, from: income.startDate)
-            var total = 0.0
-            for monthAnchor in monthAnchors {
-                guard let interval = calendar.dateInterval(of: .month, for: monthAnchor) else { continue }
-                let dayRange = calendar.range(of: .day, in: .month, for: monthAnchor) ?? 1..<29
-                let targetDay = min(dayOfMonth, dayRange.count)
-                guard let payoutDate = calendar.date(byAdding: .day, value: targetDay - 1, to: interval.start) else { continue }
-                let payout = calendar.startOfDay(for: payoutDate)
-                guard payout >= start && payout <= endInclusive else { continue }
-                guard payout >= calendar.startOfDay(for: income.startDate) else { continue }
-                total += NSDecimalNumber(decimal: income.amount).doubleValue
-            }
-            return total
-        }
-    }
-
-    private func projectedUniqueMonthsBetween(start: Date, endInclusive: Date) -> [Date] {
-        let calendar = Calendar.current
-        guard start <= endInclusive else { return [] }
-        var months: [Date] = []
-        var current = startOfMonth(start)
-        let endMonth = startOfMonth(endInclusive)
-        while current <= endMonth {
-            months.append(current)
-            guard let next = calendar.date(byAdding: .month, value: 1, to: current) else { break }
-            current = next
-        }
-        return months
-    }
-
-    private func startOfMonth(_ date: Date) -> Date {
-        let calendar = Calendar.current
-        let comps = calendar.dateComponents([.year, .month], from: date)
-        return calendar.date(from: comps) ?? date
+        .sorted { $0.id > $1.id }
     }
 
     private var duplicateInvoiceIDs: Set<UUID> {
@@ -516,7 +529,7 @@ private struct InvoicesScreen: View {
         return duplicates
     }
 
-    private func dashboardCard(title: String, value: String, symbol: String, tint: Color) -> some View {
+    private func dashboardCard(title: String, value: String, subValue: String? = nil, symbol: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Image(systemName: symbol)
                 .font(.caption.weight(.semibold))
@@ -530,6 +543,118 @@ private struct InvoicesScreen: View {
                 .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
+            if let subValue, !subValue.isEmpty {
+                Text(subValue)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .monospacedDigit()
+            }
+        }
+        .frame(width: 195, alignment: .leading)
+        .padding(12)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(red: 0.82, green: 0.86, blue: 0.91), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
+    }
+
+    private func dashboardDueCard() -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
+            Menu {
+                ForEach(Self.dueWindowOptions, id: \.self) { days in
+                    Button {
+                        dueWindowDays = days
+                    } label: {
+                        if days == dueWindowDays {
+                            Label(dueWindowLabel(days: days), systemImage: "checkmark")
+                        } else {
+                            Text(dueWindowLabel(days: days))
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Text(dueWindowLabel(days: dueWindowDays))
+                        .font(.caption2)
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                        .lineLimit(2)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                }
+            }
+            .buttonStyle(.plain)
+            Text("\(dueInNextDaysCount(dueWindowDays))")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(dueInNextDaysAmount(dueWindowDays).formatted(.currency(code: "EUR")))
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .monospacedDigit()
+        }
+        .frame(width: 195, alignment: .leading)
+        .padding(12)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(red: 0.82, green: 0.86, blue: 0.91), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
+    }
+
+    private func dashboardPaidCard() -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(red: 0.23, green: 0.35, blue: 0.50))
+            Menu {
+                ForEach(Self.paidWindowOptions, id: \.self) { days in
+                    Button {
+                        paidWindowDays = days
+                    } label: {
+                        if days == paidWindowDays {
+                            Label(paidWindowLabel(days: days), systemImage: "checkmark")
+                        } else {
+                            Text(paidWindowLabel(days: days))
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Text(paidWindowLabel(days: paidWindowDays))
+                        .font(.caption2)
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                        .lineLimit(2)
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                }
+            }
+            .buttonStyle(.plain)
+            Text("\(paidInLastDaysCount(paidWindowDays))")
+                .font(.headline)
+                .foregroundStyle(Color(red: 0.10, green: 0.16, blue: 0.24))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(paidInLastDaysAmount(paidWindowDays).formatted(.currency(code: "EUR")))
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color(red: 0.34, green: 0.43, blue: 0.54))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .monospacedDigit()
         }
         .frame(width: 195, alignment: .leading)
         .padding(12)
@@ -551,62 +676,70 @@ private struct StatsView: View {
         case reports
     }
 
-    enum DataScope: CaseIterable, Identifiable {
+    enum DataScope: String, CaseIterable, Identifiable {
         case open
         case all
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .open: return L10n.t("Nur offen", "Open only")
-            case .all: return L10n.t("Alle", "All")
+            case .open: return isEnglish ? "Open only" : "Nur offen"
+            case .all:  return isEnglish ? "All"       : "Alle"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum StatsTab: CaseIterable, Identifiable {
+    enum StatsTab: String, CaseIterable, Identifiable {
         case analysis
         case fixedCosts
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .analysis: return L10n.t("Übersicht", "Overview")
-            case .fixedCosts: return L10n.t("Fixkosten", "Fixed costs")
+            case .analysis:   return isEnglish ? "Overview"     : "Übersicht"
+            case .fixedCosts: return isEnglish ? "Fixed costs"  : "Fixkosten"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum ReportsTab: CaseIterable, Identifiable {
+    enum ReportsTab: String, CaseIterable, Identifiable {
         case total
         case invoices
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .total: return L10n.t("Gesamt", "Total")
-            case .invoices: return L10n.t("Rechnungen", "Invoices")
+            case .total:    return isEnglish ? "Total"    : "Gesamt"
+            case .invoices: return isEnglish ? "Invoices" : "Rechnungen"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum ReportInvoiceStatusScope: CaseIterable, Identifiable {
+    enum ReportInvoiceStatusScope: String, CaseIterable, Identifiable {
         case open
         case paid
         case all
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .open: return L10n.t("Offen", "Open")
-            case .paid: return L10n.t("Bezahlt", "Paid")
-            case .all: return L10n.t("Alle", "All")
+            case .open: return isEnglish ? "Open"   : "Offen"
+            case .paid: return isEnglish ? "Paid"   : "Bezahlt"
+            case .all:  return isEnglish ? "All"    : "Alle"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
     @Query private var invoices: [Invoice]
@@ -619,6 +752,9 @@ private struct StatsView: View {
     @State private var selectedMonth: Date = Date()
     @State private var dataScope: DataScope = .open
     @State private var reportInvoiceStatusScope: ReportInvoiceStatusScope = .all
+    // Observed so the view re-renders when the language is toggled in Settings
+    // (otherwise enum-driven Picker labels stay stuck in the previous language).
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
     @AppStorage(AppSettings.exportFormatKey) private var exportFormat: String = AppSettings.exportFormat
     @AppStorage("liquidity.startBalance") private var startBalance: Double = 0
     @AppStorage("liquidity.useCurrentBalance") private var useCurrentBalance: Bool = false
@@ -659,6 +795,7 @@ private struct StatsView: View {
     @State private var specialRepaymentPlanForSheet: InstallmentPlan?
     @State private var planningWeeks: Int = 12
     @State private var selectedWeekStart: Date?
+    @FocusState private var isAmountFieldFocused: Bool
     private let notificationService = NotificationService()
 
     private let calendar = Calendar.current
@@ -681,26 +818,94 @@ private struct StatsView: View {
         editingKind == .loan
     }
 
-    var body: some View {
-        Form {
-            Section(L10n.t("Bereich", "Area")) {
-                if mode == .expenses {
-                    Picker(L10n.t("Bereich", "Area"), selection: $selectedTab) {
-                        ForEach(StatsTab.allCases) { tab in
-                            Text(tab.title).tag(tab)
-                        }
+    @ViewBuilder
+    private var topSegmentBar: some View {
+        HStack(spacing: 8) {
+            if mode == .expenses {
+                ForEach(StatsTab.allCases) { tab in
+                    segmentButton(
+                        title: tab.title,
+                        icon: iconName(for: tab),
+                        isSelected: selectedTab == tab
+                    ) {
+                        selectedTab = tab
                     }
-                    .pickerStyle(.segmented)
-                } else {
-                    Picker(L10n.t("Bereich", "Area"), selection: $selectedReportsTab) {
-                        ForEach(ReportsTab.allCases) { tab in
-                            Text(tab.title).tag(tab)
-                        }
-                    }
-                    .pickerStyle(.segmented)
                 }
+            } else {
+                ForEach(ReportsTab.allCases) { tab in
+                    segmentButton(
+                        title: tab.title,
+                        icon: iconName(for: tab),
+                        isSelected: selectedReportsTab == tab
+                    ) {
+                        selectedReportsTab = tab
+                    }
+                }
+            }
+        }
+    }
 
-                if !(mode == .expenses && selectedTab == .fixedCosts) {
+    private func segmentButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        let accent = AppTheme.accent
+        return Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.subheadline.weight(.semibold))
+                Text(title)
+                    .font(.subheadline.weight(isSelected ? .semibold : .medium))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isSelected ? accent.opacity(0.18) : Color(.tertiarySystemFill))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(isSelected ? accent.opacity(0.45) : Color.clear, lineWidth: 1)
+            )
+            .foregroundStyle(isSelected ? accent : Color.secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func iconName(for tab: StatsTab) -> String {
+        switch tab {
+        case .analysis: return "chart.bar.fill"
+        case .fixedCosts: return "calendar.badge.clock"
+        }
+    }
+
+    private func iconName(for tab: ReportsTab) -> String {
+        switch tab {
+        case .total: return "chart.line.uptrend.xyaxis"
+        case .invoices: return "doc.text.fill"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            AppHeroHeader(
+                title: mode == .expenses
+                    ? L10n.t("Ausgaben", "Expenses")
+                    : L10n.t("Auswertung", "Analytics"),
+                subtitle: mode == .expenses
+                    ? L10n.t("Kosten und Fixkosten im Überblick", "Costs and fixed costs at a glance")
+                    : L10n.t("Einnahmen, Ausgaben und Saldo", "Income, expenses and balance"),
+                icon: mode == .expenses
+                    ? "creditcard.fill"
+                    : "chart.bar.doc.horizontal.fill"
+            )
+
+            topSegmentBar
+                .padding(.horizontal, 16)
+                .padding(.top, 2)
+                .padding(.bottom, 6)
+
+            Form {
+            if !(mode == .expenses && selectedTab == .fixedCosts) {
+                Section {
                     Picker(L10n.t("Monat", "Month"), selection: $selectedMonth) {
                         ForEach(availableMonths, id: \.self) { month in
                             Text(monthLabel(for: month)).tag(month)
@@ -711,14 +916,16 @@ private struct StatsView: View {
                     if mode == .expenses {
                         Picker(L10n.t("Datenbasis", "Data scope"), selection: $dataScope) {
                             ForEach(DataScope.allCases) { scope in
-                                Text(scope.title).tag(scope)
+                                Text(scope.localizedTitle(isEnglish: appLanguageCode == "en"))
+                                    .tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
                     } else if selectedReportsTab == .invoices {
                         Picker(L10n.t("Status", "Status"), selection: $reportInvoiceStatusScope) {
                             ForEach(ReportInvoiceStatusScope.allCases) { scope in
-                                Text(scope.title).tag(scope)
+                                Text(scope.localizedTitle(isEnglish: appLanguageCode == "en"))
+                                    .tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
@@ -778,10 +985,12 @@ private struct StatsView: View {
             reportsInvoiceSections
 
             fixedCostSections
+            }
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.immediately)
         }
-        .navigationTitle(mode == .expenses ? L10n.t("Ausgaben", "Expenses") : L10n.t("Auswertung", "Analytics"))
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
@@ -790,11 +999,12 @@ private struct StatsView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
@@ -830,6 +1040,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("z. B. 420,00", value: $editInstallmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                         }
                         HStack {
                             Text(L10n.t("Typ", "Type"))
@@ -855,7 +1066,7 @@ private struct StatsView: View {
                         Section(L10n.t("Kreditdetails", "Loan details")) {
                             Picker(L10n.t("Kreditart", "Loan type"), selection: $editInstallmentLoanRepaymentMode) {
                                 ForEach(InstallmentPlan.LoanRepaymentMode.allCases) { mode in
-                                    Text(mode.title).tag(mode)
+                                    Text(mode.localizedTitle(isEnglish: appLanguageCode == "en")).tag(mode)
                                 }
                             }
                             .pickerStyle(.segmented)
@@ -867,6 +1078,7 @@ private struct StatsView: View {
                                         .foregroundStyle(.secondary)
                                     TextField("z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                         .keyboardType(.decimalPad)
+                                        .focused($isAmountFieldFocused)
                                     Text(L10n.t("Pflichtfeld bei fester Tilgung.", "Required for fixed principal mode."))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -878,6 +1090,7 @@ private struct StatsView: View {
                                         .foregroundStyle(.secondary)
                                     TextField("optional, z. B. 5,49", value: $editInstallmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                         .keyboardType(.decimalPad)
+                                        .focused($isAmountFieldFocused)
                                     Text(L10n.t("Für Restschuld-Berechnung empfohlen.", "Recommended for remaining principal calculation."))
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -889,6 +1102,7 @@ private struct StatsView: View {
                                     .foregroundStyle(.secondary)
                                 TextField("optional, z. B. 18000,00", value: $editInstallmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
                                     .keyboardType(.decimalPad)
+                                    .focused($isAmountFieldFocused)
                             }
                             if editInstallmentLoanRepaymentMode == .annuity {
                                 Text(L10n.t("Für Restschuld-Anzeige bitte Anfangsschuld und Sollzins eintragen.", "For remaining principal display, please enter initial principal and nominal interest."))
@@ -903,6 +1117,7 @@ private struct StatsView: View {
                             DatePicker(L10n.t("Datum", "Date"), selection: $editSpecialRepaymentDate, displayedComponents: .date)
                             TextField(L10n.t("Betrag in EUR", "Amount in EUR"), text: $editSpecialRepaymentAmountText)
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
 
                             Button(L10n.t("Sondertilgung hinzufügen", "Add special repayment")) {
                                 addSpecialRepayment(to: plan)
@@ -920,7 +1135,7 @@ private struct StatsView: View {
                             } else {
                                 ForEach(planRepayments) { repayment in
                                     HStack {
-                                        Text(repayment.repaymentDate.formatted(date: .abbreviated, time: .omitted))
+                                        Text(repayment.repaymentDate.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, locale: statsLocale)))
                                         Spacer()
                                         Text(repayment.amount.formatted(.currency(code: "EUR")))
                                             .fontWeight(.medium)
@@ -966,6 +1181,7 @@ private struct StatsView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
@@ -979,6 +1195,7 @@ private struct StatsView: View {
                         DatePicker(L10n.t("Datum", "Date"), selection: $editSpecialRepaymentDate, displayedComponents: .date)
                         TextField(L10n.t("Betrag in EUR", "Amount in EUR"), text: $editSpecialRepaymentAmountText)
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
 
                         Button(L10n.t("Sondertilgung hinzufügen", "Add special repayment")) {
                             addSpecialRepayment(to: plan)
@@ -996,7 +1213,7 @@ private struct StatsView: View {
                         } else {
                             ForEach(planRepayments) { repayment in
                                 HStack {
-                                    Text(repayment.repaymentDate.formatted(date: .abbreviated, time: .omitted))
+                                    Text(repayment.repaymentDate.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, locale: statsLocale)))
                                     Spacer()
                                     Text(repayment.amount.formatted(.currency(code: "EUR")))
                                         .fontWeight(.medium)
@@ -1030,6 +1247,7 @@ private struct StatsView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }
@@ -1053,9 +1271,11 @@ private struct StatsView: View {
                 if useCurrentBalance {
                     TextField(L10n.t("Aktueller Kontostand", "Current balance"), value: $currentBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 } else {
                     TextField(L10n.t("Startbestand", "Starting balance"), value: $startBalance, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
 
                 if !effectiveUseCurrentBalance && overdueOpenAmount > 0 {
@@ -1135,7 +1355,7 @@ private struct StatsView: View {
                 .chartForegroundStyleScale([
                     L10n.t("Ausgaben", "Expenses"): .red.opacity(0.55),
                     L10n.t("Einnahmen", "Income"): .green.opacity(0.55),
-                    L10n.t("Kontostand", "Balance"): Color(red: 0.54, green: 0.35, blue: 0.25)
+                    L10n.t("Kontostand", "Balance"): AppTheme.accent
                 ])
                 .chartLegend(position: .bottom, alignment: .leading, spacing: 12)
                 .chartYAxis {
@@ -1181,7 +1401,7 @@ private struct StatsView: View {
                                     .foregroundStyle(.secondary)
                                 ForEach(row.categoryBreakdown) { item in
                                     HStack {
-                                        Text(item.name)
+                                        Text(Invoice.localizedCategory(item.name, isEnglish: L10n.isEnglish))
                                         Spacer()
                                         Text(item.amount.formatted(.currency(code: "EUR")))
                                             .fontWeight(.medium)
@@ -1196,7 +1416,7 @@ private struct StatsView: View {
                             if selectedWeekStart == row.weekStart {
                                 Text(L10n.t("Ausgewählt", "Selected"))
                                     .font(.caption2)
-                                    .foregroundStyle(Color(red: 0.54, green: 0.35, blue: 0.25))
+                                    .foregroundStyle(AppTheme.accent)
                             }
                             Spacer()
                             Text(row.totalOutgoing.formatted(.currency(code: "EUR")))
@@ -1295,7 +1515,7 @@ private struct StatsView: View {
             Section(L10n.t("Fixkosten/Kredit erfassen", "Create fixed cost/loan")) {
                 Picker(L10n.t("Typ", "Type"), selection: $installmentKind) {
                     ForEach(InstallmentPlan.Kind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                        Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -1316,12 +1536,13 @@ private struct StatsView: View {
                         .foregroundStyle(.secondary)
                     TextField("z. B. 420,00", value: $installmentMonthlyPayment, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
 
                 if installmentKind == .loan {
                     Picker(L10n.t("Kreditart", "Loan type"), selection: $installmentLoanRepaymentMode) {
                         ForEach(InstallmentPlan.LoanRepaymentMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
+                            Text(mode.localizedTitle(isEnglish: appLanguageCode == "en")).tag(mode)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -1333,6 +1554,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("z. B. 5,49", value: $installmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                             Text(L10n.t("Pflichtfeld bei fester Tilgung.", "Required for fixed principal mode."))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -1344,6 +1566,7 @@ private struct StatsView: View {
                                 .foregroundStyle(.secondary)
                             TextField("optional, z. B. 5,49", value: $installmentAnnualInterestRate, format: .number.precision(.fractionLength(3)))
                                 .keyboardType(.decimalPad)
+                                .focused($isAmountFieldFocused)
                             Text(L10n.t("Für Restschuld-Berechnung empfohlen.", "Recommended for remaining principal calculation."))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -1355,6 +1578,7 @@ private struct StatsView: View {
                             .foregroundStyle(.secondary)
                         TextField("optional, z. B. 18000,00", value: $installmentInitialPrincipal, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     if installmentLoanRepaymentMode == .annuity {
                         Text(L10n.t("Für Restschuld-Anzeige bitte Anfangsschuld und Sollzins eintragen.", "For remaining principal display, please enter initial principal and nominal interest."))
@@ -1449,7 +1673,7 @@ private struct StatsView: View {
                             } label: {
                                 Text(L10n.t("Bearbeiten", "Edit"))
                             }
-                            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+                            .tint(AppTheme.accent)
                             Button(role: .destructive) {
                                 modelContext.delete(plan)
                                 do {
@@ -1607,14 +1831,22 @@ private struct StatsView: View {
         startOfMonth(for: selectedMonth)
     }
 
+    /// Aktuelle App-Locale fuer Datums-Anzeigen — immer konsistent mit
+    /// appLanguageCode (nicht mit System-Locale). SwiftUI sieht den Read,
+    /// triggert daher Re-Render bei Sprachwechsel.
+    private var statsLocale: Locale {
+        Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+    }
+
     private var reportAsOfLabel: String {
         let today = calendar.startOfDay(for: Date())
-        return "Stand \(today.formatted(.dateTime.day().month().year()))"
+        let formatted = today.formatted(.dateTime.day().month().year().locale(statsLocale))
+        return "\(L10n.t("Stand", "As of")) \(formatted)"
     }
 
     private var reportAsOfDateText: String {
         let today = calendar.startOfDay(for: Date())
-        return today.formatted(.dateTime.day().month().year())
+        return today.formatted(.dateTime.day().month().year().locale(statsLocale))
     }
 
     private var reportMonthEndExclusive: Date {
@@ -1754,7 +1986,13 @@ private struct StatsView: View {
     }
 
     private func monthLabel(for date: Date) -> String {
-        date.formatted(.dateTime.month(.wide).year())
+        // Explizite Locale-Bindung an die App-Sprache. Date.formatted(_:)
+        // nimmt sonst Locale.current (System-Sprache) und ignoriert die
+        // .environment(\.locale, ...)-Bindung — Effekt: bei deutschem
+        // System-iOS und englischer App-Sprache wuerden trotzdem deutsche
+        // Monatsnamen ausgespielt.
+        let locale = Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+        return date.formatted(.dateTime.month(.wide).year().locale(locale))
     }
 
     private var overdueOpenAmount: Double {
@@ -1878,7 +2116,9 @@ private struct StatsView: View {
 
     private func weekLabel(start: Date, end: Date) -> String {
         let weekEnd = calendar.date(byAdding: .day, value: -1, to: end) ?? end
-        return "\(start.formatted(.dateTime.day().month())) - \(weekEnd.formatted(.dateTime.day().month()))"
+        let locale = Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+        let style = Date.FormatStyle.dateTime.day().month().locale(locale)
+        return "\(start.formatted(style)) - \(weekEnd.formatted(style))"
     }
 
     private func buildCategoryBreakdown(_ invoices: [Invoice]) -> [BreakdownItem] {
@@ -2778,17 +3018,22 @@ private struct StatsView: View {
 
     private func rateSubtitle(_ plan: InstallmentPlan) -> String {
         let start = dateString(plan.startDate)
-        let end = plan.endDate.map(dateString) ?? "offen"
+        let end = plan.endDate.map(dateString) ?? L10n.t("offen", "open-ended")
+        let from = L10n.t("ab", "from")
+        let endLabel = L10n.t("Ende", "end")
+        let dayLabel = L10n.t("am", "on day")
+        let scheduleLine = "\(from) \(start), \(endLabel) \(end), \(dayLabel) \(plan.paymentDay)."
         if plan.kind == .fixedCost {
-            return "ab \(start), Ende \(end), am \(plan.paymentDay)."
+            return scheduleLine
         }
         let repaymentText = plan.loanRepaymentMode == .fixedPrincipal
             ? L10n.t("Feste Tilgung", "Fixed principal")
             : L10n.t("Annuität", "Annuity")
+        let interestLabel = L10n.t("Sollzins", "Nominal interest")
         let rateText = plan.loanRepaymentMode == .fixedPrincipal
-            ? (plan.annualInterestRatePercent.map { "Sollzins \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("Sollzins fehlt", "Nominal interest missing"))
-            : (plan.annualInterestRatePercent.map { "Sollzins \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("feste Monatsrate", "fixed monthly payment"))
-        return "ab \(start), Ende \(end), am \(plan.paymentDay). · \(repaymentText) · \(rateText)"
+            ? (plan.annualInterestRatePercent.map { "\(interestLabel) \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("Sollzins fehlt", "Nominal interest missing"))
+            : (plan.annualInterestRatePercent.map { "\(interestLabel) \($0.formatted(.number.precision(.fractionLength(2))))% p.a." } ?? L10n.t("feste Monatsrate", "fixed monthly payment"))
+        return "\(scheduleLine) · \(repaymentText) · \(rateText)"
     }
 
     private func remainingPrincipal(of plan: InstallmentPlan, at referenceDate: Date) -> Decimal? {
@@ -3003,9 +3248,19 @@ private struct IncomeManagementView: View {
     @State private var editIncomeStartDate: Date = Date()
     @State private var editIncomeMonthlyDay: Int = 1
     @State private var isShowingEditIncomeSheet = false
+    @FocusState private var isAmountFieldFocused: Bool
+    // See StatsView: observe so the view re-renders on language toggle.
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     var body: some View {
-        Form {
+        VStack(spacing: 0) {
+            AppHeroHeader(
+                title: L10n.t("Einnahmen", "Income"),
+                subtitle: L10n.t("Fixe und variable Einnahmen verwalten", "Manage fixed and variable income"),
+                icon: "banknote.fill"
+            )
+
+            Form {
             Section(L10n.t("Neue Einnahme", "New income")) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L10n.t("Bezeichnung", "Name"))
@@ -3019,10 +3274,11 @@ private struct IncomeManagementView: View {
                         .foregroundStyle(.secondary)
                     TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $incomeAmount, format: .number.precision(.fractionLength(2)))
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFieldFocused)
                 }
                 Picker(L10n.t("Typ", "Type"), selection: $incomeKind) {
                     ForEach(IncomeEntry.Kind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                        Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -3057,7 +3313,15 @@ private struct IncomeManagementView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(income.name)
                                     .font(.headline.weight(.semibold))
-                                Text(L10n.isEnglish ? "\(income.kind.title) · from \(income.startDate.formatted(.dateTime.day().month().year()))" : "\(income.kind.title) · ab \(income.startDate.formatted(.dateTime.day().month().year()))")
+                                Text({
+                                    let isEN = appLanguageCode == "en"
+                                    let locale = Locale(identifier: isEN ? "en_US" : "de_DE")
+                                    let kindLabel = income.kind.localizedTitle(isEnglish: isEN)
+                                    let dateLabel = income.startDate.formatted(.dateTime.day().month().year().locale(locale))
+                                    return isEN
+                                        ? "\(kindLabel) · from \(dateLabel)"
+                                        : "\(kindLabel) · ab \(dateLabel)"
+                                }())
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -3072,7 +3336,7 @@ private struct IncomeManagementView: View {
                             } label: {
                                 Text(L10n.t("Bearbeiten", "Edit"))
                             }
-                            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+                            .tint(AppTheme.accent)
                             Button(role: .destructive) {
                                 modelContext.delete(income)
                                 do {
@@ -3087,10 +3351,12 @@ private struct IncomeManagementView: View {
                     }
                 }
             }
+            }
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.immediately)
         }
-        .navigationTitle(L10n.t("Einnahmen", "Income"))
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .scrollContentBackground(.hidden)
         .background(
             LinearGradient(
                 colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
@@ -3099,11 +3365,12 @@ private struct IncomeManagementView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
@@ -3119,7 +3386,7 @@ private struct IncomeManagementView: View {
                     }
                     Picker(L10n.t("Typ", "Type"), selection: $editIncomeKind) {
                         ForEach(IncomeEntry.Kind.allCases) { kind in
-                            Text(kind.title).tag(kind)
+                            Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -3129,6 +3396,7 @@ private struct IncomeManagementView: View {
                             .foregroundStyle(.secondary)
                         TextField(L10n.t("z. B. 2800,00", "e.g. 2800.00"), value: $editIncomeAmount, format: .number.precision(.fractionLength(2)))
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     DatePicker(editIncomeDateLabel, selection: $editIncomeStartDate, displayedComponents: .date)
                     if editIncomeKind == .monthlyFixed {
@@ -3155,6 +3423,7 @@ private struct IncomeManagementView: View {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()
                         Button(L10n.t("Fertig", "Done")) {
+                            isAmountFieldFocused = false
                             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                         }
                     }

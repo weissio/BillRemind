@@ -14,13 +14,20 @@ struct InvoiceDetailView: View {
     @State private var ibanCopied = false
     @State private var customCategoryInput = ""
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @FocusState private var isAmountFieldFocused: Bool
 
     var body: some View {
         Form {
             Section(L10n.t("Status", "Status")) {
                 LabeledContent(L10n.t("Aktuell", "Current"), value: invoice.status == .open ? L10n.t("Offen", "Open") : L10n.t("Bezahlt", "Paid"))
                 if let paidAt = invoice.paidAt {
-                    LabeledContent(L10n.t("Bezahlt am", "Paid on"), value: paidAt.formatted(date: .abbreviated, time: .shortened))
+                    let style = Date.FormatStyle(
+                        date: .abbreviated,
+                        time: .shortened,
+                        locale: Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+                    )
+                    LabeledContent(L10n.t("Bezahlt am", "Paid on"), value: paidAt.formatted(style))
                 }
                 Button(invoice.status == .open ? L10n.t("Als bezahlt markieren", "Mark as paid") : L10n.t("Als offen markieren", "Mark as open")) {
                     if invoice.status == .open {
@@ -39,7 +46,8 @@ struct InvoiceDetailView: View {
                 TextField(L10n.t("Zahlungsempfaenger", "Payment recipient"), text: $invoice.paymentRecipient)
                 Picker(L10n.t("Kategorie", "Category"), selection: categoryBinding) {
                     ForEach(allCategories, id: \.self) { category in
-                        Text(category).tag(category)
+                        Text(Invoice.localizedCategory(category, isEnglish: appLanguageCode == "en"))
+                            .tag(category)
                     }
                 }
                 HStack(spacing: 8) {
@@ -51,6 +59,7 @@ struct InvoiceDetailView: View {
                 }
                 TextField(L10n.t("Betrag", "Amount"), value: $invoice.amount, format: .number)
                     .keyboardType(.decimalPad)
+                    .focused($isAmountFieldFocused)
                 HStack {
                     Button(L10n.t("+7 Tage", "+7 days")) {
                         applyDueDate(offsetDays: 7)
@@ -153,10 +162,12 @@ struct InvoiceDetailView: View {
         }
         .navigationTitle(invoice.vendorName)
         .navigationBarTitleDisplayMode(.inline)
+        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(L10n.t("Fertig", "Done")) {
+                    isAmountFieldFocused = false
                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }

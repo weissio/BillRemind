@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "02_versicherung_rechnung.pdf",
+  "expected": {
+    "vendor_name": "NORDSCHUTZ Versicherung AG",
+    "payment_recipient": "NORDSCHUTZ Versicherung AG",
+    "amount_value": 35.0,
+    "category": "Versicherung",
+    "due_date": "2026-03-01",
+    "due_offset_days_hint": null,
+    "status_suggestion": "open",
+    "invoice_number": "VS-2026-1148",
+    "iban": "DE11370400440532013000"
+  }
+}

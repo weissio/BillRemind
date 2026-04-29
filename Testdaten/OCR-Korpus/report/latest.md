@@ -1,8 +1,8 @@
 # OCR Corpus Report
 
-- Generated: 2026-03-06T16:40:02Z
-- Cases: 14/14 passed (100.0%)
-- Fields: 140/140 passed (100.0%)
+- Generated: 2026-04-29T21:24:20Z
+- Cases: 17/17 passed (100.0%)
+- Fields: 170/170 passed (100.0%)
 
 ## Case Details
 
@@ -50,6 +50,51 @@
 - [OK] status_suggestion: expected=`open` actual=`open`
 - [OK] invoice_number: expected=`PK-2026-1884` actual=`PK-2026-1884`
 - [OK] iban: expected=`DE77860555921012334455` actual=`DE77860555921012334455`
+
+### invoice_01_stadtwerke_full - PASS
+- Source: `rechnung/01_stadtwerke_rechnung.pdf`
+- Document type expected/actual: `invoice` / `invoice`
+
+- [OK] document_type: expected=`invoice` actual=`invoice`
+- [OK] vendor_name: expected=`STADTWERKE NORD GMBH` actual=`STADTWERKE NORD GMBH`
+- [OK] payment_recipient: expected=`STADTWERKE NORD GMBH` actual=`STADTWERKE NORD GMBH`
+- [OK] amount_value: expected=`76.86` actual=`76.86`
+- [OK] category: expected=`WOHNEN` actual=`WOHNEN`
+- [OK] due_date: expected=`2026-03-05` actual=`2026-03-05`
+- [OK] due_offset_days_hint: expected=`null` actual=`null`
+- [OK] status_suggestion: expected=`open` actual=`open`
+- [OK] invoice_number: expected=`SW-2026-0301` actual=`SW-2026-0301`
+- [OK] iban: expected=`DE98200505501122334466` actual=`DE98200505501122334466`
+
+### invoice_02_versicherung_full - PASS
+- Source: `rechnung/02_versicherung_rechnung.pdf`
+- Document type expected/actual: `invoice` / `invoice`
+
+- [OK] document_type: expected=`invoice` actual=`invoice`
+- [OK] vendor_name: expected=`NORDSCHUTZ VERSICHERUNG AG` actual=`NORDSCHUTZ VERSICHERUNG AG`
+- [OK] payment_recipient: expected=`NORDSCHUTZ VERSICHERUNG AG` actual=`NORDSCHUTZ VERSICHERUNG AG`
+- [OK] amount_value: expected=`35.00` actual=`35.00`
+- [OK] category: expected=`VERSICHERUNG` actual=`VERSICHERUNG`
+- [OK] due_date: expected=`2026-03-01` actual=`2026-03-01`
+- [OK] due_offset_days_hint: expected=`null` actual=`null`
+- [OK] status_suggestion: expected=`open` actual=`open`
+- [OK] invoice_number: expected=`VS-2026-1148` actual=`VS-2026-1148`
+- [OK] iban: expected=`DE11370400440532013000` actual=`DE11370400440532013000`
+
+### invoice_03_produktkauf_full - PASS
+- Source: `rechnung/03_produktkauf_rechnung.pdf`
+- Document type expected/actual: `invoice` / `invoice`
+
+- [OK] document_type: expected=`invoice` actual=`invoice`
+- [OK] vendor_name: expected=`TECHSTORE ONLINE GMBH` actual=`TECHSTORE ONLINE GMBH`
+- [OK] payment_recipient: expected=`TECHSTORE ONLINE GMBH` actual=`TECHSTORE ONLINE GMBH`
+- [OK] amount_value: expected=`206.93` actual=`206.93`
+- [OK] category: expected=`SONSTIGES` actual=`SONSTIGES`
+- [OK] due_date: expected=`2026-03-06` actual=`2026-03-06`
+- [OK] due_offset_days_hint: expected=`null` actual=`null`
+- [OK] status_suggestion: expected=`open` actual=`open`
+- [OK] invoice_number: expected=`TS-2026-55209` actual=`TS-2026-55209`
+- [OK] iban: expected=`DE33500105175407324931` actual=`DE33500105175407324931`
 
 ### receipt_01_rewe - PASS
 - Source: `kassenbon/01_rewe_kassenbon.pdf`

@@ -20,6 +20,8 @@ struct ReviewInvoiceView: View {
     @AppStorage("categories.custom") private var customCategoriesStorage: String = ""
     @AppStorage(AppSettings.reviewConfidenceThresholdKey) private var reviewConfidenceThreshold: Double = AppSettings.reviewConfidenceThreshold
     @AppStorage(AppSettings.ocrDebugVisibleKey) private var ocrDebugVisible: Bool = AppSettings.ocrDebugVisible
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
+    @FocusState private var isAmountFieldFocused: Bool
     private let notificationService = NotificationService()
 
     init(scanViewModel: ScanViewModel, onSaved: @escaping () -> Void) {
@@ -108,6 +110,47 @@ struct ReviewInvoiceView: View {
                         Text(L10n.t("Bezahlt", "Paid")).tag(Invoice.Status.paid)
                     }
                     .pickerStyle(.segmented)
+                    // Sanfter Hinweis-Banner: wenn die Rechnung im Text einen
+                    // Hinweis wie "Die Zahlung wurde per Paypal beglichen"
+                    // enthielt, schlagen wir das Setzen auf "Bezahlt" vor —
+                    // der Nutzer entscheidet aktiv per Knopfdruck.
+                    if draft.status == .open,
+                       let provider = draft.alreadyPaidProviderHint,
+                       !provider.isEmpty {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(Color(red: 0.16, green: 0.50, blue: 0.30))
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(L10n.t(
+                                    "Diese Rechnung scheint bereits per \(provider) bezahlt zu sein.",
+                                    "This invoice appears to be already paid via \(provider)."
+                                ))
+                                .font(.footnote)
+                                .foregroundStyle(.primary)
+                                Button(L10n.t("Auf bezahlt setzen", "Mark as paid")) {
+                                    draft.status = .paid
+                                    draft.paidAt = draft.invoiceDate
+                                    draft.dueDate = nil
+                                    draft.dueOffsetDaysHint = nil
+                                    draft.reminderEnabled = false
+                                    draft.reminderDate = nil
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(Color(red: 0.16, green: 0.50, blue: 0.30))
+                                .controlSize(.small)
+                            }
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(red: 0.16, green: 0.50, blue: 0.30).opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(red: 0.16, green: 0.50, blue: 0.30).opacity(0.25), lineWidth: 1)
+                        )
+                    }
                     if draft.status == .paid {
                         DatePicker(L10n.t("Bezahlt am", "Paid on"), selection: paidAtBinding, displayedComponents: .date)
                         Button(L10n.t("Als bezahlt (heute)", "Mark as paid (today)")) {
@@ -127,7 +170,8 @@ struct ReviewInvoiceView: View {
                         .foregroundStyle(.secondary)
                     Picker(L10n.t("Kategorie", "Category"), selection: $draft.category) {
                         ForEach(allCategories, id: \.self) { category in
-                            Text(category).tag(category)
+                            Text(Invoice.localizedCategory(category, isEnglish: appLanguageCode == "en"))
+                                .tag(category)
                         }
                     }
                     HStack(spacing: 8) {
@@ -140,6 +184,7 @@ struct ReviewInvoiceView: View {
                     highlightedField(title: L10n.t("Betrag", "Amount"), confidence: draft.amountConfidence) {
                         TextField(L10n.t("z. B. 49,99", "e.g. 49.99"), value: $draft.amount, format: .number)
                             .keyboardType(.decimalPad)
+                            .focused($isAmountFieldFocused)
                     }
                     if draft.importKind != .scanReceipt {
                         highlightedField(title: L10n.t("Fälligkeitsdatum", "Due date"), confidence: draft.dueDateConfidence) {
@@ -162,6 +207,12 @@ struct ReviewInvoiceView: View {
                                 .buttonStyle(.bordered)
                                 .tint(isDuePresetSelected(30) ? Color.accentColor : Color.secondary)
                             }
+                            Text(L10n.t(
+                                "Erneut tippen entfernt die Fälligkeit – z. B. wenn bereits per PayPal bezahlt.",
+                                "Tap again to clear the due date — e.g. when already paid via PayPal."
+                            ))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                             DatePicker(L10n.t("Fällig am", "Due date"), selection: dueDateBinding, displayedComponents: .date)
                         }
                     }
@@ -225,6 +276,7 @@ struct ReviewInvoiceView: View {
             }
             .navigationTitle(L10n.t("Review", "Review"))
             .navigationBarTitleDisplayMode(.inline)
+            .scrollDismissesKeyboard(.immediately)
             .scrollContentBackground(.hidden)
             .background(
                 LinearGradient(
@@ -234,7 +286,7 @@ struct ReviewInvoiceView: View {
                 )
                 .ignoresSafeArea()
             )
-            .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+            .tint(AppTheme.accent)
             .onAppear {
                 sanitizeCriticalIdentifiers()
                 applyLearnedDefaultsIfAvailable()
@@ -266,6 +318,7 @@ struct ReviewInvoiceView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button(L10n.t("Fertig", "Done")) {
+                        isAmountFieldFocused = false
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }
@@ -408,12 +461,28 @@ struct ReviewInvoiceView: View {
     }
 
     private func applyDueDate(offsetDays: Int) {
+        // Bereits aktiv? Dann wirkt erneutes Antippen als Toggle und entfernt
+        // die Fälligkeit. Sinnvoll z. B. wenn die Rechnung bereits per PayPal
+        // bezahlt ist und kein Fälligkeitsdatum gefuehrt werden soll, oder
+        // wenn die OCR ein falsches +7/+14/+30 erkannt hat und der Nutzer
+        // wirklich kein Faelligkeitsdatum will.
+        if isDuePresetSelected(offsetDays) {
+            clearDueDate()
+            return
+        }
         let due = Calendar.current.date(byAdding: .day, value: offsetDays, to: draft.invoiceDate) ?? draft.invoiceDate
         draft.dueDate = due
         draft.dueOffsetDaysHint = offsetDays
         if draft.reminderDate == nil || draft.reminderEnabled {
             draft.reminderDate = Calendar.current.date(byAdding: .day, value: -AppSettings.defaultReminderOffsetDays, to: due)
         }
+    }
+
+    private func clearDueDate() {
+        draft.dueDate = nil
+        draft.dueOffsetDaysHint = nil
+        // Reminder bewusst nicht angefasst — den schaltet der Nutzer separat,
+        // falls er ihn wirklich gesetzt haben moechte.
     }
 
     private func isDuePresetSelected(_ offsetDays: Int) -> Bool {

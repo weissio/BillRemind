@@ -177,7 +177,7 @@ struct SettingsView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(isEnglish ? "Back" : "Zurück") {
@@ -326,7 +326,8 @@ struct FeedbackView: View {
             Section(L10n.t("Feedback", "Feedback")) {
                 Picker(L10n.t("Kategorie", "Category"), selection: $feedbackCategory) {
                     ForEach(FeedbackCategory.allCases) { category in
-                        Text(category.title).tag(category)
+                        Text(category.localizedTitle(isEnglish: appLanguageCode == "en"))
+                            .tag(category)
                     }
                 }
                 .pickerStyle(.menu)
@@ -359,7 +360,7 @@ struct FeedbackView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(L10n.t("Zurück", "Back")) {
@@ -445,7 +446,7 @@ struct HelpView: View {
             )
             .ignoresSafeArea()
         )
-        .tint(Color(red: 0.54, green: 0.35, blue: 0.25))
+        .tint(AppTheme.accent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(L10n.t("Zurück", "Back")) {
@@ -473,16 +474,18 @@ private enum FeedbackCategory: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    func localizedTitle(isEnglish: Bool) -> String {
         switch self {
-        case .ocr: return "OCR"
-        case .ui: return "UI"
-        case .export: return L10n.t("Export", "Export")
-        case .fixedCosts: return L10n.t("Fixkosten", "Fixed costs")
-        case .bug: return L10n.t("Bug", "Bug")
-        case .wish: return L10n.t("Wunsch", "Feature request")
+        case .ocr:        return "OCR"
+        case .ui:         return "UI"
+        case .export:     return isEnglish ? "Export"          : "Export"
+        case .fixedCosts: return isEnglish ? "Fixed costs"     : "Fixkosten"
+        case .bug:        return isEnglish ? "Bug"             : "Bug"
+        case .wish:       return isEnglish ? "Feature request" : "Wunsch"
         }
     }
+
+    var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
 }
 
 private struct BackupPayload: Codable {

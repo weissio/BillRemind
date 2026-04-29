@@ -3,6 +3,7 @@ import SwiftUI
 struct FullScreenImageView: View {
     let image: UIImage?
     @Binding var isPresented: Bool
+    @AppStorage(AppSettings.appLanguageCodeKey) private var appLanguageCode: String = AppSettings.appLanguageCode
 
     var body: some View {
         NavigationStack {
