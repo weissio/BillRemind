@@ -110,6 +110,47 @@ struct ReviewInvoiceView: View {
                         Text(L10n.t("Bezahlt", "Paid")).tag(Invoice.Status.paid)
                     }
                     .pickerStyle(.segmented)
+                    // Sanfter Hinweis-Banner: wenn die Rechnung im Text einen
+                    // Hinweis wie "Die Zahlung wurde per Paypal beglichen"
+                    // enthielt, schlagen wir das Setzen auf "Bezahlt" vor —
+                    // der Nutzer entscheidet aktiv per Knopfdruck.
+                    if draft.status == .open,
+                       let provider = draft.alreadyPaidProviderHint,
+                       !provider.isEmpty {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(Color(red: 0.16, green: 0.50, blue: 0.30))
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(L10n.t(
+                                    "Diese Rechnung scheint bereits per \(provider) bezahlt zu sein.",
+                                    "This invoice appears to be already paid via \(provider)."
+                                ))
+                                .font(.footnote)
+                                .foregroundStyle(.primary)
+                                Button(L10n.t("Auf bezahlt setzen", "Mark as paid")) {
+                                    draft.status = .paid
+                                    draft.paidAt = draft.invoiceDate
+                                    draft.dueDate = nil
+                                    draft.dueOffsetDaysHint = nil
+                                    draft.reminderEnabled = false
+                                    draft.reminderDate = nil
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .tint(Color(red: 0.16, green: 0.50, blue: 0.30))
+                                .controlSize(.small)
+                            }
+                        }
+                        .padding(10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color(red: 0.16, green: 0.50, blue: 0.30).opacity(0.08))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(red: 0.16, green: 0.50, blue: 0.30).opacity(0.25), lineWidth: 1)
+                        )
+                    }
                     if draft.status == .paid {
                         DatePicker(L10n.t("Bezahlt am", "Paid on"), selection: paidAtBinding, displayedComponents: .date)
                         Button(L10n.t("Als bezahlt (heute)", "Mark as paid (today)")) {

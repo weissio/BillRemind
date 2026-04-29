@@ -26,6 +26,13 @@ struct ParsedInvoiceData {
     var invoiceNumberConfidence: Double?
     var ibanConfidence: Double?
     var reviewHint: String?
+    /// Wenn die Rechnung explizit auf bereits erfolgte Zahlung per
+    /// PayPal/ApplePay/etc. hinweist ("Die Zahlung wurde per Paypal
+    /// beglichen."), wird hier der erkannte Anbieter (z. B. "PayPal")
+    /// hinterlegt. Das Review-Sheet zeigt daraus einen Vorschlag-Banner —
+    /// die Auto-Markierung als bezahlt geschieht aber NUR auf Klick des
+    /// Nutzers, nicht implizit.
+    var alreadyPaidProviderHint: String?
 }
 
 struct ParsingService {
@@ -64,8 +71,45 @@ struct ParsingService {
             invoiceNumber: documentType == .receipt ? nil : (headerSignals.invoiceNumber ?? extractInvoiceNumber(from: lines)),
             iban: extractIBAN(from: lines, fullText: normalizedText),
             note: nil,
-            extractedText: normalizedText
+            extractedText: normalizedText,
+            alreadyPaidProviderHint: extractAlreadyPaidProviderHint(from: normalizedText)
         )
+    }
+
+    /// Erkennt explizite Hinweise, dass die Rechnung bereits ueber einen
+    /// Online-Bezahldienst beglichen wurde — nur sehr enge Phrasen, damit
+    /// keine falschen Vorschlaege bei "Wir akzeptieren PayPal" entstehen.
+    private func extractAlreadyPaidProviderHint(from text: String) -> String? {
+        let lower = text.lowercased()
+
+        // Provider in der Reihenfolge ihrer Auflistung — der erste Treffer gewinnt.
+        let providers: [(label: String, needles: [String])] = [
+            ("PayPal", ["paypal"]),
+            ("Apple Pay", ["apple pay", "applepay"]),
+            ("Google Pay", ["google pay", "googlepay", "gpay"]),
+            ("Klarna", ["klarna"]),
+            ("Stripe", ["stripe"]),
+            ("Amazon Pay", ["amazon pay", "amazonpay"]),
+            ("Sofortueberweisung", ["sofortueberweisung", "sofortüberweisung", "sofort überweisung"]),
+            ("Kreditkarte", ["kreditkarte", "credit card"])
+        ]
+
+        // Nur wenn der Provider zusammen mit einem Begleichungs-Verb auftaucht.
+        // Das schliesst neutrale Erwaehnungen ("Wir akzeptieren PayPal") aus.
+        let paidVerbs = [
+            "beglichen", "bezahlt", "abgewickelt", "vereinnahmt",
+            "paid", "settled", "charged", "completed"
+        ]
+
+        for provider in providers {
+            for needle in provider.needles {
+                guard lower.contains(needle) else { continue }
+                if paidVerbs.contains(where: { lower.contains($0) }) {
+                    return provider.label
+                }
+            }
+        }
+        return nil
     }
 
     private func normalizeOCRText(_ text: String) -> String {

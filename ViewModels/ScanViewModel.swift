@@ -396,6 +396,11 @@ struct InvoiceDraft {
     var ocrOriginalDueDate: Date?
     var ocrOriginalInvoiceNumber: String?
     var ocrOriginalIBAN: String?
+    /// Vorschlag aus der Parser-Pipeline: wenn die Rechnung explizit auf
+    /// "bereits per X beglichen" hinweist, steht hier der Provider-Name
+    /// (z. B. "PayPal"). Das Review-Sheet zeigt daraus einen Banner und
+    /// laesst den Nutzer entscheiden — kein Auto-Setzen.
+    var alreadyPaidProviderHint: String?
 
     init(parsed: ParsedInvoiceData? = nil, captureMode: ScanCaptureMode = .invoice, importKind: InvoiceImportKind? = nil) {
         self.importKind = importKind ?? (captureMode == .receipt ? .scanReceipt : .scanInvoice)
@@ -439,6 +444,7 @@ struct InvoiceDraft {
         ocrOriginalDueDate = parsed.dueDate
         ocrOriginalInvoiceNumber = parsed.invoiceNumber
         ocrOriginalIBAN = parsed.iban
+        alreadyPaidProviderHint = parsed.alreadyPaidProviderHint
 
         if dueDate == nil, let offset = dueOffsetDaysHint {
             dueDate = Calendar.current.date(byAdding: .day, value: offset, to: invoiceDate)
