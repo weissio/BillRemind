@@ -1968,7 +1968,13 @@ private struct StatsView: View {
     }
 
     private func monthLabel(for date: Date) -> String {
-        date.formatted(.dateTime.month(.wide).year())
+        // Explizite Locale-Bindung an die App-Sprache. Date.formatted(_:)
+        // nimmt sonst Locale.current (System-Sprache) und ignoriert die
+        // .environment(\.locale, ...)-Bindung — Effekt: bei deutschem
+        // System-iOS und englischer App-Sprache wuerden trotzdem deutsche
+        // Monatsnamen ausgespielt.
+        let locale = Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+        return date.formatted(.dateTime.month(.wide).year().locale(locale))
     }
 
     private var overdueOpenAmount: Double {
@@ -2092,7 +2098,9 @@ private struct StatsView: View {
 
     private func weekLabel(start: Date, end: Date) -> String {
         let weekEnd = calendar.date(byAdding: .day, value: -1, to: end) ?? end
-        return "\(start.formatted(.dateTime.day().month())) - \(weekEnd.formatted(.dateTime.day().month()))"
+        let locale = Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+        let style = Date.FormatStyle.dateTime.day().month().locale(locale)
+        return "\(start.formatted(style)) - \(weekEnd.formatted(style))"
     }
 
     private func buildCategoryBreakdown(_ invoices: [Invoice]) -> [BreakdownItem] {
