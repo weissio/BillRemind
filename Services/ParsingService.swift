@@ -36,7 +36,20 @@ struct ParsedInvoiceData {
 }
 
 struct ParsingService {
-    private let calendar = Calendar.current
+    /// Fixe Zeitzone Europe/Berlin fuer alle Datums-Operationen im Parser.
+    /// Vorher: Calendar.current — abhaengig von der System-Zeitzone des Nutzers.
+    /// Effekt: Wer mit dem iPhone in Tokio (UTC+9) eine deutsche Rechnung
+    /// scannt, deren Rechnungsdatum "22.04.2026" ist, bekam u. U. einen
+    /// Vergleich "22.04.2026 00:00 Tokyo > heute (Berlin)" und damit
+    /// invoiceDate=nil. Mit fixiertem TZ ist das Verhalten reproduzierbar
+    /// und entspricht der Lokalzeit, die auf der Rechnung gemeint war.
+    private static let parserTimeZone: TimeZone = TimeZone(identifier: "Europe/Berlin") ?? TimeZone(secondsFromGMT: 0)!
+    private let calendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = ParsingService.parserTimeZone
+        cal.locale = Locale(identifier: "de_DE")
+        return cal
+    }()
     private struct HeaderSignals {
         var invoiceNumber: String?
         var invoiceDate: Date?
@@ -922,6 +935,7 @@ struct ParsingService {
 
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "de_DE")
+        dateFormatter.timeZone = Self.parserTimeZone
 
         let keywordLines = lines.filter { line in
             let lower = line.lowercased()
@@ -1059,10 +1073,12 @@ struct ParsingService {
 
         let deFormatter = DateFormatter()
         deFormatter.locale = Locale(identifier: "de_DE")
+        deFormatter.timeZone = Self.parserTimeZone
         deFormatter.isLenient = true
 
         let enFormatter = DateFormatter()
         enFormatter.locale = Locale(identifier: "en_US_POSIX")
+        enFormatter.timeZone = Self.parserTimeZone
         enFormatter.isLenient = true
 
         let deFormats = [

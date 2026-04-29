@@ -205,6 +205,23 @@ final class ParsingServiceTests: XCTestCase {
         XCTAssertEqual(formatter.string(from: parsed.dueDate ?? .distantPast), "2026-03-05")
     }
 
+    /// QA-Report 🟡: Calendar.current war zeitzonen-abhaengig. Wenn das
+    /// iPhone z. B. auf Asia/Tokyo steht, war "22.04.2026" abhaengig vom
+    /// Vergleichs-Timezone mal valide, mal nicht. Der Parser pinnt jetzt
+    /// alle Datums-Operationen auf Europe/Berlin — der Test formatiert mit
+    /// derselben Timezone und sollte konsistent "2026-04-22" sehen.
+    func testInvoiceDateParsingIsTimezoneStable() {
+        let text = """
+        Rechnungsnummer: TS-2026-00001
+        Rechnungsdatum: 22.04.2026
+        """
+        let parsed = service.parse(text: text)
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Europe/Berlin")
+        formatter.dateFormat = "yyyy-MM-dd"
+        XCTAssertEqual(formatter.string(from: parsed.invoiceDate ?? .distantPast), "2026-04-22")
+    }
+
     /// QA-Report Risiko: Adresse rutschte ins vendorName-Feld mit
     /// ("NORDSCHUTZ Versicherung AG Policenring 8 50667 Koeln").
     /// Die Trimming-Logik schneidet jetzt am letzten Legal-Suffix ab,
