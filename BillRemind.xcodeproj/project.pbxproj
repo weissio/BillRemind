@@ -26,6 +26,7 @@
 		8D2CF1AC8C353717B4726BB1 /* SpatialParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 936CCFE2FF4A3EE116C820EE /* SpatialParser.swift */; };
 		98139D301005341363001DAE /* LayoutAwareOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4279ABC9E2A23C0BC8C7C4EE /* LayoutAwareOCR.swift */; };
 		B1527C6067FEBC5CCEE7B792 /* ParsingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */; };
+		AA98E12FD06A1B2C3D4E5F6A /* OCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */; };
 		B5148B646105139C9E139CF5 /* InvoiceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8F9B0776FA86D95E4DCCEC9 /* InvoiceDetailView.swift */; };
 		B893E83C70548CC6DAD24738 /* FullScreenImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CCC850F55E9D2C1B87C035 /* FullScreenImageView.swift */; };
 		B8BFBF3BB62C6CD34690A8B4 /* LearnedParsingRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8FDCCFCD623DD854A7B0C1 /* LearnedParsingRule.swift */; };
@@ -77,6 +78,7 @@
 		AF93AB26D1F6B2630F46BA42 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		BD88E620A2B65DEC03380A10 /* ParsingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingService.swift; sourceTree = "<group>"; };
 		CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParsingServiceTests.swift; sourceTree = "<group>"; };
+		AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceTests.swift; sourceTree = "<group>"; };
 		DF451840C025CB6EEA0EC8CC /* BillRemindApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillRemindApp.swift; sourceTree = "<group>"; };
 		E8F9B0776FA86D95E4DCCEC9 /* InvoiceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceDetailView.swift; sourceTree = "<group>"; };
 		EA61E84EBCBC636AD5C7B786 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 			children = (
 				3E6ADFD852B430E2FFF67C6C /* ParserFixtures.swift */,
 				CB3F7E02A52E5BC08BE1F636 /* ParsingServiceTests.swift */,
+				AA98E12FD06A1B2C3D4E5F6B /* OCRServiceTests.swift */,
 			);
 			name = BillRemindTests;
 			path = Tests/BillRemindTests;
@@ -315,6 +318,7 @@
 			files = (
 				F8A63F890A4DBBB950E2179E /* ParserFixtures.swift in Sources */,
 				B1527C6067FEBC5CCEE7B792 /* ParsingServiceTests.swift in Sources */,
+				AA98E12FD06A1B2C3D4E5F6A /* OCRServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
