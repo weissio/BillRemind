@@ -290,7 +290,11 @@ struct OCRCorpusCheck {
 
     private static func compareDate(field: String, expected: String?, actual: Date?) -> CheckResult.FieldResult {
         let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        // ParsingService.calendar nutzt Calendar.current und produziert
+        // startOfDay-Werte in der lokalen Zeitzone. Wir pinnen den Vergleich
+        // auf Europe/Berlin, damit der Test reproduzierbar ist — sowohl auf
+        // Entwickler-Macs als auch auf CI-Runnern in anderen Zeitzonen.
+        formatter.timeZone = TimeZone(identifier: "Europe/Berlin") ?? TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd"
         let actualString = actual.map { formatter.string(from: $0) }
         let e = normalizeOptional(expected)

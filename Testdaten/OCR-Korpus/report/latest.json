@@ -1,10 +1,10 @@
 {
   "failedCases" : 0,
-  "generatedAt" : "2026-03-06T16:40:02Z",
-  "passedCases" : 14,
-  "passedFieldChecks" : 140,
+  "generatedAt" : "2026-04-29T20:45:16Z",
   "passRateCases" : 1,
   "passRateFields" : 1,
+  "passedCases" : 17,
+  "passedFieldChecks" : 170,
   "results" : [
     {
       "checks" : [
@@ -206,6 +206,207 @@
       "id" : "invoice_03_produktkauf_style",
       "passed" : true,
       "sourceFile" : "rechnung\/03_produktkauf_rechnung_style.pdf"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "STADTWERKE NORD GMBH",
+          "expected" : "STADTWERKE NORD GMBH",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "STADTWERKE NORD GMBH",
+          "expected" : "STADTWERKE NORD GMBH",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "76.86",
+          "expected" : "76.86",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "WOHNEN",
+          "expected" : "WOHNEN",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "actual" : "2026-03-05",
+          "expected" : "2026-03-05",
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "SW-2026-0301",
+          "expected" : "SW-2026-0301",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE98200505501122334466",
+          "expected" : "DE98200505501122334466",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_01_stadtwerke_full",
+      "passed" : true,
+      "sourceFile" : "rechnung\/01_stadtwerke_rechnung.pdf"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "NORDSCHUTZ VERSICHERUNG AG",
+          "expected" : "NORDSCHUTZ VERSICHERUNG AG",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "NORDSCHUTZ VERSICHERUNG AG",
+          "expected" : "NORDSCHUTZ VERSICHERUNG AG",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "35.00",
+          "expected" : "35.00",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "VERSICHERUNG",
+          "expected" : "VERSICHERUNG",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "actual" : "2026-03-01",
+          "expected" : "2026-03-01",
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "VS-2026-1148",
+          "expected" : "VS-2026-1148",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE11370400440532013000",
+          "expected" : "DE11370400440532013000",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_02_versicherung_full",
+      "passed" : true,
+      "sourceFile" : "rechnung\/02_versicherung_rechnung.pdf"
+    },
+    {
+      "checks" : [
+        {
+          "actual" : "invoice",
+          "expected" : "invoice",
+          "field" : "document_type",
+          "ok" : true
+        },
+        {
+          "actual" : "TECHSTORE ONLINE GMBH",
+          "expected" : "TECHSTORE ONLINE GMBH",
+          "field" : "vendor_name",
+          "ok" : true
+        },
+        {
+          "actual" : "TECHSTORE ONLINE GMBH",
+          "expected" : "TECHSTORE ONLINE GMBH",
+          "field" : "payment_recipient",
+          "ok" : true
+        },
+        {
+          "actual" : "206.93",
+          "expected" : "206.93",
+          "field" : "amount_value",
+          "ok" : true
+        },
+        {
+          "actual" : "SONSTIGES",
+          "expected" : "SONSTIGES",
+          "field" : "category",
+          "ok" : true
+        },
+        {
+          "actual" : "2026-03-06",
+          "expected" : "2026-03-06",
+          "field" : "due_date",
+          "ok" : true
+        },
+        {
+          "field" : "due_offset_days_hint",
+          "ok" : true
+        },
+        {
+          "actual" : "open",
+          "expected" : "open",
+          "field" : "status_suggestion",
+          "ok" : true
+        },
+        {
+          "actual" : "TS-2026-55209",
+          "expected" : "TS-2026-55209",
+          "field" : "invoice_number",
+          "ok" : true
+        },
+        {
+          "actual" : "DE33500105175407324931",
+          "expected" : "DE33500105175407324931",
+          "field" : "iban",
+          "ok" : true
+        }
+      ],
+      "documentTypeActual" : "invoice",
+      "documentTypeExpected" : "invoice",
+      "id" : "invoice_03_produktkauf_full",
+      "passed" : true,
+      "sourceFile" : "rechnung\/03_produktkauf_rechnung.pdf"
     },
     {
       "checks" : [
@@ -909,6 +1110,6 @@
       "sourceFile" : "rechnung\/09_datum_als_betrag_noise_rechnung.txt"
     }
   ],
-  "totalCases" : 14,
-  "totalFieldChecks" : 140
+  "totalCases" : 17,
+  "totalFieldChecks" : 170
 }

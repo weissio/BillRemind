@@ -1,0 +1,15 @@
+{
+  "document_type": "invoice",
+  "source_file": "03_produktkauf_rechnung.pdf",
+  "expected": {
+    "vendor_name": "TECHSTORE ONLINE GmbH",
+    "payment_recipient": "TECHSTORE ONLINE GmbH",
+    "amount_value": 206.93,
+    "category": "Sonstiges",
+    "due_date": "2026-03-06",
+    "due_offset_days_hint": null,
+    "status_suggestion": "open",
+    "invoice_number": "TS-2026-55209",
+    "iban": "DE33500105175407324931"
+  }
+}

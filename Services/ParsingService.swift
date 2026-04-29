@@ -153,7 +153,11 @@ struct ParsingService {
             if signals.invoiceNumber == nil, numberLabels.contains(where: { lower.contains($0) }) {
                 // Erweitert: matched jetzt auch "Rechnung #"/"Invoice #" als Label
                 // und akzeptiert mehrteilige Slash-Werte wie "INV/2026/2463032".
-                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
+                // Capture-Set ohne \s — sonst frisst die Regex bei
+                // "Rechnungsnummer: TS-2026-55209 Bestellnummer: ORD-7785001"
+                // bis zum Zeilenende und produziert "TS-2026-55209BESTELLNUMMER..."
+                // nach Whitespace-Collapse.
+                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.]{2,})"#),
                    let normalized = normalizeInvoiceNumberCandidate(sameLine) {
                     signals.invoiceNumber = normalized
                 } else {
@@ -907,7 +911,12 @@ struct ParsingService {
     }
 
     func extractDueDate(from lines: [String]) -> Date? {
-        let keywords = ["zahlbar bis", "fällig am", "fällig", "zahlungsziel", "due", "due date"]
+        // Umlautlose Varianten ("faellig"/"faellig am") sind hier ausdruecklich
+        // mit drin — die anderen Due-Pfade (extractHeaderSignals,
+        // extractDueOffsetDaysHint) hatten sie bereits, nur diese Liste hatte
+        // sie vergessen, was bei OCR-/PDFs ohne saubere Umlaute alle
+        // Faelligkeitsdaten verschluckt hat.
+        let keywords = ["zahlbar bis", "fällig am", "faellig am", "fällig", "faellig", "zahlungsziel", "due", "due date"]
         let formats = ["dd.MM.yyyy", "dd.MM.yy", "yyyy-MM-dd"]
         let datePattern = #"\b\d{2}\.\d{2}\.\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b"#
 
@@ -1095,7 +1104,8 @@ struct ParsingService {
             line.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
         }
 
-        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#
+        // Capture-Set ohne \s — siehe Begruendung in extractHeaderSignals.
+        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.]{2,})"#
         for line in normalizedLines {
             if let match = line.firstCaptureGroup(for: pattern) {
                 let normalized = normalizeInvoiceNumberCandidate(match)
@@ -1178,8 +1188,10 @@ struct ParsingService {
         guard !value.isEmpty else { return nil }
 
         // Cut off obvious trailing fields frequently adjacent in OCR output.
+        // BESTELLNUMMER/KUNDENNUMMER/REFERENZ kommen in Online-Shop-Rechnungen
+        // haeufig in derselben Zeile direkt nach der Rechnungsnummer.
         value = value.replacingOccurrences(
-            of: #"(?i)(RECHNUNGSDATUM|DATUM|INVOICE|IBAN|TOTAL|NETTO|BRUTTO).*$"#,
+            of: #"(?i)(RECHNUNGSDATUM|DATUM|INVOICE|IBAN|TOTAL|NETTO|BRUTTO|BESTELLNUMMER|BESTELLNR|KUNDENNUMMER|KUNDENNR|REFERENZ|VERWENDUNGSZWECK).*$"#,
             with: "",
             options: .regularExpression
         ).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1366,10 +1378,31 @@ struct ParsingService {
             }
             if isLikelyCustomerLine(lower) { continue }
             if hasLegalEntitySuffix(lower) {
-                return cleaned
+                return trimAddressTailFromCompanyName(cleaned)
             }
         }
         return nil
+    }
+
+    /// PDF-Layouts flatten oft eine Firmen-Zeile zusammen mit der direkt
+    /// dahinter stehenden Adresse ("NORDSCHUTZ Versicherung AG Policenring 8
+    /// 50667 Koeln"). Wir kuerzen die Zeile am Ende des LETZTEN Legal-Entity-
+    /// Suffixes (GmbH/AG/UG/...). Wenn keine PLZ folgt, lassen wir den Wert
+    /// unveraendert — ein Vendor wie "Stadtwerke" ohne Suffix soll nicht
+    /// abgeschnitten werden.
+    private func trimAddressTailFromCompanyName(_ raw: String) -> String {
+        let pattern = #"(?i)\b(gmbh|ag|se|kg|ug|ltd|llc|inc|e\.\s*v\.?|e\.\s*k\.?)\b"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return raw }
+        let nsRange = NSRange(raw.startIndex..<raw.endIndex, in: raw)
+        let matches = regex.matches(in: raw, range: nsRange)
+        guard let lastMatch = matches.last,
+              let range = Range(lastMatch.range, in: raw) else { return raw }
+        // Nur kuerzen, wenn nach dem Suffix tatsaechlich Adressbestandteile
+        // folgen (PLZ als deutlichstes Indiz). Sonst Zeile so lassen.
+        let tail = String(raw[range.upperBound...])
+        guard tail.range(of: #"\b\d{5}\b"#, options: .regularExpression) != nil else { return raw }
+        let head = String(raw[..<range.upperBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        return head.isEmpty ? raw : head
     }
 
     private func extractSellerOfRecord(from lines: [String]) -> String? {

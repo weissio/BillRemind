@@ -21,6 +21,24 @@
       "expected_file": "expected/rechnung/03_produktkauf_rechnung_style.json"
     },
     {
+      "id": "invoice_01_stadtwerke_full",
+      "document_type": "invoice",
+      "source_file": "rechnung/01_stadtwerke_rechnung.pdf",
+      "expected_file": "expected/rechnung/01_stadtwerke_rechnung.json"
+    },
+    {
+      "id": "invoice_02_versicherung_full",
+      "document_type": "invoice",
+      "source_file": "rechnung/02_versicherung_rechnung.pdf",
+      "expected_file": "expected/rechnung/02_versicherung_rechnung.json"
+    },
+    {
+      "id": "invoice_03_produktkauf_full",
+      "document_type": "invoice",
+      "source_file": "rechnung/03_produktkauf_rechnung.pdf",
+      "expected_file": "expected/rechnung/03_produktkauf_rechnung.json"
+    },
+    {
       "id": "receipt_01_rewe",
       "document_type": "receipt",
       "source_file": "kassenbon/01_rewe_kassenbon.pdf",
