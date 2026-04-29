@@ -269,12 +269,17 @@ final class IncomeEntry {
 
         var id: String { rawValue }
 
-        var title: String {
+        /// Picker-tauglicher Title — bekommt isEnglish als Parameter, damit
+        /// SwiftUI die @AppStorage-Dependency erkennt und re-rendert.
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .monthlyFixed: return L10n.t("Fix monatlich", "Monthly fixed")
-            case .oneTime: return L10n.t("Einmalig", "One-time")
+            case .monthlyFixed: return isEnglish ? "Monthly fixed" : "Fix monatlich"
+            case .oneTime:      return isEnglish ? "One-time"      : "Einmalig"
             }
         }
+
+        /// Backwards-Compat fuer CSV-Export & nicht-reaktive Pfade.
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
     @Attribute(.unique) var id: UUID
@@ -319,12 +324,14 @@ final class InstallmentPlan {
 
         var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .fixedCost: return L10n.t("Fixkosten", "Fixed cost")
-            case .loan: return L10n.t("Kredit", "Loan")
+            case .fixedCost: return isEnglish ? "Fixed cost" : "Fixkosten"
+            case .loan:      return isEnglish ? "Loan"       : "Kredit"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
     enum LoanRepaymentMode: String, Codable, CaseIterable, Identifiable {
@@ -333,12 +340,14 @@ final class InstallmentPlan {
 
         var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .annuity: return L10n.t("Annuitaet", "Annuity")
-            case .fixedPrincipal: return L10n.t("Feste Tilgung", "Fixed principal")
+            case .annuity:        return isEnglish ? "Annuity"        : "Annuitaet"
+            case .fixedPrincipal: return isEnglish ? "Fixed principal" : "Feste Tilgung"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
     @Attribute(.unique) var id: UUID

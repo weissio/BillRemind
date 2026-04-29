@@ -676,62 +676,70 @@ private struct StatsView: View {
         case reports
     }
 
-    enum DataScope: CaseIterable, Identifiable {
+    enum DataScope: String, CaseIterable, Identifiable {
         case open
         case all
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .open: return L10n.t("Nur offen", "Open only")
-            case .all: return L10n.t("Alle", "All")
+            case .open: return isEnglish ? "Open only" : "Nur offen"
+            case .all:  return isEnglish ? "All"       : "Alle"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum StatsTab: CaseIterable, Identifiable {
+    enum StatsTab: String, CaseIterable, Identifiable {
         case analysis
         case fixedCosts
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .analysis: return L10n.t("Übersicht", "Overview")
-            case .fixedCosts: return L10n.t("Fixkosten", "Fixed costs")
+            case .analysis:   return isEnglish ? "Overview"     : "Übersicht"
+            case .fixedCosts: return isEnglish ? "Fixed costs"  : "Fixkosten"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum ReportsTab: CaseIterable, Identifiable {
+    enum ReportsTab: String, CaseIterable, Identifiable {
         case total
         case invoices
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .total: return L10n.t("Gesamt", "Total")
-            case .invoices: return L10n.t("Rechnungen", "Invoices")
+            case .total:    return isEnglish ? "Total"    : "Gesamt"
+            case .invoices: return isEnglish ? "Invoices" : "Rechnungen"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
-    enum ReportInvoiceStatusScope: CaseIterable, Identifiable {
+    enum ReportInvoiceStatusScope: String, CaseIterable, Identifiable {
         case open
         case paid
         case all
 
-        var id: String { title }
+        var id: String { rawValue }
 
-        var title: String {
+        func localizedTitle(isEnglish: Bool) -> String {
             switch self {
-            case .open: return L10n.t("Offen", "Open")
-            case .paid: return L10n.t("Bezahlt", "Paid")
-            case .all: return L10n.t("Alle", "All")
+            case .open: return isEnglish ? "Open"   : "Offen"
+            case .paid: return isEnglish ? "Paid"   : "Bezahlt"
+            case .all:  return isEnglish ? "All"    : "Alle"
             }
         }
+
+        var title: String { localizedTitle(isEnglish: L10n.isEnglish) }
     }
 
     @Query private var invoices: [Invoice]
@@ -908,14 +916,16 @@ private struct StatsView: View {
                     if mode == .expenses {
                         Picker(L10n.t("Datenbasis", "Data scope"), selection: $dataScope) {
                             ForEach(DataScope.allCases) { scope in
-                                Text(scope.title).tag(scope)
+                                Text(scope.localizedTitle(isEnglish: appLanguageCode == "en"))
+                                    .tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
                     } else if selectedReportsTab == .invoices {
                         Picker(L10n.t("Status", "Status"), selection: $reportInvoiceStatusScope) {
                             ForEach(ReportInvoiceStatusScope.allCases) { scope in
-                                Text(scope.title).tag(scope)
+                                Text(scope.localizedTitle(isEnglish: appLanguageCode == "en"))
+                                    .tag(scope)
                             }
                         }
                         .pickerStyle(.segmented)
@@ -1056,7 +1066,7 @@ private struct StatsView: View {
                         Section(L10n.t("Kreditdetails", "Loan details")) {
                             Picker(L10n.t("Kreditart", "Loan type"), selection: $editInstallmentLoanRepaymentMode) {
                                 ForEach(InstallmentPlan.LoanRepaymentMode.allCases) { mode in
-                                    Text(mode.title).tag(mode)
+                                    Text(mode.localizedTitle(isEnglish: appLanguageCode == "en")).tag(mode)
                                 }
                             }
                             .pickerStyle(.segmented)
@@ -1125,7 +1135,7 @@ private struct StatsView: View {
                             } else {
                                 ForEach(planRepayments) { repayment in
                                     HStack {
-                                        Text(repayment.repaymentDate.formatted(date: .abbreviated, time: .omitted))
+                                        Text(repayment.repaymentDate.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, locale: statsLocale)))
                                         Spacer()
                                         Text(repayment.amount.formatted(.currency(code: "EUR")))
                                             .fontWeight(.medium)
@@ -1203,7 +1213,7 @@ private struct StatsView: View {
                         } else {
                             ForEach(planRepayments) { repayment in
                                 HStack {
-                                    Text(repayment.repaymentDate.formatted(date: .abbreviated, time: .omitted))
+                                    Text(repayment.repaymentDate.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, locale: statsLocale)))
                                     Spacer()
                                     Text(repayment.amount.formatted(.currency(code: "EUR")))
                                         .fontWeight(.medium)
@@ -1505,7 +1515,7 @@ private struct StatsView: View {
             Section(L10n.t("Fixkosten/Kredit erfassen", "Create fixed cost/loan")) {
                 Picker(L10n.t("Typ", "Type"), selection: $installmentKind) {
                     ForEach(InstallmentPlan.Kind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                        Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -1532,7 +1542,7 @@ private struct StatsView: View {
                 if installmentKind == .loan {
                     Picker(L10n.t("Kreditart", "Loan type"), selection: $installmentLoanRepaymentMode) {
                         ForEach(InstallmentPlan.LoanRepaymentMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
+                            Text(mode.localizedTitle(isEnglish: appLanguageCode == "en")).tag(mode)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -1821,14 +1831,22 @@ private struct StatsView: View {
         startOfMonth(for: selectedMonth)
     }
 
+    /// Aktuelle App-Locale fuer Datums-Anzeigen — immer konsistent mit
+    /// appLanguageCode (nicht mit System-Locale). SwiftUI sieht den Read,
+    /// triggert daher Re-Render bei Sprachwechsel.
+    private var statsLocale: Locale {
+        Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+    }
+
     private var reportAsOfLabel: String {
         let today = calendar.startOfDay(for: Date())
-        return "Stand \(today.formatted(.dateTime.day().month().year()))"
+        let formatted = today.formatted(.dateTime.day().month().year().locale(statsLocale))
+        return "\(L10n.t("Stand", "As of")) \(formatted)"
     }
 
     private var reportAsOfDateText: String {
         let today = calendar.startOfDay(for: Date())
-        return today.formatted(.dateTime.day().month().year())
+        return today.formatted(.dateTime.day().month().year().locale(statsLocale))
     }
 
     private var reportMonthEndExclusive: Date {
@@ -3260,7 +3278,7 @@ private struct IncomeManagementView: View {
                 }
                 Picker(L10n.t("Typ", "Type"), selection: $incomeKind) {
                     ForEach(IncomeEntry.Kind.allCases) { kind in
-                        Text(kind.title).tag(kind)
+                        Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -3295,7 +3313,15 @@ private struct IncomeManagementView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(income.name)
                                     .font(.headline.weight(.semibold))
-                                Text(L10n.isEnglish ? "\(income.kind.title) · from \(income.startDate.formatted(.dateTime.day().month().year()))" : "\(income.kind.title) · ab \(income.startDate.formatted(.dateTime.day().month().year()))")
+                                Text({
+                                    let isEN = appLanguageCode == "en"
+                                    let locale = Locale(identifier: isEN ? "en_US" : "de_DE")
+                                    let kindLabel = income.kind.localizedTitle(isEnglish: isEN)
+                                    let dateLabel = income.startDate.formatted(.dateTime.day().month().year().locale(locale))
+                                    return isEN
+                                        ? "\(kindLabel) · from \(dateLabel)"
+                                        : "\(kindLabel) · ab \(dateLabel)"
+                                }())
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -3360,7 +3386,7 @@ private struct IncomeManagementView: View {
                     }
                     Picker(L10n.t("Typ", "Type"), selection: $editIncomeKind) {
                         ForEach(IncomeEntry.Kind.allCases) { kind in
-                            Text(kind.title).tag(kind)
+                            Text(kind.localizedTitle(isEnglish: appLanguageCode == "en")).tag(kind)
                         }
                     }
                     .pickerStyle(.segmented)

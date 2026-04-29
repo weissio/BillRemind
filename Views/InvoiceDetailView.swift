@@ -22,7 +22,12 @@ struct InvoiceDetailView: View {
             Section(L10n.t("Status", "Status")) {
                 LabeledContent(L10n.t("Aktuell", "Current"), value: invoice.status == .open ? L10n.t("Offen", "Open") : L10n.t("Bezahlt", "Paid"))
                 if let paidAt = invoice.paidAt {
-                    LabeledContent(L10n.t("Bezahlt am", "Paid on"), value: paidAt.formatted(date: .abbreviated, time: .shortened))
+                    let style = Date.FormatStyle(
+                        date: .abbreviated,
+                        time: .shortened,
+                        locale: Locale(identifier: appLanguageCode == "en" ? "en_US" : "de_DE")
+                    )
+                    LabeledContent(L10n.t("Bezahlt am", "Paid on"), value: paidAt.formatted(style))
                 }
                 Button(invoice.status == .open ? L10n.t("Als bezahlt markieren", "Mark as paid") : L10n.t("Als offen markieren", "Mark as open")) {
                     if invoice.status == .open {
