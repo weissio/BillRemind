@@ -93,7 +93,10 @@ struct ParsingService {
 
     private func extractHeaderSignals(from lines: [String]) -> HeaderSignals {
         var signals = HeaderSignals.empty
-        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "invoice no", "invoice number", "invoice nr", "belegnr", "rg nr"]
+        // "rechnung #" / "invoice #" decken zusaetzlich die Schreibweise mit
+        // Hash-Symbol ab, die viele Online-Shops (z. B. sunday.de, Amazon)
+        // nutzen ("RECHNUNG # INV/2026/2463032").
+        let numberLabels = ["rechnungsnummer", "rechnungsnr", "rechnung nr", "rechnung #", "invoice no", "invoice number", "invoice nr", "invoice #", "belegnr", "rg nr"]
         let dateLabels = ["rechnungsdatum", "rechnung vom", "invoice date", "issue date", "belegdatum", "date:"]
         let dueLabels = ["zahlungsziel", "zahlbar", "fällig", "faellig", "due", "terms", "payment terms", "netto"]
         let serviceKeywords = ["leistungsdatum", "service date", "delivery date", "lieferdatum", "bestelldatum", "versanddatum"]
@@ -104,7 +107,9 @@ struct ParsingService {
             let valueRange = idx...min(idx + 3, normalizedLines.count - 1)
 
             if signals.invoiceNumber == nil, numberLabels.contains(where: { lower.contains($0) }) {
-                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
+                // Erweitert: matched jetzt auch "Rechnung #"/"Invoice #" als Label
+                // und akzeptiert mehrteilige Slash-Werte wie "INV/2026/2463032".
+                if let sameLine = line.firstCaptureGroup(for: #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#),
                    let normalized = normalizeInvoiceNumberCandidate(sameLine) {
                     signals.invoiceNumber = normalized
                 } else {
@@ -1046,7 +1051,7 @@ struct ParsingService {
             line.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
         }
 
-        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#
+        let pattern = #"(?i)(?:rechnungs?(?:nummer|[-\s]*nr\.?|\s*#)|rg[-\s]*nr\.?|beleg(?:nummer|[-\s]*nr\.?)|invoice\s*(?:no|nr|number|#)\.?)\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/\.\s]{2,})"#
         for line in normalizedLines {
             if let match = line.firstCaptureGroup(for: pattern) {
                 let normalized = normalizeInvoiceNumberCandidate(match)
@@ -1077,6 +1082,8 @@ struct ParsingService {
             #"\bRE\s*\d{4}\s*[-/]\s*\d{3,5}\b"#,
             #"\bINV-\d{3,6}\b"#,
             #"\bINV\s*\d{3,6}\b"#,
+            // Slash-getrennte Mehrteiler wie "INV/2026/2463032" (Online-Shops).
+            #"(?i)\b(?:INV|RE|RG)[/\-]\d{2,6}[/\-]\d{3,12}\b"#,
             #"\bRG\d{4,6}\b"#,
             #"\bRG\s*\d{4,6}\b"#,
             #"\bR\d{6,10}\b"#,
@@ -1096,6 +1103,9 @@ struct ParsingService {
     private func firstStandaloneInvoiceNumberToken(in line: String) -> String? {
         let upper = line.uppercased()
         let patterns = [
+            // Mehrteilige Slash-/Bindestrich-Formate zuerst pruefen, damit "INV/2026/2463032"
+            // nicht durch das einfachere "INV/...."-Pattern auf "INV/2026" verkuerzt wird.
+            #"\b(?:INV|RE|RG)[-/\s]\d{2,6}[-/]\d{3,12}\b"#,
             #"\b(?:INV|RE|RG)[-\s]?\d{3,10}(?:[-/]\d{2,8})?\b"#,
             #"\bR\d{6,10}\b"#,
             #"\b\d{4}\s*/\s*\d{3,8}\b"#,
@@ -1558,7 +1568,12 @@ struct ParsingService {
         ]
         let strongInvoiceKeywords = [
             "rechnungsnr", "rechnungsnummer", "rechnungsdatum", "zahlungsziel", "leistungsdatum",
-            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms"
+            "kundennr", "bestellnr", "verwendungszweck", "invoice no", "invoice number", "invoice date", "terms",
+            // "Rechnungsadresse" / "Versandadresse" sind eindeutige Invoice-Marker —
+            // Kassenbons fuehren sowas nicht. Genauso eine UStId/USt-IdNr ist ein
+            // legales Pflicht-Element von Rechnungen, das auf Bons nicht erscheint.
+            "rechnungsadresse", "versandadresse", "ust-id", "ust id", "ustid",
+            "usteridnr", "ust-idnr", "ust idnr"
         ]
 
         let receiptHits = receiptKeywords.filter { containsKeyword($0) }.count
