@@ -19,6 +19,31 @@ final class Invoice {
         "Sonstiges"
     ]
 
+    /// Anzeige-Pairs fuer die Default-Kategorien. Die kanonische
+    /// Speicher-Form bleibt bewusst Deutsch — so ist kein Datenmigrations-
+    /// schritt noetig und bestehende Datensaetze funktionieren weiterhin.
+    /// Fuer die Anzeige gibt der UI-Layer (siehe Invoice.localizedCategory)
+    /// pro Sprache den passenden Label zurueck.
+    static let defaultCategoryLocalization: [(canonical: String, en: String)] = [
+        ("Wohnen", "Housing"),
+        ("Lebensmittel", "Groceries"),
+        ("Versicherung", "Insurance"),
+        ("Telefon & Internet", "Phone & Internet"),
+        ("Abos", "Subscriptions"),
+        ("Steuern", "Taxes"),
+        ("Mobilität", "Mobility"),
+        ("Sonstiges", "Other")
+    ]
+
+    /// Liefert den lokalisierten Anzeige-Text fuer eine Kategorie. Bei
+    /// kanonischen Default-Kategorien wird im Englisch-Modus die englische
+    /// Beschriftung zurueckgegeben; benutzerdefinierte Kategorien werden
+    /// unveraendert weitergereicht (User-Eingabe ist sprach-neutral).
+    static func localizedCategory(_ canonical: String, isEnglish: Bool) -> String {
+        guard isEnglish else { return canonical }
+        return defaultCategoryLocalization.first(where: { $0.canonical == canonical })?.en ?? canonical
+    }
+
     @Attribute(.unique) var id: UUID
     var createdAt: Date
     var receivedAt: Date = Date()

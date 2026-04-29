@@ -1387,7 +1387,7 @@ private struct StatsView: View {
                                     .foregroundStyle(.secondary)
                                 ForEach(row.categoryBreakdown) { item in
                                     HStack {
-                                        Text(item.name)
+                                        Text(Invoice.localizedCategory(item.name, isEnglish: L10n.isEnglish))
                                         Spacer()
                                         Text(item.amount.formatted(.currency(code: "EUR")))
                                             .fontWeight(.medium)

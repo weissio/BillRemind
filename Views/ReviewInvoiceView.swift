@@ -170,7 +170,8 @@ struct ReviewInvoiceView: View {
                         .foregroundStyle(.secondary)
                     Picker(L10n.t("Kategorie", "Category"), selection: $draft.category) {
                         ForEach(allCategories, id: \.self) { category in
-                            Text(category).tag(category)
+                            Text(Invoice.localizedCategory(category, isEnglish: appLanguageCode == "en"))
+                                .tag(category)
                         }
                     }
                     HStack(spacing: 8) {

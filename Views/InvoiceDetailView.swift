@@ -41,7 +41,8 @@ struct InvoiceDetailView: View {
                 TextField(L10n.t("Zahlungsempfaenger", "Payment recipient"), text: $invoice.paymentRecipient)
                 Picker(L10n.t("Kategorie", "Category"), selection: categoryBinding) {
                     ForEach(allCategories, id: \.self) { category in
-                        Text(category).tag(category)
+                        Text(Invoice.localizedCategory(category, isEnglish: appLanguageCode == "en"))
+                            .tag(category)
                     }
                 }
                 HStack(spacing: 8) {
