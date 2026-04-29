@@ -26,7 +26,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Mnemor benötigt Zugriff auf die Kamera, um Rechnungen und Belege zu scannen.</string>
+	<string>Mnemor needs camera access to scan invoices and receipts.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
