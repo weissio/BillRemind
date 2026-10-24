@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Objekt anlegen – Mobilität</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.bar{background:#1C3250;color:#FFFFFF;padding:56px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px}
+.f{display:flex;align-items:center;gap:12px;min-height:50px;padding:3px 16px;text-decoration:none;color:inherit}
+.f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
+.f .v{margin:0;font-size:16px;font-weight:500;flex:1;min-width:0}
+.f .v.ph{color:#9AA5B4;font-weight:400}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px;flex:1}
+.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px}
+.seg span.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.chev{width:8px;height:13px;flex:none}
+.chk{width:24px;height:24px;border-radius:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:2px solid #C4CCD6}
+.chk.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
+.tab.on{color:#2A5480;font-weight:700}
+a{color:#2A5480}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div class="root">
+<div class="scroll">
+  <div class="bar"><a href="Akte.dc.html">Abbrechen</a><p style="margin: 0; font-size: 17px; font-weight: 600">Neues Objekt</p><a href="Akte.dc.html" style="font-weight: 700">Anlegen</a></div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <div class="card">
+      <div class="f"><p class="l">Bereich</p><p class="v"><span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #3C8DBC; display: inline-block"></span>Mobilität</span></p></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Typ</p><div class="seg"><span class="on">KFZ</span><span>ÖPNV</span><span>Eigenes</span></div></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Name</p><p class="v">Motorrad BMW F 900</p></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Kennzeichen</p><p class="v">KA-MN 77</p></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Kilometerstand</p><p class="v">12.480 km</p></div>
+      <div class="sep"></div>
+      <a class="f" href="#"><p class="l">Dokument</p><p class="v ph">Fahrzeugschein scannen – füllt Name und Kennzeichen</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+  </div>
+
+  <div style="padding: 20px 20px 0 20px">
+    <h2 class="h2">Termine anlegen (Vorlage KFZ)</h2>
+    <div class="card">
+      <div class="f"><span class="chk on"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><p class="v">HU/AU <span style="color: #637894; font-weight: 400">· alle 24 Monate · nächste: Mai 2027 · Planbetrag 150 €</span></p></div>
+      <div class="sep"></div>
+      <div class="f"><span class="chk on"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><p class="v">Kfz-Steuer <span style="color: #637894; font-weight: 400">· jährlich · Rücklage anlegen</span></p></div>
+      <div class="sep"></div>
+      <div class="f"><span class="chk on"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><p class="v">Versicherungswechsel <span style="color: #637894; font-weight: 400">· Erinnerung 1. Nov.</span></p></div>
+      <div class="sep"></div>
+      <div class="f"><span class="chk"></span><p class="v">Reifenwechsel <span style="color: #637894; font-weight: 400">· April / Oktober</span></p></div>
+      <div class="sep"></div>
+      <div class="f"><span class="chk"></span><p class="v">Inspektion <span style="color: #637894; font-weight: 400">· jährlich oder nach km</span></p></div>
+    </div>
+    <p style="margin: 8px 4px 0; font-size: 12px; color: #637894">Vorlagen je Typ: Haus → Heizungswartung, Schornsteinfeger, Zählerstände, Rauchmelder · Wohnung → Zählerstände, Nebenkostenabrechnung prüfen · Person → Vorsorge, Zahnarzt.</p>
+  </div>
+
+
+</div>
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab on" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
+    <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="Erfassen.dc.html"><span style="width: 44px; height: 44px; border-radius: 22px; background: #2A5480; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; margin-top: -4px"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+    <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

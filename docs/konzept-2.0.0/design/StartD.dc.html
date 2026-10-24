@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Nativ 4 – Zahl und Liste</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#000;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased}
+.lt{margin:0;font-size:34px;font-weight:700;letter-spacing:-0.4px;line-height:41px}
+.hdr{margin:0;padding:0 16px 7px;font-size:13px;font-weight:400;color:#6D6D72;text-transform:uppercase;letter-spacing:-0.08px}
+.grp{background:#FFFFFF;border-radius:20px;overflow:hidden}
+.cell{display:flex;align-items:center;gap:12px;min-height:44px;padding:11px 16px;text-decoration:none;color:inherit}
+.sep{height:0.5px;background:#C6C6C8;margin-left:64px}
+.t{margin:0;font-size:17px;line-height:22px;letter-spacing:-0.4px}
+.s{margin:1px 0 0;font-size:15px;line-height:20px;color:#6D6D72;letter-spacing:-0.2px}
+.v{margin:0;font-size:17px;line-height:22px;color:#000;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-0.4px}
+.d{width:36px;flex:none;text-align:center;line-height:1}
+.d b{display:block;font-size:20px;font-weight:700;letter-spacing:-0.4px}
+.d span{font-size:11px;color:#6D6D72}
+.tabbar{position:absolute;left:16px;right:16px;bottom:22px;height:64px;border-radius:32px;background:rgba(255,255,255,.92);box-shadow:0 2px 14px rgba(0,0,0,.12), inset 0 0 0 0.5px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-around;padding:0 6px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8E8E93;width:60px;min-height:48px;text-decoration:none;letter-spacing:-0.1px}
+.tab.on{color:#007AFF}
+a{color:#007AFF}
+</style>
+</helmet>
+<div class="root">
+
+  <div style="padding: 56px 16px 0 16px; display: flex; align-items: flex-end; justify-content: space-between">
+    <h1 class="lt">Oktober</h1>
+    <a href="#" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: #FFFFFF; color: #007AFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 6px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
+  </div>
+
+  <div style="padding: 28px 16px 0 16px">
+    <p style="margin: 0; font-size: 17px; color: #6D6D72; letter-spacing: -0.4px">Frei verfügbar</p>
+    <p style="margin: 4px 0 0; font-size: 56px; font-weight: 700; letter-spacing: -1.2px; font-variant-numeric: tabular-nums; line-height: 1">946,40 €</p>
+    <a href="#" style="display: inline-block; margin-top: 10px; font-size: 15px; text-decoration: none; letter-spacing: -0.2px">So berechnet ›</a>
+  </div>
+
+  <div style="padding: 32px 16px 0 16px">
+    <h2 class="hdr">Diese Woche</h2>
+    <div class="grp">
+      <a class="cell" href="#"><div class="d"><b style="color: #FF3B30">21</b><span>Mi</span></div><div style="flex: 1; min-width: 0"><p class="t">Stadtwerke – Nachzahlung</p><p class="s" style="color: #FF3B30">Überfällig seit 3 Tagen</p></div><p class="v">142,00 €</p></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><div class="d"><b>27</b><span>Mo</span></div><div style="flex: 1; min-width: 0"><p class="t">Kfz-Versicherung HUK24</p><p class="s">Jahresbeitrag aus Rücklage</p></div><p class="v" style="color: #6D6D72">487,20 €</p></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><div class="d"><b>29</b><span>Mi</span></div><div style="flex: 1; min-width: 0"><p class="t">Netflix</p><p class="s">Abo</p></div><p class="v">12,99 €</p></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><div class="d"><b>30</b><span>Do</span></div><div style="flex: 1; min-width: 0"><p class="t">Autohaus Keller – Inspektion</p><p class="s">Rechnung vom 16.10.</p></div><p class="v">212,40 €</p></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><div class="d"><b>31</b><span>Fr</span></div><div style="flex: 1; min-width: 0"><p class="t">Gehalt</p><p class="s">Eingang erwartet</p></div><p class="v" style="color: #34A853">+3.100,00 €</p></a>
+      <div class="sep" style="margin-left: 0"></div>
+      <a class="cell" href="Liquiditaet.dc.html" style="justify-content: center"><p class="t" style="color: #007AFF">Alle Termine</p></a>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab on" href="StartD.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Start</a>
+    <a class="tab" href="#"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="#"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/><path d="M9 9h.5"/></svg>Erfassen</a>
+    <a class="tab" href="Akte.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4.5l2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Akten</a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

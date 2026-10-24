@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Nativ 3 – Haushaltsbuch</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F2F2F7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#000;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased}
+.lt{margin:0;font-size:34px;font-weight:700;letter-spacing:-0.4px;line-height:41px}
+.hdr{margin:0;padding:0 16px 7px;font-size:13px;font-weight:400;color:#6D6D72;text-transform:uppercase;letter-spacing:-0.08px}
+.ftr{margin:0;padding:7px 16px 0;font-size:13px;color:#6D6D72;letter-spacing:-0.08px;line-height:18px}
+.grp{background:#FFFFFF;border-radius:20px;overflow:hidden}
+.cell{display:flex;align-items:center;gap:12px;min-height:44px;padding:11px 16px;text-decoration:none;color:inherit}
+.sep{height:0.5px;background:#C6C6C8;margin-left:16px}
+.t{margin:0;font-size:17px;line-height:22px;letter-spacing:-0.4px}
+.s{margin:1px 0 0;font-size:15px;line-height:20px;color:#6D6D72;letter-spacing:-0.2px}
+.v{margin:0;font-size:17px;line-height:22px;color:#6D6D72;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-0.4px}
+.chev{width:8px;height:13px;flex:none}
+.ico{width:29px;height:29px;border-radius:7px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.tabbar{position:absolute;left:16px;right:16px;bottom:22px;height:64px;border-radius:32px;background:rgba(255,255,255,.92);box-shadow:0 2px 14px rgba(0,0,0,.12), inset 0 0 0 0.5px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-around;padding:0 6px}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8E8E93;width:60px;min-height:48px;text-decoration:none;letter-spacing:-0.1px}
+.tab.on{color:#007AFF}
+a{color:#007AFF}
+</style>
+</helmet>
+<div class="root">
+
+  <div style="padding: 56px 16px 0 16px; display: flex; align-items: flex-end; justify-content: space-between">
+    <div>
+      <p style="margin: 0 0 2px; font-size: 13px; color: #6D6D72; letter-spacing: -0.08px">Haushaltsbuch</p>
+      <h1 class="lt">Oktober 2026</h1>
+    </div>
+    <a href="#" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: #FFFFFF; color: #007AFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-bottom: 6px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
+  </div>
+
+  <div style="padding: 18px 16px 0 16px">
+    <div class="grp">
+      <div class="cell" style="min-height: 72px; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px">
+        <p class="s">Frei verfügbar</p>
+        <p style="margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.6px; font-variant-numeric: tabular-nums; line-height: 1.1">946,40 €</p>
+      </div>
+      <div class="sep"></div>
+      <a class="cell" href="#"><p class="t" style="flex: 1">Einnahmen</p><p class="v">3.100,00 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="cell" href="Vertraege.dc.html"><p class="t" style="flex: 1">Fixkosten &amp; Kredite</p><p class="v">−1.570,00 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><p class="t" style="flex: 1">Offene Rechnungen</p><p class="v">−418,60 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="cell" href="#"><p class="t" style="flex: 1">Budgets, noch offen</p><p class="v">−165,00 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+    <p class="ftr">Bereits bezahlt: 1.634,20 €. Der Kfz-Jahresbeitrag (487,20 €) kommt aus der Rücklage und mindert den Monat nicht.</p>
+  </div>
+
+  <div style="padding: 24px 16px 0 16px">
+    <h2 class="hdr">Akten</h2>
+    <div class="grp">
+      <a class="cell" href="#"><span class="ico" style="background: #FF9500"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg></span><div style="flex: 1; min-width: 0"><p class="t">Gebäude</p><p class="s" style="color: #FF3B30">Nachzahlung überfällig</p></div><p class="v">1.258 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep" style="margin-left: 57px"></div>
+      <a class="cell" href="Akte.dc.html"><span class="ico" style="background: #32ADE6"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1v6h-2v2h-3v-2H9v2H6v-2H4v-6zm2.2 0h9.6l-1-3H8.2zM7 15a1.3 1.3 0 1 0 0-2.6A1.3 1.3 0 0 0 7 15zm10 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg></span><div style="flex: 1; min-width: 0"><p class="t">Mobilität</p><p class="s">HU am 12.11.</p></div><p class="v">486 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep" style="margin-left: 57px"></div>
+      <a class="cell" href="#"><span class="ico" style="background: #34C759"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z"/></svg></span><div style="flex: 1; min-width: 0"><p class="t">Haushalt</p><p class="s">Freizeit 30 € über Budget</p></div><p class="v">611 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+  </div>
+
+  <div style="padding: 24px 16px 0 16px">
+    <h2 class="hdr">Nächste Fälligkeit</h2>
+    <div class="grp">
+      <a class="cell" href="Liquiditaet.dc.html"><div style="width: 29px; text-align: center; line-height: 1"><b style="display: block; font-size: 17px; font-weight: 700; color: #FF3B30; letter-spacing: -0.4px">21</b><span style="font-size: 11px; color: #6D6D72">Okt</span></div><div style="flex: 1; min-width: 0"><p class="t">Stadtwerke – Nachzahlung</p><p class="s" style="color: #FF3B30">Überfällig seit 3 Tagen</p></div><p class="v" style="color: #000">142,00 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4C4C6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+  </div>
+
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab on" href="StartC.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Start</a>
+    <a class="tab" href="#"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="#"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.2"/><path d="M9 9h.5"/></svg>Erfassen</a>
+    <a class="tab" href="Akte.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4.5l2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Akten</a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

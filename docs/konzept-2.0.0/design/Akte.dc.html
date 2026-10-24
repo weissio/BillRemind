@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mobilität</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 24px}
+.card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:3px 16px;text-decoration:none;color:inherit}
+.row p{margin:0}
+.row .n{font-size:16px;font-weight:500;flex:1;min-width:0}
+.row .s{font-size:12.5px;color:#637894;margin-top:1px}
+.row .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#17263B;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.chev{width:8px;height:13px;flex:none}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
+.tab.on{color:#2A5480;font-weight:700}
+a{color:#2A5480}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div class="root">
+<div class="scroll">
+
+  <div class="hdr">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 4px; color: #FFFFFF; text-decoration: none; font-size: 15px; opacity: .9"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Übersicht</a>
+      <p style="margin: 0; font-size: 15px; font-weight: 600; opacity: .85">Oktober 2026</p>
+      <a href="Liquiditaet.dc.html" aria-label="Liquidität Mobilität" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg></a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 18px">
+      <span style="width: 44px; height: 44px; border-radius: 22px; background: #3C8DBC; display: inline-flex; align-items: center; justify-content: center; flex: none"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1v6h-2v2h-3v-2H9v2H6v-2H4v-6zm2.2 0h9.6l-1-3H8.2zM7 15a1.3 1.3 0 1 0 0-2.6A1.3 1.3 0 0 0 7 15zm10 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg></span>
+      <div>
+        <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1">Mobilität</h1>
+        <p style="margin: 3px 0 0; font-size: 13px; opacity: .8">746,19 € im Oktober · fix 356,99 · variabel 276,60 · Rücklagen 112,60</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 16px">
+      <a class="chip on" href="#">Alle</a>
+      <a class="chip" href="#">VW ID.3</a>
+      <a class="chip" href="#">Deutschlandticket</a>
+      <a class="chip" href="ObjektNeu.dc.html" aria-label="Eigenes Objekt hinzufügen">+</a>
+    </div>
+  </div>
+
+  <div style="padding: 20px 20px 0 20px">
+    <h2 class="h2">Kategorien <span>746,19 €</span></h2>
+    <div class="card">
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>Kfz-Rate / Leasing</p><p class="s">fix · 1. Okt.</p></div><p class="v">289,00</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>Werkstatt &amp; Reifen</p><p class="s"><span style="color: #943333">Inspektion 212,40 offen · fällig 30. Okt.</span> · 60,00 Rücklage HU/Reifen</p></div><p class="v">272,40</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>Kraftstoff / Laden</p><p class="s">9,99 Ladetarif fix · 64,20 geladen</p></div><p class="v">74,19</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>ÖPNV / Deutschlandticket</p><p class="s">fix · 3. Okt.</p></div><p class="v">58,00</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>Kfz-Versicherung</p><p class="s">Rücklage-Rate · 487,20 jährlich</p></div><p class="v m">40,60</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html"><div class="n"><p>Kfz-Steuer</p><p class="s">Rücklage-Rate · 144,00 jährlich</p></div><p class="v m">12,00</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="KategorieNeu.dc.html"><div class="n"><p style="color: #2A5480; font-weight: 600">+ Kategorie anlegen</p><p class="s">Parken &amp; Maut, Fahrrad &amp; E-Bike, Carsharing, Taxi …</p></div><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+  </div>
+
+  <div style="padding: 20px 20px 0 20px">
+    <h2 class="h2">Rücklagen <span>in den Kategorien enthalten</span></h2>
+    <div class="card">
+      <a class="row" href="Ruecklage.dc.html"><div class="n"><p>Kfz-Versicherung</p><p class="s">487,20 bis 27. Okt. · 40,60/Monat</p></div><p class="v" style="color: #215F33">487,20 gedeckt</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Ruecklage.dc.html"><div class="n"><p>HU und Reifen</p><p class="s">190 bis 12. Nov. · 60/Monat · Reifenwechsel 2. Nov.</p></div><p class="v">120 / 190</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="row" href="Ruecklage.dc.html"><div class="n"><p>Kfz-Steuer</p><p class="s">144 bis 15. Mai · 12/Monat</p></div><p class="v">60 / 144</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+    <p style="margin: 8px 4px 0; font-size: 12px; color: #637894">Prüfsumme: fix 356,99 (Leasing 289 + Ticket 58 + Ladetarif 9,99) + variabel 276,60 (Inspektion 212,40 offen + Laden 64,20) + Rücklagen 112,60 (Kfz-Vers. 40,60 + HU/Reifen 60 + Kfz-Steuer 12) = 746,19 €</p>
+  </div>
+
+
+</div>
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab on" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
+    <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="Erfassen.dc.html"><span style="width: 44px; height: 44px; border-radius: 22px; background: #2A5480; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; margin-top: -4px"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+    <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

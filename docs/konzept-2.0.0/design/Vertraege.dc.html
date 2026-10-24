@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Verträge</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.hdr{background:#1C3250;color:#FFFFFF;padding:56px 20px 22px}
+.card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.row{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 16px;text-decoration:none;color:inherit}
+.row p{margin:0}
+.row .n{font-size:16px;font-weight:500;flex:1;min-width:0}
+.row .s{font-size:12.5px;color:#637894;margin-top:2px}
+.row .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#17263B;white-space:nowrap;text-align:right}
+.row .i{font-size:12px;color:#637894;font-weight:500;margin-top:2px}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.dot{width:8px;height:8px;border-radius:4px;flex:none}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
+.tab.on{color:#2A5480;font-weight:700}
+a{color:#2A5480}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div class="root">
+<div class="scroll">
+
+  <div class="hdr">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">Verträge</h1>
+      <a href="VertragNeu.dc.html" aria-label="Vertrag hinzufügen" style="width: 34px; height: 34px; border-radius: 17px; border: 0; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>
+    </div>
+    <p style="margin: 6px 0 0; font-size: 13px; opacity: .8">16 Verträge · 1.713,30 € im Monat · 20.559,60 € im Jahr</p>
+    <div style="display: flex; gap: 8px; margin-top: 16px">
+      <a class="chip on" href="Vertraege.dc.html">Nach Typ</a>
+      <a class="chip" href="Vertraege.dc.html">Nach Bereich</a>
+      <a class="chip" href="Vertraege.dc.html">Kündbar</a>
+    </div>
+  </div>
+
+  <div style="padding: 20px 20px 0 20px">
+    <h2 class="h2">Kündigungsfristen <span>nächste 60 Tage</span></h2>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><div class="n"><p>FitnessFirst</p><p class="s">bis 15. Nov. kündigen, sonst +12 Monate · 358,80 €/Jahr</p></div><div><p class="v" style="color: #2A5480">22 Tage</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><div class="n"><p>HUK24 Kfz-Versicherung</p><p class="s">Wechsel bis 30. Nov. zum 1. Jan. · 487,20 €/Jahr</p></div><div><p class="v" style="color: #637894; font-weight: 500">37 Tage</p></div></a>
+    </div>
+  </div>
+
+  <div style="padding: 22px 20px 0 20px">
+    <h2 class="h2">Versorger &amp; Gebühren <span>5 · 278,34 €/Monat</span></h2>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Stadtwerke – Strom</p><p class="s">Abschlag · nächste Abbuchung 1. Nov.</p></div><div><p class="v">98,00 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Stadtwerke – Gas</p><p class="s">Abschlag · nächste Abbuchung 1. Nov.</p></div><div><p class="v">112,00 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>EnBW mobility+</p><p class="s">Ladetarif · monatlich kündbar</p></div><div><p class="v">9,99 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Telekom Internet &amp; Festnetz</p><p class="s">Laufzeit bis 31. Mai 2027</p></div><div><p class="v">39,99 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Rundfunkbeitrag</p><p class="s">55,08 € vierteljährlich · nächste 15. Jan.</p></div><div><p class="v">18,36 €</p><p class="i">Monatsanteil</p></div></a>
+    </div>
+  </div>
+
+  <div style="padding: 22px 20px 0 20px">
+    <h2 class="h2">Versicherung <span>3 · 54,10 €/Monat</span></h2>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>HUK24 Kfz-Versicherung</p><p class="s">Jahresbeitrag 27. Okt. · aus Rücklage</p></div><div><p class="v">487,20 €</p><p class="i">jährlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Hausrat Allianz</p><p class="s">Jahresbeitrag 1. März</p></div><div><p class="v">94,00 €</p><p class="i">jährlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Privathaftpflicht</p><p class="s">Jahresbeitrag 1. März</p></div><div><p class="v">68,00 €</p><p class="i">jährlich</p></div></a>
+    </div>
+  </div>
+
+  <div style="padding: 22px 20px 0 20px">
+    <h2 class="h2">Abo &amp; Streaming <span>3 · 33,97 €/Monat</span></h2>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Netflix</p><p class="s">nächste Abbuchung 29. Okt.</p></div><div><p class="v">12,99 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Spotify Family</p><p class="s">nächste Abbuchung 3. Nov.</p></div><div><p class="v">17,99 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>iCloud+</p><p class="s">nächste Abbuchung 8. Nov.</p></div><div><p class="v">2,99 €</p><p class="i">monatlich</p></div></a>
+    </div>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Wohnen, Mobilität, Mitgliedschaft <span>5 · 1.346,89 €/Monat</span></h2>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Miete Hauptstr. 12</p><p class="s">unbefristet · 3 Monate Kündigungsfrist</p></div><div><p class="v">950,00 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>VW Leasing ID.3</p><p class="s">Kredit · bis Aug. 2028 · 22 Raten offen</p></div><div><p class="v">289,00 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Deutschlandticket</p><p class="s">monatlich kündbar bis zum 10.</p></div><div><p class="v">58,00 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Telekom Mobilfunk</p><p class="s">Laufzeit bis 14. Feb. 2027</p></div><div><p class="v">19,99 €</p><p class="i">monatlich</p></div></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>FitnessFirst</p><p class="s">bis 15. Nov. kündbar</p></div><div><p class="v">29,90 €</p><p class="i">monatlich</p></div></a>
+    </div>
+    <p style="margin: 8px 4px 0; font-size: 12px; color: #637894">Prüfsumme: 278,34 + 54,10 + 33,97 + 1.346,89 = 1.713,30 € = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 (Kfz, Hausrat, Haftpflicht). Kfz-Steuer ist kein Vertrag → Termin mit Rücklage.</p>
+  </div>
+
+
+</div>
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
+    <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="Erfassen.dc.html"><span style="width: 44px; height: 44px; border-radius: 22px; background: #2A5480; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; margin-top: -4px"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></a>
+    <a class="tab on" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+    <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

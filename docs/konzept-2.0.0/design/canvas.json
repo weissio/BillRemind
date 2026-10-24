@@ -1,0 +1,313 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-24T18:30:00Z"
+  },
+  "title": "Mnemor 2.0 – App-Screens",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Übersicht",
+      "radius": 44
+    },
+    "Monatsrechnung.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Monatsrechnung (Herleitung)",
+      "radius": 44
+    },
+    "Einnahmen.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Einnahmen",
+      "radius": 44
+    },
+    "Budgets.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Budgets",
+      "radius": 44
+    },
+    "Mehr.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Mehr",
+      "radius": 44
+    },
+    "Auswertung.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Auswertung",
+      "radius": 44
+    },
+    "Einstellungen.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Einstellungen",
+      "radius": 44
+    },
+    "Wohnen.dc.html": {
+      "x": 0,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Wohnen (Bereich)",
+      "radius": 44
+    },
+    "Akte.dc.html": {
+      "x": 470,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Mobilität (Bereich)",
+      "radius": 44
+    },
+    "Haushalt.dc.html": {
+      "x": 940,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Haushalt (Bereich)",
+      "radius": 44
+    },
+    "Kategorie.dc.html": {
+      "x": 1410,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Kategorie · Wohnen › Strom",
+      "radius": 44
+    },
+    "KategorieNeu.dc.html": {
+      "x": 1880,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Kategorie anlegen",
+      "radius": 44
+    },
+    "ObjektNeu.dc.html": {
+      "x": 2350,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Objekt anlegen",
+      "radius": 44
+    },
+    "Ruecklage.dc.html": {
+      "x": 2820,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Rücklage · Urlaub",
+      "radius": 44
+    },
+    "Termin.dc.html": {
+      "x": 3290,
+      "y": 1100,
+      "w": 390,
+      "h": 844,
+      "title": "Termin · HU/AU",
+      "radius": 44
+    },
+    "Rechnungen.dc.html": {
+      "x": 0,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Rechnungen",
+      "radius": 44
+    },
+    "Rechnung.dc.html": {
+      "x": 470,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Rechnung (Detail)",
+      "radius": 44
+    },
+    "Erfassen.dc.html": {
+      "x": 940,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Erfassen",
+      "radius": 44
+    },
+    "Review.dc.html": {
+      "x": 1410,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Rechnung prüfen (nach Scan)",
+      "radius": 44
+    },
+    "Vertraege.dc.html": {
+      "x": 1880,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Verträge",
+      "radius": 44
+    },
+    "Vertrag.dc.html": {
+      "x": 2350,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Vertrag (Detail)",
+      "radius": 44
+    },
+    "VertragNeu.dc.html": {
+      "x": 2820,
+      "y": 2200,
+      "w": 390,
+      "h": 844,
+      "title": "Vertrag anlegen",
+      "radius": 44
+    },
+    "Liquiditaet.dc.html": {
+      "x": 0,
+      "y": 3300,
+      "w": 390,
+      "h": 844,
+      "title": "Liquidität – Termine",
+      "radius": 44
+    },
+    "Verlauf.dc.html": {
+      "x": 470,
+      "y": 3300,
+      "w": 390,
+      "h": 844,
+      "title": "Liquidität – Verlauf",
+      "radius": 44
+    },
+    "Kontostand.dc.html": {
+      "x": 940,
+      "y": 3300,
+      "w": 390,
+      "h": 844,
+      "title": "Kontostand aktualisieren",
+      "radius": 44
+    },
+    "StartB.dc.html": {
+      "x": 0,
+      "y": 4500,
+      "w": 390,
+      "h": 844,
+      "title": "Verworfen · Nativ 2",
+      "radius": 44
+    },
+    "StartC.dc.html": {
+      "x": 470,
+      "y": 4500,
+      "w": 390,
+      "h": 844,
+      "title": "Verworfen · Nativ 3",
+      "radius": 44
+    },
+    "StartD.dc.html": {
+      "x": 940,
+      "y": 4500,
+      "w": 390,
+      "h": 844,
+      "title": "Verworfen · Nativ 4",
+      "radius": 44
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Monatsrechnung.dc.html",
+    "Einnahmen.dc.html",
+    "Budgets.dc.html",
+    "Mehr.dc.html",
+    "Auswertung.dc.html",
+    "Einstellungen.dc.html",
+    "Wohnen.dc.html",
+    "Akte.dc.html",
+    "Haushalt.dc.html",
+    "Kategorie.dc.html",
+    "KategorieNeu.dc.html",
+    "ObjektNeu.dc.html",
+    "Ruecklage.dc.html",
+    "Termin.dc.html",
+    "Rechnungen.dc.html",
+    "Rechnung.dc.html",
+    "Erfassen.dc.html",
+    "Review.dc.html",
+    "Vertraege.dc.html",
+    "Vertrag.dc.html",
+    "VertragNeu.dc.html",
+    "Liquiditaet.dc.html",
+    "Verlauf.dc.html",
+    "Kontostand.dc.html",
+    "StartB.dc.html",
+    "StartC.dc.html",
+    "StartD.dc.html"
+  ],
+  "notes": {
+    "t1": {
+      "x": 0,
+      "y": -300,
+      "text": "Mnemor 2.0 – ein Beispielmonat, alle Module abgestimmt (jeder Tap führt weiter, Tab-Leiste bringt immer zur Übersicht)",
+      "kind": "title1",
+      "maxW": 3200
+    },
+    "n1": {
+      "x": 3290,
+      "y": 0,
+      "w": 420,
+      "fill": "blue",
+      "text": "Beispielmonat Oktober 2026 (Stand Sa 24.)\nEinnahmen 3.650,00 (Gehalt 3.400 am 30., Kindergeld 250 am 5.)\nFixkosten 1.659,20 = Wohnen 1.218,35 (Miete 950 + Strom 98 + Gas 112 + Internet 39,99 + Rundfunk 18,36) + Mobilität 356,99 (Leasing 289 + Ticket 58 + Ladetarif 9,99) + Haushalt 83,86 (Mobilfunk 19,99 + Netflix 12,99 + Spotify 17,99 + iCloud 2,99 + Fitness 29,90)\nAusgaben 1.010,60 = bezahlt 656,20 (Laden 64,20 + Bons 592,00) + offen 354,40 (Stadtwerke 142,00 überfällig 21. + Inspektion 212,40 am 30.)\nBudgets offen 61,40 = Lebensmittel 38,00 (412/450) + Mobilität variabel 23,40 (276,60/300); Freizeit 180/150 überschritten → 0\nRücklagen-Raten 326,10 = Kfz-Vers. 40,60 + Kfz-Steuer 12,00 + HU/Reifen 60,00 + Hausrat 7,83 + Haftpflicht 5,67 + Urlaub 200,00\nSparpotenzial 592,70 = 3.650,00 − 1.659,20 − 1.010,60 − 61,40 − 326,10\nBereiche 2.995,90 = Wohnen 1.368,18 + Mobilität 746,19 + Haushalt 881,53 = Fixkosten + Ausgaben + Rücklagen\nVerträge 16 · 1.713,30/Monat = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 (Kfz-Vers., Hausrat, Haftpflicht); Kfz-Steuer = Termin mit Rücklage, kein Vertrag\nLiquidität: Kontostand 2.410,00; − 142 − 487,20 (27.) − 12,99 (29.) = tiefster Stand 1.767,81 am 29.; + 3.400 − 212,40 (30.) = 4.955,41; − 1.160 − 289 (1. Nov.) = 3.506,41"
+    },
+    "r1": {
+      "x": 0,
+      "y": 1000,
+      "text": "Bereiche – Kategorien, Objekte, Rücklagen, Termine (Internet und Rundfunkbeitrag = ortsgebunden → Wohnen)",
+      "kind": "title1",
+      "maxW": 3700
+    },
+    "r2": {
+      "x": 0,
+      "y": 2100,
+      "text": "Rechnungen, Erfassen und Verträge – Tiefe bis zum Detail",
+      "kind": "title1",
+      "maxW": 3200
+    },
+    "r3": {
+      "x": 0,
+      "y": 3200,
+      "text": "Liquidität – Kontostand nur hier, manuell aktualisiert",
+      "kind": "title1",
+      "maxW": 1400
+    },
+    "t2": {
+      "x": 0,
+      "y": 4400,
+      "text": "Verworfen – native Varianten (Referenz)",
+      "kind": "title1",
+      "maxW": 1330
+    }
+  },
+  "designSystems": []
+}

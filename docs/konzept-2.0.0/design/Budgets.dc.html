@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Budgets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
+.hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
+.hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none}
+.hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
+.hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
+.hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
+.hdr .sub{margin:6px 0 0;font-size:13px;opacity:.8}
+.bar{background:#1C3250;color:#FFFFFF;padding:56px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.bar p{margin:0;font-size:17px;font-weight:600}
+.card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.h2 a{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit}
+.f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
+.f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .v.ph{color:#9AA5B4;font-weight:400}
+.f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit}
+.row p{margin:0}
+.row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.row .n{font-size:15px;font-weight:600;line-height:1.2}
+.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .mid{flex:1;min-width:0}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.chev{width:8px;height:13px;flex:none}
+.cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
+.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;text-decoration:none}
+.seg span.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1}
+.pri{background:#2A5480;color:#FFFFFF}
+.sec2{background:#E6EEF6;color:#2A5480}
+.danger{background:#FBE9E7;color:#943333}
+.bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
+.bar2 i{display:block;height:6px;border-radius:3px}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none}
+.tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.off{background:#D1D6DE}
+.tog.off::after{right:auto;left:2px}
+.note{margin:8px 4px 0;font-size:12px;color:#637894}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
+.tab.on{color:#2A5480;font-weight:700}
+a{color:#2A5480}
+</style>
+</helmet>
+<div class="root">
+<div class="scroll">
+  <div class="hdr">
+    <div class="nav"><a class="back" href="Mehr.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mehr</a><p class="ttl">Budgets</p><a class="act" href="#">Neu</a></div>
+
+    <h1>Budgets im Oktober</h1>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">61,40 €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">noch offen · 3 Budgets · 900 € geplant</p></div>
+    <p class="sub">868,60 € verbraucht · Überschreitungen werden nicht gegengerechnet</p>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Variable Kategorien <span>7 Tage bis Monatsende</span></h2>
+    <div class="card">
+      <a class="row" href="Kategorie.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; flex: none"></span><p class="n" style="flex: 1">Lebensmittel</p><p class="v">412,00 / 450 €</p></div>
+        <div class="bar2"><i style="width: 92%; background: #E08A1E"></i></div>
+        <p class="s" style="color: #E08A1E; font-weight: 600">noch 38,00 €</p>
+      </a>
+      <div class="sep"></div>
+      <a class="row" href="Kategorie.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; flex: none"></span><p class="n" style="flex: 1">Freizeit (ohne Fitness-Vertrag)</p><p class="v">180,00 / 150 €</p></div>
+        <div class="bar2"><i style="width: 100%; background: #943333"></i></div>
+        <p class="s" style="color: #943333; font-weight: 600">30,00 € über Budget</p>
+      </a>
+      <div class="sep"></div>
+      <a class="row" href="Akte.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #3C8DBC; flex: none"></span><p class="n" style="flex: 1">Mobilität variabel (Laden, Werkstatt)</p><p class="v">276,60 / 300 €</p></div>
+        <div class="bar2"><i style="width: 92%; background: #E08A1E"></i></div>
+        <p class="s" style="color: #E08A1E; font-weight: 600">noch 23,40 €</p>
+      </a>
+    </div>
+    <p class="note">Offen = Summe der positiven Reste: 38,00 + 0 + 23,40 = 61,40 €. Dieser Betrag mindert das Sparpotenzial, weil er voraussichtlich noch ausgegeben wird.</p>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Ohne Budget</h2>
+    <div class="card">
+      <a class="f" href="KategorieNeu.dc.html"><p class="v"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Kleidung · Gesundheit · Haustier · Geschenke</p><span style="font-size: 13px; color: #2A5480; font-weight: 600">Budget setzen</span><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep"></div>
+      <a class="f" href="KategorieNeu.dc.html"><p class="v"><span style="width: 10px; height: 10px; border-radius: 5px; background: #E8A33D; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Instandhaltung · Wasser/Abfall</p><span style="font-size: 13px; color: #2A5480; font-weight: 600">Budget setzen</span><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+    </div>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <div class="card">
+      <div class="f" style="flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; padding-bottom: 12px"><p class="v wrap"><b>Vorschlag:</b> Freizeit lag in 4 von 6 Monaten über 150 €. Budget auf 200 € anheben?</p><div style="display: flex; gap: 8px"><a class="btn sec2" href="#" style="height: 36px; font-size: 14px">Auf 200 € setzen</a><a class="btn" href="#" style="height: 36px; font-size: 14px; background: #F3F5F8; color: #637894">Später</a></div></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Fixkosten</p><p class="v wrap">Brauchen kein Budget – sie stehen als Vertrag fest. Abweichungen zeigt die Monatsrechnung.</p></div>
+    </div>
+  </div>
+
+</div>
+
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab on" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
+    <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="Erfassen.dc.html"><span style="width: 44px; height: 44px; border-radius: 22px; background: #2A5480; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; margin-top: -4px"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+    <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

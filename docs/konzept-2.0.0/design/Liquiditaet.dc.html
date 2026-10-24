@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Liquidität</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.hdr{background:#1C3250;color:#FFFFFF;padding:56px 20px 22px}
+.card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.day{display:flex;align-items:baseline;gap:8px;padding:14px 4px 6px}
+.day h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#637894}
+.day p{margin:0;font-size:12.5px;color:#637894}
+.row{display:flex;align-items:center;gap:12px;min-height:52px;padding:4px 16px;text-decoration:none;color:inherit}
+.row p{margin:0}
+.row .n{font-size:16px;font-weight:500;flex:1;min-width:0}
+.row .s{font-size:12.5px;color:#637894;margin-top:2px}
+.row .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#17263B;white-space:nowrap}
+.sep{height:1px;background:#EEF1F5;margin-left:36px}
+.dot{width:8px;height:8px;border-radius:4px;flex:none}
+.seg{display:flex;background:rgba(255,255,255,.14);border-radius:10px;padding:2px;margin-top:16px}
+.seg a{flex:1;text-align:center;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;padding:8px 0;border-radius:8px;min-height:36px;box-sizing:border-box;opacity:.85}
+.seg a.on{background:#FFFFFF;color:#1C3250;opacity:1}
+.chip{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
+.tab.on{color:#2A5480;font-weight:700}
+a{color:#2A5480}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div class="root">
+<div class="scroll">
+
+  <div class="hdr">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">Liquidität</h1>
+      <p style="margin: 0; font-size: 13px; opacity: .8">Stand Sa 24. Okt.</p>
+    </div>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px">
+      <div>
+        <p style="margin: 0; font-size: 13px; opacity: .8">Kontostand heute</p>
+        <p style="margin: 2px 0 0; font-size: 36px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; font-variant-numeric: tabular-nums">2.410,00 €</p>
+      </div>
+      <a href="Kontostand.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; background: #FFFFFF; color: #1C3250; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none">Aktualisieren</a>
+    </div>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">Tiefster Stand <strong style="font-weight: 600; opacity: 1">1.767,81 € am Mi 29. Okt.</strong> · Gehalt 3.400 € am 30. Okt.</p>
+    <div class="seg" role="tablist" aria-label="Ansicht">
+      <a href="Liquiditaet.dc.html" role="tab" class="on" aria-selected="true">Termine</a>
+      <a href="Verlauf.dc.html" role="tab">Verlauf</a>
+    </div>
+  </div>
+
+  <div style="padding: 14px 20px 0 20px; display: flex; gap: 8px">
+    <a class="chip on" href="Liquiditaet.dc.html">Alle</a>
+    <a class="chip" href="Liquiditaet.dc.html">Wohnen</a>
+    <a class="chip" href="Akte.dc.html">Mobilität</a>
+    <a class="chip" href="Liquiditaet.dc.html">Haushalt</a>
+  </div>
+
+  <div style="padding: 0 20px">
+    <div class="day"><h2>Überfällig</h2></div>
+    <div class="card">
+      <a class="row" href="Rechnung.dc.html"><span class="dot" style="background: #E03C31"></span><div class="n"><p style="color: #943333">Stadtwerke – Nachzahlung</p><p class="s">seit 21. Okt. · Wohnen</p></div><p class="v" style="color: #943333">−142,00</p></a>
+    </div>
+
+    <div class="day"><h2>Mo 27. Okt.</h2><p>in 3 Tagen</p></div>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Kfz-Versicherung HUK24</p><p class="s">Jahresbeitrag · aus Rücklage · Mobilität</p></div><p class="v">−487,20</p></a>
+    </div>
+
+    <div class="day"><h2>Mi 29. Okt.</h2></div>
+    <div class="card">
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Netflix</p><p class="s">Abo · Haushalt</p></div><p class="v">−12,99</p></a>
+    </div>
+
+    <div class="day"><h2>Do 30. Okt.</h2></div>
+    <div class="card">
+      <a class="row" href="Review.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Autohaus Keller – Inspektion</p><p class="s">Rechnung · Mobilität</p></div><p class="v">−212,40</p></a>
+      <div class="sep"></div>
+      <a class="row" href="Einnahmen.dc.html"><span class="dot" style="background: #215F33"></span><div class="n"><p>Gehalt</p><p class="s">Einnahme</p></div><p class="v" style="color: #215F33">+3.400,00</p></a>
+    </div>
+
+    <div class="day"><h2>Sa 1. Nov.</h2><p>Monatswechsel</p></div>
+    <div class="card">
+      <a class="row" href="Vertraege.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Miete, Strom, Gas, Internet</p><p class="s">4 Fixkosten · Wohnen</p></div><p class="v">−1.199,99</p></a>
+      <div class="sep"></div>
+      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Leasing VW Financial</p><p class="s">Fixkosten · Mobilität</p></div><p class="v">−289,00</p></a>
+    </div>
+  </div>
+
+
+</div>
+  <nav class="tabbar" aria-label="Hauptnavigation">
+    <a class="tab" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
+    <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
+    <a class="tab" href="Erfassen.dc.html"><span style="width: 44px; height: 44px; border-radius: 22px; background: #2A5480; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; margin-top: -4px"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span></a>
+    <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
+    <a class="tab on" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
