@@ -1,6 +1,6 @@
 # Konzept Release 2.0.0 – Mnemor als Haushaltsverwaltung
 
-Stand 24.10.2026. Ergebnis der Konzeptphase für 2.0.0: Marktvergleich, Funktionsmodell und ein klickbarer Screen-Prototyp mit einem durchgerechneten Beispielmonat. Die Implementierung folgt auf `release/2.0.0` (zuerst Datenmodell, dann OCR 2.0, dann Screens).
+Stand 25.10.2026. Ergebnis der Konzeptphase für 2.0.0: Marktvergleich, Funktionsmodell und ein klickbarer Screen-Prototyp mit einem durchgerechneten Beispielmonat. Die Implementierung folgt auf `release/2.0.0` (zuerst Datenmodell, dann OCR 2.0, dann Screens).
 
 Die Dokumente leben weiterhin als bearbeitbare Claude-Docs; hier liegt der eingefrorene Stand.
 
@@ -8,6 +8,7 @@ Die Dokumente leben weiterhin als bearbeitbare Claude-Docs; hier liegt der einge
 | --- | --- | --- |
 | `marktvergleich.md` | DE/US/UK-Haushaltsbuch-Apps, Muster & Lücken, sechs USPs | [Marktvergleich](https://claude.ai/artifact/14ebQFwB3GdiJ9q7B9MRuf) |
 | `funktionsmodell.md` | Taxonomie, Zuordnungsregel, Objektmodell, OCR-Symbiose, OCR 2.0, eingefrorene Funktionsliste, Glossar, Beispielmonat | [Funktionsmodell](https://claude.ai/artifact/WQdw2oxroqdp27fwcHr1WR) |
+| `darstellungsarchitektur.md` | Funktion → Frage → Datenform → Anzeigemuster → Screen; Muster-Katalog nach Vorbild der Marktführer; Regeln für die Startseite | – |
 | `navigation-und-faelligkeiten.md` | Zweiter Reiter des Funktionsmodells: Bereiche, Fälligkeiten, Liquidität, Termin-Objekt (Konzeptsprache, „Akte“ = Bereich, „Gebäude“ = Wohnen) | gleiches Dokument, Reiter 2 |
 | `design/` | 27 interaktive Screens als Artboards (`*.dc.html`), `canvas.json` (Anordnung), `generator/` (erzeugt alle Screens, `check2.js`/`check3.js` prüfen jede Taste und 41 Soll-Werte), `screenshots/` (gerendert mit `generator/render.js`, ganze Seitenhöhe) | [App-Screens](https://claude.ai/artifact/ACDyBU4mp3qL8kMp6PbWxZ) |
 

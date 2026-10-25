@@ -22,12 +22,12 @@ def build():
   <div style="padding: 16px 20px 0 20px; display: flex; flex-direction: column; gap: 10px">
     <sc-for list="{{{{groups}}}}" as="g" hint-placeholder-count="2">
       <h2 class="h2" style="margin: 6px 0 0">{{{{g.title}}}} <span>{{{{g.meta}}}}</span></h2>
+      <div class="card">
       <sc-for list="{{{{g.items}}}}" as="it" hint-placeholder-count="2">
-        <a class="inv" href="{{{{it.href}}}}">
-          <div style="flex: 1; min-width: 0"><p class="n">{{{{it.name}}}}</p><p class="a">{{{{it.amount}}}} €</p><p class="d">{{{{it.sub}}}}</p><p class="d">{{{{it.cat}}}}</p></div>
-          <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{{{it.capst}}}}">{{{{it.cap}}}}</span><sc-if value="{{{{it.urg}}}}" hint-placeholder-val="{{{{false}}}}"><span class="urg" style="{{{{it.urgst}}}}"><i style="{{{{it.dotst}}}}"></i>{{{{it.urg}}}}</span></sc-if></div>
-        </a>
+        <a class="row dr" href="{{{{it.href}}}}"><div class="dd" style="{{{{it.dst}}}}"><p class="d1">{{{{it.day}}}}</p><p class="d2">{{{{it.mon}}}}</p></div><div class="mid"><p class="n">{{{{it.name}}}}</p><p class="s">{{{{it.cat}}}}</p></div><div class="vcol"><p class="v">{{{{it.amount}}}} €</p><p class="s" style="{{{{it.urgst}}}}">{{{{it.urg}}}}</p></div></a>
+        <div class="sep" style="margin-left: 72px"></div>
       </sc-for>
+      </div>
     </sc-for>
     <sc-if value="{{{{none}}}}" hint-placeholder-val="{{{{false}}}}"><p class="note">Keine Treffer für „{{{{q}}}}“.</p></sc-if>
   </div>
@@ -58,10 +58,11 @@ def build():
     var open = all.filter(function (i) {{ return i.st !== 'paid'; }}), paid = all.filter(function (i) {{ return i.st === 'paid'; }});
     var sum = function (l) {{ return l.reduce(function (a, b) {{ return a + b.amount; }}, 0); }};
     var fmt = function (i) {{
-      var o = {{ name: i.name, amount: eur(i.amount), href: i.href, cat: i.cat }};
-      if (i.st === 'over') {{ o.sub = 'Fällig ' + i.due; o.cap = 'Offen'; o.capst = 'background: #F7D4D1; color: #943333'; o.urg = 'Überfällig'; o.urgst = 'color: #E03C31'; o.dotst = 'background: #E03C31'; }}
-      else if (i.st === 'soon') {{ o.sub = 'Fällig ' + i.due; o.cap = 'Offen'; o.capst = 'background: #EDE3C9; color: #704F2E'; o.urg = 'Bald fällig'; o.urgst = 'color: #E08A1E'; o.dotst = 'background: #E08A1E'; }}
-      else {{ o.sub = (i.kind === 'Bon' ? 'Bon ' : 'Bezahlt ') + i.due; o.cap = 'Bezahlt'; o.capst = 'background: #D6EDDB; color: #215F33'; o.urg = ''; o.urgst = ''; o.dotst = ''; }}
+      var dp = i.due.split(' ');
+      var o = {{ name: i.name, amount: eur(i.amount), href: i.href, cat: i.cat, day: dp[0].replace('.', ''), mon: dp[1], dst: '' }};
+      if (i.st === 'over') {{ o.sub = 'Fällig ' + i.due; o.urg = 'überfällig'; o.urgst = 'color: #E03C31'; o.dst = 'color: #E03C31'; }}
+      else if (i.st === 'soon') {{ o.sub = 'Fällig ' + i.due; o.urg = 'fällig'; o.urgst = 'color: #704F2E'; }}
+      else {{ o.sub = (i.kind === 'Bon' ? 'Bon ' : 'Bezahlt ') + i.due; o.urg = i.kind === 'Bon' ? 'Bon' : 'bezahlt'; o.urgst = 'color: #215F33'; }}
       return o;
     }};
     var groups = [];

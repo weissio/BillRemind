@@ -154,7 +154,7 @@ def build():
         "Kinderbetreuung, Bildung, Geschenke, Spenden, Taschengeld …")
 
     # ---------------- Übersicht (Main)
-    body = f'''  <div class="hdr" style="padding: 56px 20px 64px">
+    body = f'''  <div class="hdr" style="padding: 56px 20px 60px">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <div style="display: flex; gap: 6px; align-items: center">
         <button class="chip" style="height: 28px; padding: 0 10px" onClick="{{{{prevMonth}}}}" aria-label="Vormonat">‹</button>
@@ -166,49 +166,49 @@ def build():
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
       </div>
     </div>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 22px">
-      <p style="margin: 0; font-size: 15px; opacity: .85">{{{{sparLabel}}}}</p>
-      <p style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; line-height: 1">{{{{spar}}}} €</p>
-    </div>
-    <button onClick="{{{{flipCalc}}}}" style="margin: 10px 0 0; padding: 0; border: 0; background: none; color: #FFFFFF; opacity: .75; font: inherit; font-size: 13px; cursor: pointer">{{{{calcHint}}}}</button>
-    <sc-if value="{{{{calcOpen}}}}" hint-placeholder-val="{{{{false}}}}">
-    <div style="margin-top: 10px; padding: 2px 14px 4px; background: rgba(255,255,255,.08); border-radius: 12px">
-      <div class="kr dk"><p class="kl">Einnahmen</p><p class="kv">{{{{k.ein}}}}</p></div>
-      <div class="kr dk"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{{{k.fix}}}}</p></div>
-      <div class="kr dk"><p class="kl">Ausgaben <span class="ks">davon offen {{{{k.offen}}}}</span></p><p class="kv">− {{{{k.aus}}}}</p></div>
-      <div class="kr dk"><p class="kl">Budgets, noch offen</p><p class="kv">− {{{{k.bud}}}}</p></div>
-      <div class="kr dk"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{{{k.res}}}}</p></div>
-      <a class="kr dk" href="Monatsrechnung.dc.html" style="text-decoration: none"><p class="kl" style="font-weight: 600">Monatsrechnung mit Einzelposten</p><p class="kv">›</p></a>
-    </div>
-    </sc-if>
+    <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{{{sparLabel}}}}</p>
+    <p class="big" style="margin-top: 6px">{{{{spar}}}} €</p>
+    <p class="sub">{{{{sparSub}}}}</p>
+  </div>
+
+  <div style="padding: 0 20px; margin-top: -40px">
+    <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 14px 16px 12px; text-decoration: none; color: inherit">
+      <div class="mb"><p class="ml">Einnahmen</p><div class="mt"><i style="width: 100%; background: #2F8F5B"></i></div><p class="mv" style="color: #215F33">{{{{k.ein}}}}</p></div>
+      <div class="mb"><p class="ml">Ausgaben</p><div class="mt"><i style="{{{{bar.fix}}}}"></i><i style="{{{{bar.aus}}}}"></i><i style="{{{{bar.bud}}}}"></i><i style="{{{{bar.res}}}}"></i></div><p class="mv">{{{{k.out}}}}</p></div>
+      <div class="lg">
+        <span><i style="background: #1C3250"></i>Fixkosten {{{{k.fix}}}}</span>
+        <span><i style="background: #3C8DBC"></i>Ausgaben {{{{k.aus}}}}</span>
+        <span><i style="background: #9CC3DC"></i>Budgets {{{{k.bud}}}}</span>
+        <span><i style="background: #E8A33D"></i>Rücklagen {{{{k.res}}}}</span>
+      </div>
+    </a>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <a class="row" href="Wohnen.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {W}; width: 36px; height: 36px; border-radius: 18px">{ICON["home"]}</span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><p class="s" style="font-size: 12.5px">{{{{a.ws}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.w}}}} €</p>{CHEV}</a>
+      <a class="row" href="Wohnen.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {W}; width: 36px; height: 36px; border-radius: 18px">{ICON["home"]}</span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><div class="sh"><i style="{{{{a.wb}}}}"></i></div><sc-if value="{{{{a.ws}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #943333">{{{{a.ws}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.w}}}} €</p>{CHEV}</a>
       <div class="sep" style="margin-left: 64px"></div>
-      <a class="row" href="Akte.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {M}; width: 36px; height: 36px; border-radius: 18px">{ICON["car"]}</span><div class="mid"><p class="n" style="font-size: 16px">Mobilität</p><p class="s" style="font-size: 12.5px">{{{{a.ms}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.mo}}}} €</p>{CHEV}</a>
+      <a class="row" href="Akte.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {M}; width: 36px; height: 36px; border-radius: 18px">{ICON["car"]}</span><div class="mid"><p class="n" style="font-size: 16px">Mobilität</p><div class="sh"><i style="{{{{a.mb}}}}"></i></div><sc-if value="{{{{a.ms}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #704F2E">{{{{a.ms}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.mo}}}} €</p>{CHEV}</a>
       <div class="sep" style="margin-left: 64px"></div>
-      <a class="row" href="Haushalt.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><p class="s" style="font-size: 12.5px">{{{{a.hs}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
+      <a class="row" href="Haushalt.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><div class="sh"><i style="{{{{a.hb}}}}"></i></div><sc-if value="{{{{a.hs}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #704F2E">{{{{a.hs}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
     </div>
   </div>
 
-  <div style="padding: 22px 0 0 20px">
-    <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 20px 10px 4px">
+  <div style="padding: 22px 20px 0 20px">
+    <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px 10px 4px">
       <h2 style="margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.3px">Fällig</h2>
       <a href="Rechnungen.dc.html" style="font-size: 14px; font-weight: 600; text-decoration: none">{{{{dueLine}}}}</a>
     </div>
-    <div style="display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-right: 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch">
+    <div class="card">
       <sc-for list="{{{{due}}}}" as="d" hint-placeholder-count="3">
-        <a class="inv" href="{{{{d.href}}}}" style="flex: none; width: 272px; scroll-snap-align: start">
-          <div style="flex: 1; min-width: 0"><p class="n">{{{{d.name}}}}</p><p class="a">{{{{d.amount}}}} €</p><p class="d">{{{{d.sub}}}}</p><p class="d">{{{{d.sub2}}}}</p></div>
-          <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{{{d.capst}}}}">{{{{d.cap}}}}</span><span class="urg" style="{{{{d.urgst}}}}"><i style="{{{{d.dotst}}}}"></i>{{{{d.urg}}}}</span></div>
-        </a>
+        <a class="row dr" href="{{{{d.href}}}}"><div class="dd" style="{{{{d.dst}}}}"><p class="d1">{{{{d.day}}}}</p><p class="d2">{{{{d.mon}}}}</p></div><div class="mid"><p class="n">{{{{d.name}}}}</p><p class="s">{{{{d.sub2}}}}</p></div><div class="vcol"><p class="v">{{{{d.amount}}}} €</p><p class="s" style="{{{{d.urgst}}}}">{{{{d.urg}}}}</p></div></a>
+        <div class="sep" style="margin-left: 72px"></div>
       </sc-for>
+      <sc-if value="{{{{noDue}}}}" hint-placeholder-val="{{{{false}}}}"><div class="row"><p class="s">Nichts offen – der Monat ist abgeschlossen.</p></div></sc-if>
     </div>
   </div>
 '''
-    logic = f'''  constructor(p) {{ super(p); this.state = {{ m: 0, calcOpen: false, toast: '' }}; }}
+    logic = f'''  constructor(p) {{ super(p); this.state = {{ m: 0, toast: '' }}; }}
 {JS_SEG}
   renderVals() {{
     var self = this, m = this.state.m;
@@ -219,12 +219,15 @@ def build():
       {{ ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, ws: 'abgeschlossen', ms: 'abgeschlossen', hs: 'abgeschlossen' }},
       {{ ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, ws: 'Rückerstattung Strom 51,30', ms: 'abgeschlossen', hs: 'abgeschlossen' }}
     ];
-    var d = D[m], aus = d.bez + d.off, spar = d.ein - d.fix - aus - d.bud - d.res;
+    var d = D[m], aus = d.bez + d.off, out = d.fix + aus + d.bud + d.res, spar = d.ein - out;
+    var pct = function (v) {{ return Math.round(v / d.ein * 1000) / 10; }};
+    var sumA = d.w + d.mo + d.h, share = function (v, c) {{ return 'width: ' + Math.round(v / sumA * 100) + '%; background: ' + c; }};
+    var warn = function (t) {{ return t === 'abgeschlossen' ? '' : t; }};
     var dueAll = [
-      {{ name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig 21. Okt. 2026', sub2: 'Wohnen › Strom', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' }},
-      {{ name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig 27. Okt. 2026', sub2: 'Mobilität · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
-      {{ name: 'Netflix', amount: eur(12.99), sub: 'Fällig 29. Okt. 2026', sub2: 'Haushalt › Streaming', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
-      {{ name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig 30. Okt. 2026', sub2: 'Mobilität › Werkstatt & Reifen', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }}
+      {{ name: 'Stadtwerke Mainstadt', amount: eur(142), day: '21', mon: 'Okt.', dst: 'color: #E03C31', sub2: 'Wohnen › Strom · Nachzahlung', urg: 'überfällig', urgst: 'color: #E03C31', href: 'Rechnung.dc.html' }},
+      {{ name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), day: '27', mon: 'Okt.', dst: '', sub2: 'Mobilität · aus Rücklage', urg: 'in 2 Tagen', urgst: '', href: 'Vertrag.dc.html' }},
+      {{ name: 'Netflix', amount: eur(12.99), day: '29', mon: 'Okt.', dst: '', sub2: 'Haushalt › Streaming · Abo', urg: 'in 4 Tagen', urgst: '', href: 'Vertrag.dc.html' }},
+      {{ name: 'Autohaus Keller', amount: eur(212.40), day: '30', mon: 'Okt.', dst: '', sub2: 'Mobilität › Werkstatt & Reifen', urg: 'in 5 Tagen', urgst: '', href: 'Review.dc.html' }}
     ];
     var due = m === 0 ? dueAll : [];
     return {{
@@ -233,12 +236,12 @@ def build():
       prevMonth: function () {{ if (m < months.length - 1) self.setState({{ m: m + 1 }}); else self.say('Ältere Monate: Mehr › Auswertung'); }},
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
       spar: eur(spar), sparLabel: (m === 0 ? 'Sparpotenzial ' : 'Ergebnis ') + months[m].split(' ')[0],
-      calcOpen: this.state.calcOpen, flipCalc: this.flip('calcOpen'), calcHint: this.state.calcOpen ? 'Rechnung ausblenden ▴' : 'So gerechnet ▾',
-      k: {{ ein: eur(d.ein), fix: eur(d.fix), aus: eur(aus), offen: eur(d.off), bud: eur(d.bud), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) }},
-      a: {{ ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) }},
+      sparSub: m === 0 ? 'bleibt von ' + eur(d.ein) + ' € Einnahmen · ' + eur(d.off) + ' € noch offen' : 'Monat abgeschlossen · von ' + eur(d.ein) + ' € Einnahmen',
+      k: {{ ein: eur(d.ein), out: eur(out), fix: eur(d.fix, 0), aus: eur(aus, 0), bud: eur(d.bud, 0), res: eur(d.res, 0), offen: eur(d.off) }},
+      bar: {{ fix: 'width: ' + pct(d.fix) + '%; background: #1C3250', aus: 'width: ' + pct(aus) + '%; background: #3C8DBC', bud: 'width: ' + pct(d.bud) + '%; background: #9CC3DC', res: 'width: ' + pct(d.res) + '%; background: #E8A33D' }},
+      a: {{ ws: warn(d.ws), ms: warn(d.ms), hs: warn(d.hs), w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0), wb: share(d.w, '{W}'), mb: share(d.mo, '{M}'), hb: share(d.h, '{H}') }},
       sumAreas: eur(d.w + d.mo + d.h),
-      due: due,
-      dueCount: due.length,
+      due: due, noDue: due.length === 0,
       dueLine: m === 0 ? '1 überfällig · 3 in 7 Tagen' : 'nichts offen'
     }};
   }}'''
