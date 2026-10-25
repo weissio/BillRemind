@@ -41,6 +41,7 @@ body{margin:0}
 .lg i{width:8px;height:8px;border-radius:4px;flex:none}
 .sh{height:5px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:5px;max-width:160px}
 .sh i{display:block;height:5px;border-radius:3px}
+.bdg{min-width:20px;height:20px;padding:0 6px;border-radius:10px;color:#FFFFFF;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-right:4px}
 .row.dr{padding:10px 16px}
 .row.dr .vcol{max-width:88px}
 .row.dr:last-of-type+.sep{display:none}

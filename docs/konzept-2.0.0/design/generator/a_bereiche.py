@@ -154,7 +154,7 @@ def build():
         "Kinderbetreuung, Bildung, Geschenke, Spenden, Taschengeld …")
 
     # ---------------- Übersicht (Main)
-    body = f'''  <div class="hdr" style="padding: 56px 20px 60px">
+    body = f'''  <div class="hdr" style="padding: 56px 20px 26px">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <div style="display: flex; gap: 6px; align-items: center">
         <button class="chip" style="height: 28px; padding: 0 10px" onClick="{{{{prevMonth}}}}" aria-label="Vormonat">‹</button>
@@ -168,30 +168,19 @@ def build():
     </div>
     <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{{{sparLabel}}}}</p>
     <p class="big" style="margin-top: 6px">{{{{spar}}}} €</p>
-    <p class="sub">{{{{sparSub}}}}</p>
-  </div>
-
-  <div style="padding: 0 20px; margin-top: -40px">
-    <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 14px 16px 12px; text-decoration: none; color: inherit">
-      <div class="mb"><p class="ml">Einnahmen</p><div class="mt"><i style="width: 100%; background: #2F8F5B"></i></div><p class="mv" style="color: #215F33">{{{{k.ein}}}}</p></div>
-      <div class="mb"><p class="ml">Verwendung</p><div class="mt"><i style="{{{{bar.fix}}}}"></i><i style="{{{{bar.res}}}}"></i><i style="{{{{bar.aus}}}}"></i><i style="{{{{bar.bud}}}}"></i></div><p class="mv">{{{{k.out}}}}</p></div>
-      <div class="lg">
-        <span><i style="background: #1C3250"></i>Fixkosten {{{{k.fix}}}}</span>
-        <span><i style="background: #2F8F5B"></i>Sparen {{{{k.res}}}}</span>
-        <span><i style="background: #3C8DBC"></i>Ausgegeben {{{{k.aus}}}}</span>
-        <span><i style="background: #B9D3E6"></i>Reserviert {{{{k.bud}}}}</span>
-        <span><i style="background: #EEF1F5; border: 1px solid #C9D3DF; box-sizing: border-box"></i>Noch frei {{{{k.spar}}}}</span>
-      </div>
+    <a href="Monatsrechnung.dc.html" style="display: block; text-decoration: none; color: inherit; margin-top: 14px">
+      <div style="height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden"><i style="{{{{usedSt}}}}"></i></div>
+      <p class="sub" style="margin-top: 8px">{{{{sparSub}}}}</p>
     </a>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <a class="row" href="Wohnen.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {W}; width: 36px; height: 36px; border-radius: 18px">{ICON["home"]}</span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><div class="sh"><i style="{{{{a.wb}}}}"></i></div><sc-if value="{{{{a.ws}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #943333">{{{{a.ws}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.w}}}} €</p>{CHEV}</a>
+      <a class="row" href="Wohnen.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {W}; width: 36px; height: 36px; border-radius: 18px">{ICON["home"]}</span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p></div><sc-if value="{{{{a.wn}}}}" hint-placeholder-val="{{{{false}}}}"><span class="bdg" style="{{{{a.wbs}}}}">{{{{a.wn}}}}</span></sc-if><p class="v" style="font-size: 16px">{{{{a.w}}}} €</p>{CHEV}</a>
       <div class="sep" style="margin-left: 64px"></div>
-      <a class="row" href="Akte.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {M}; width: 36px; height: 36px; border-radius: 18px">{ICON["car"]}</span><div class="mid"><p class="n" style="font-size: 16px">Mobilität</p><div class="sh"><i style="{{{{a.mb}}}}"></i></div><sc-if value="{{{{a.ms}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #704F2E">{{{{a.ms}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.mo}}}} €</p>{CHEV}</a>
+      <a class="row" href="Akte.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {M}; width: 36px; height: 36px; border-radius: 18px">{ICON["car"]}</span><div class="mid"><p class="n" style="font-size: 16px">Mobilität</p></div><sc-if value="{{{{a.mn}}}}" hint-placeholder-val="{{{{false}}}}"><span class="bdg" style="{{{{a.mbs}}}}">{{{{a.mn}}}}</span></sc-if><p class="v" style="font-size: 16px">{{{{a.mo}}}} €</p>{CHEV}</a>
       <div class="sep" style="margin-left: 64px"></div>
-      <a class="row" href="Haushalt.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><div class="sh"><i style="{{{{a.hb}}}}"></i></div><sc-if value="{{{{a.hs}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="font-size: 12.5px; color: #704F2E">{{{{a.hs}}}}</p></sc-if></div><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
+      <a class="row" href="Haushalt.dc.html" style="min-height: 60px; padding: 8px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p></div><sc-if value="{{{{a.hn}}}}" hint-placeholder-val="{{{{false}}}}"><span class="bdg" style="{{{{a.hbs}}}}">{{{{a.hn}}}}</span></sc-if><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
     </div>
   </div>
 
@@ -202,7 +191,7 @@ def build():
     </div>
     <div class="card">
       <sc-for list="{{{{due}}}}" as="d" hint-placeholder-count="3">
-        <a class="row dr" href="{{{{d.href}}}}"><div class="dd" style="{{{{d.dst}}}}"><p class="d1">{{{{d.day}}}}</p><p class="d2">{{{{d.mon}}}}</p></div><div class="mid"><p class="n">{{{{d.name}}}}</p><p class="s">{{{{d.sub2}}}}</p></div><div class="vcol"><p class="v">{{{{d.amount}}}} €</p><p class="s" style="{{{{d.urgst}}}}">{{{{d.urg}}}}</p></div></a>
+        <a class="row dr" href="{{{{d.href}}}}"><div class="dd" style="{{{{d.dst}}}}"><p class="d1">{{{{d.day}}}}</p><p class="d2">{{{{d.mon}}}}</p></div><div class="mid"><p class="n">{{{{d.name}}}}</p><p class="s" style="{{{{d.urgst}}}}">{{{{d.urg}}}}</p></div><p class="v">{{{{d.amount}}}} €</p></a>
         <div class="sep" style="margin-left: 72px"></div>
       </sc-for>
       <sc-if value="{{{{noDue}}}}" hint-placeholder-val="{{{{false}}}}"><div class="row"><p class="s">Nichts offen – der Monat ist abgeschlossen.</p></div></sc-if>
@@ -216,14 +205,13 @@ def build():
     var months = ['Oktober 2026', 'September 2026', 'August 2026'];
     // Beispielmonat Oktober; Vormonate als Vergleich (abgeschlossen: keine offenen Posten)
     var D = [
-      {{ ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 offen', hs: 'Budget Freizeit überschritten' }},
-      {{ ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, ws: 'abgeschlossen', ms: 'abgeschlossen', hs: 'abgeschlossen' }},
-      {{ ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, ws: 'Rückerstattung Strom 51,30', ms: 'abgeschlossen', hs: 'abgeschlossen' }}
+      {{ ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, wn: 1, wred: true, mn: 1, mred: false, hn: 1, hred: false }},
+      {{ ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, wn: 0, mn: 0, hn: 0 }},
+      {{ ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, wn: 0, mn: 0, hn: 0 }}
     ];
     var d = D[m], aus = d.bez + d.off, out = d.fix + aus + d.bud + d.res, spar = d.ein - out;
     var pct = function (v) {{ return Math.round(v / d.ein * 1000) / 10; }};
-    var sumA = d.w + d.mo + d.h, share = function (v, c) {{ return 'width: ' + Math.round(v / sumA * 100) + '%; background: ' + c; }};
-    var warn = function (t) {{ return t === 'abgeschlossen' ? '' : t; }};
+    var bdg = function (red) {{ return red ? 'background: #E03C31' : 'background: #E08A1E'; }};
     var dueAll = [
       {{ name: 'Stadtwerke Mainstadt', amount: eur(142), day: '21', mon: 'Okt.', dst: 'color: #E03C31', sub2: 'Wohnen › Strom · Nachzahlung', urg: 'überfällig', urgst: 'color: #E03C31', href: 'Rechnung.dc.html' }},
       {{ name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), day: '27', mon: 'Okt.', dst: '', sub2: 'Mobilität · aus Rücklage', urg: 'in 2 Tagen', urgst: '', href: 'Vertrag.dc.html' }},
@@ -237,10 +225,10 @@ def build():
       prevMonth: function () {{ if (m < months.length - 1) self.setState({{ m: m + 1 }}); else self.say('Ältere Monate: Mehr › Auswertung'); }},
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
       spar: eur(spar), sparLabel: (m === 0 ? 'Noch frei im ' : 'Überschuss im ') + months[m].split(' ')[0],
-      sparSub: m === 0 ? 'von ' + eur(d.ein - d.fix - d.res) + ' € Spielraum · ' + eur(d.off) + ' € davon noch offen' : 'Monat abgeschlossen · Gespart ' + eur(d.res + spar) + ' € inkl. Rücklagen',
+      sparSub: eur(out) + ' € von ' + eur(d.ein) + ' € Einnahmen verplant', usedSt: 'display: block; height: 8px; width: ' + pct(out) + '%; background: #FFFFFF; border-radius: 4px',
       k: {{ ein: eur(d.ein), out: eur(out), fix: eur(d.fix, 0), aus: eur(aus, 0), bud: eur(d.bud, 0), res: eur(d.res, 0), spar: eur(spar, 0), offen: eur(d.off) }},
       bar: {{ fix: 'width: ' + pct(d.fix) + '%; background: #1C3250', aus: 'width: ' + pct(aus) + '%; background: #3C8DBC', bud: 'width: ' + pct(d.bud) + '%; background: #B9D3E6', res: 'width: ' + pct(d.res) + '%; background: #2F8F5B' }},
-      a: {{ ws: warn(d.ws), ms: warn(d.ms), hs: warn(d.hs), w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0), wb: share(d.w, '{W}'), mb: share(d.mo, '{M}'), hb: share(d.h, '{H}') }},
+      a: {{ w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0), wn: d.wn || 0, mn: d.mn || 0, hn: d.hn || 0, wbs: bdg(d.wred), mbs: bdg(d.mred), hbs: bdg(d.hred) }},
       sumAreas: eur(d.w + d.mo + d.h),
       due: due, noDue: due.length === 0,
       dueLine: m === 0 ? '1 überfällig · 3 in 7 Tagen' : 'nichts offen'
