@@ -38,9 +38,15 @@ Stand 25.10.2026. Die Funktionen stehen (siehe `funktionsmodell.md`). Dieses Dok
 | Auswertung | Wie entwickelt sich das? | Zeitreihe je Monat, Kategorien | Monatssäulen + Balkenliste; Jahresblick als Kennzahlen | Auswertung |
 | Haushaltskasse | Wo ist das Bargeld? | Einzahlungen/Entnahmen | Zeilen je Person, Bons als Datumszeilen | Haushaltskasse |
 
-## Was daraus für die Startseite folgt
+## Was daraus für die Startseite folgt (Stand 25.10., Version 29)
 
-Die Startseite hat genau drei Blöcke – Kopfzahl mit Balkenpaar, drei Anteilszeilen, bis zu vier Datumszeilen – und sonst nichts. Kein Formeltext, keine Prüfsummen, keine Wisch-Karten. Alles Weitere liegt einen Tap tiefer: Monatsrechnung (Einzelposten), Bereich (Kategorien), Rechnungen (alle Fälligkeiten).
+Die Startseite hat genau drei Blöcke und keinen erklärenden Text:
+
+1. **Kopf:** „Noch frei im Oktober“ 592,70 €, darunter ein einziger Balken (verplant / frei) mit der Zeile „3.057,30 € von 3.650,00 € Einnahmen verplant“. Antippen öffnet die Monatsrechnung mit den drei Stufen.
+2. **Bereiche:** Icon, Name, Betrag. Statt Statustexten ein Zähler-Punkt: rot = Anzahl überfälliger Posten, bernstein = Anzahl offener Posten oder überschrittener Budgets. Was dahintersteckt, zeigt der Bereich selbst; mehrere Posten erhöhen nur die Zahl.
+3. **Fällig:** bis zu vier Datumszeilen (Tag/Monat, Name, Status, Betrag) ohne Kategorie-Untertitel; die Kopfzeile führt zu Rechnungen.
+
+Kein Formeltext, keine Legende, keine Prüfsummen, keine Wisch-Karten.
 
 ## Regeln für alle Screens
 
