@@ -285,6 +285,96 @@
       "title": "Kalender",
       "radius": 44,
       "is_interactive": true
+    },
+    "V01_Heute.dc.html": {
+      "x": 0,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V1 Heute – Aufgaben zuerst",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V02_Ampel.dc.html": {
+      "x": 470,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V2 Ampel – drei Zustände",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V03_Ruhe.dc.html": {
+      "x": 940,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V3 Ruhe – eine Zahl",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V04_Zeitstrahl.dc.html": {
+      "x": 1410,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V4 Zeitstrahl – was kommt",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V05_Eingang.dc.html": {
+      "x": 1880,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V5 Eingang – Belege zuerst",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V06_Bereiche.dc.html": {
+      "x": 2350,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V6 Bereiche – Haus, Auto, Familie",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V07_Monatsbrief.dc.html": {
+      "x": 2820,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V7 Monatsbrief – in Sätzen",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V08_Haushaltsbuch.dc.html": {
+      "x": 3290,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V8 Haushaltsbuch – klassisch",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V09_Fokus.dc.html": {
+      "x": 3760,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V9 Fokus – eine Sache",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V10_Cockpit.dc.html": {
+      "x": 4230,
+      "y": 5700,
+      "w": 390,
+      "h": 844,
+      "title": "V10 Cockpit – alles auf einmal",
+      "radius": 44,
+      "is_interactive": true
     }
   },
   "order": [
@@ -318,7 +408,17 @@
     "Kontostand.dc.html",
     "StartB.dc.html",
     "StartC.dc.html",
-    "StartD.dc.html"
+    "StartD.dc.html",
+    "V01_Heute.dc.html",
+    "V02_Ampel.dc.html",
+    "V03_Ruhe.dc.html",
+    "V04_Zeitstrahl.dc.html",
+    "V05_Eingang.dc.html",
+    "V06_Bereiche.dc.html",
+    "V07_Monatsbrief.dc.html",
+    "V08_Haushaltsbuch.dc.html",
+    "V09_Fokus.dc.html",
+    "V10_Cockpit.dc.html"
   ],
   "notes": {
     "t1": {
@@ -333,7 +433,7 @@
       "y": 0,
       "w": 420,
       "fill": "blue",
-      "text": "Beispielmonat Oktober 2026 (Stand Sa 24.)\nEinnahmen 3.650,00 (Gehalt 3.400 am 30., Kindergeld 250 am 5.)\nFixkosten 1.659,20 = Wohnen 1.218,35 (Miete 950 + Strom 98 + Gas 112 + Internet 39,99 + Rundfunk 18,36) + Mobilität 356,99 (Leasing 289 + Ticket 58 + Ladetarif 9,99) + Haushalt 83,86 (Mobilfunk 19,99 + Netflix 12,99 + Spotify 17,99 + iCloud 2,99 + Fitness 29,90)\nAusgaben 1.010,60 = bezahlt 656,20 (Laden 64,20 + Bons 592,00) + offen 354,40 (Stadtwerke 142,00 überfällig 21. + Inspektion 212,40 am 30.)\nBudgets offen 61,40 = Lebensmittel 38,00 (412/450) + Mobilität variabel 23,40 (276,60/300); Freizeit 180/150 überschritten → 0\nRücklagen-Raten 326,10 = Kfz-Vers. 40,60 + Kfz-Steuer 12,00 + HU/Reifen 60,00 + Hausrat 7,83 + Haftpflicht 5,67 + Urlaub 200,00\nSparpotenzial 592,70 = 3.650,00 − 1.659,20 − 1.010,60 − 61,40 − 326,10\nBereiche 2.995,90 = Wohnen 1.368,18 + Mobilität 746,19 + Haushalt 881,53 = Fixkosten + Ausgaben + Rücklagen\nVerträge 16 · 1.713,30/Monat = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 (Kfz-Vers., Hausrat, Haftpflicht); Kfz-Steuer = Termin mit Rücklage, kein Vertrag\nLiquidität: Kontostand 2.410,00; − 142 − 487,20 (27.) − 12,99 (29.) = tiefster Stand 1.767,81 am 29.; + 3.400 − 212,40 (30.) = 4.955,41; − 1.160 − 289 (1. Nov.) = 3.506,41"
+      "text": "Beispielmonat Oktober 2026 (Stand Sa 24.)\nEinnahmen 3.650,00 (Gehalt 3.400 am 30., Kindergeld 250 am 5.)\nFixkosten 1.659,20 = Wohnen 1.218,35 (Miete 950 + Strom 98 + Gas 112 + Internet 39,99 + Rundfunk 18,36) + Mobilität 356,99 (Leasing 289 + Ticket 58 + Ladetarif 9,99) + Haushalt 83,86 (Mobilfunk 19,99 + Netflix 12,99 + Spotify 17,99 + iCloud 2,99 + Fitness 29,90)\nAusgaben 1.010,60 = bezahlt 656,20 (Laden 64,20 + Bons 592,00) + offen 354,40 (Stadtwerke 142,00 überfällig 21. + Inspektion 212,40 am 30.)\nIn Budgets reserviert 61,40 = Lebensmittel 38,00 (412/450) + Mobilität variabel 23,40 (276,60/300); Freizeit 180/150 überschritten → 0\nRücklagen-Raten 326,10 = Kfz-Vers. 40,60 + Kfz-Steuer 12,00 + HU/Reifen 60,00 + Hausrat 7,83 + Haftpflicht 5,67 + Urlaub 200,00\nSpielraum 1.664,70 = 3.650,00 − 1.659,20 − 326,10 · Noch frei 592,70 = 1.664,70 − 1.010,60 − 61,40 · Gespart 918,80 = 326,10 + 592,70\nBereiche 2.995,90 = Wohnen 1.368,18 + Mobilität 746,19 + Haushalt 881,53 = Fixkosten + Ausgaben + Rücklagen\nVerträge 16 · 1.713,30/Monat = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 (Kfz-Vers., Hausrat, Haftpflicht); Kfz-Steuer = Termin mit Rücklage, kein Vertrag\nLiquidität: Kontostand 2.410,00; − 142 − 487,20 (27.) − 12,99 (29.) = tiefster Stand 1.767,81 am 29.; + 3.400 − 212,40 (30.) = 4.955,41; − 1.160 − 289 (1. Nov.) = 3.506,41"
     },
     "r1": {
       "x": 0,
@@ -368,7 +468,14 @@
       "y": 560,
       "w": 420,
       "fill": "green",
-      "text": "Was im Play-Modus funktioniert (Stand So 25.10.)\n• Jede Zahl wird gerechnet, nicht getippt: Bereichs-Chips filtern Kategorien und Prüfsummen; Budgets, Einnahmen, Rücklage, Kasse, Liquidität rechnen bei jeder Eingabe neu.\n• Formulare prüfen: Review (IBAN-Prüfsumme, Betrag im Text, Empfänger Pflicht), Kategorie/Objekt/Vertrag anlegen (Pflichtfelder, Zuordnungsregel), Kontostand (Abgleich, Differenz → Buchung erfassen).\n• Jede Taste hat eine Wirkung: Sheets für Löschen/Beenden/Export/Backup, Toast-Rückmeldung für Teilen/Kopieren, Schalter in Einstellungen.\n• Nicht im Prototyp: Zustand über Screens hinweg (jede Seite startet mit dem Beispielmonat) und echte Kamera.\n• Kontrolle: check2.js (jede Taste, jede Variable), check3.js (41 Soll-Werte: Sparpotenzial 592,70, Bereiche 2.995,90, Rechnungen 13 bezahlt = 656,20, Verträge 1.713,30, tiefster Stand 1.767,81 …)."
+      "text": "Was im Play-Modus funktioniert (Stand So 25.10.)\n• Jede Zahl wird gerechnet, nicht getippt: Bereichs-Chips filtern Kategorien und Prüfsummen; Budgets, Einnahmen, Rücklage, Kasse, Liquidität rechnen bei jeder Eingabe neu.\n• Formulare prüfen: Review (IBAN-Prüfsumme, Betrag im Text, Empfänger Pflicht), Kategorie/Objekt/Vertrag anlegen (Pflichtfelder, Zuordnungsregel), Kontostand (Abgleich, Differenz → Buchung erfassen).\n• Jede Taste hat eine Wirkung: Sheets für Löschen/Beenden/Export/Backup, Toast-Rückmeldung für Teilen/Kopieren, Schalter in Einstellungen.\n• Nicht im Prototyp: Zustand über Screens hinweg (jede Seite startet mit dem Beispielmonat) und echte Kamera.\n• Kontrolle: check2.js (jede Taste, jede Variable), check3.js (41 Soll-Werte: Noch frei 592,70, Bereiche 2.995,90, Rechnungen 13 bezahlt = 656,20, Verträge 1.713,30, tiefster Stand 1.767,81 …)."
+    },
+    "t3": {
+      "x": 0,
+      "y": 5540,
+      "text": "Startseiten-Varianten 25.10. – zehn Aufbaustrukturen aus Sicht Designer, CEO, Psychologe und Vergleichsprodukte (Begründung: docs/konzept-2.0.0/startseiten-varianten.md). Zur Entscheidung, nicht final.",
+      "kind": "title1",
+      "maxW": 4600
     }
   },
   "designSystems": []
