@@ -347,13 +347,212 @@ def build():
         f = n + ".dc.html"
         c["boards"][f] = {"x": i * 470, "y": Y, "w": 390, "h": 844, "title": t, "radius": 44, "is_interactive": True}
         if f not in c["order"]: c["order"].append(f)
-    notes = c["notes"] if isinstance(c["notes"], list) else []
-    ids = [n[0] for n in notes]
-    if "t3" not in ids:
-        notes.append(["t3", {"x": 0, "y": Y - 160, "text": "Startseiten-Varianten 25.10. – zehn Aufbaustrukturen aus Sicht Designer, CEO, Psychologe und Vergleichsprodukte (Begründung: docs/konzept-2.0.0/startseiten-varianten.md). Zur Entscheidung, nicht final.", "kind": "title1", "maxW": 4600}])
-    c["notes"] = notes
+    c["notes"]["t3"] = {"x": 0, "y": Y - 160, "text": "Startseiten-Varianten 25.10. – zehn Aufbaustrukturen aus Sicht Designer, CEO, Psychologe und Vergleichsprodukte (Begründung: docs/konzept-2.0.0/startseiten-varianten.md). Zur Entscheidung, nicht final.", "kind": "title1", "maxW": 4600}
+    json.dump(c, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+
+
+
+# ====================================================================== Kategorien auf der Startseite (V11–V16)
+CATS = [  # name, betrag, bereich-farbe, budget (None = fix), kurz
+    ("Miete / Hausgeld", 950.00, W, None), ("Lebensmittel", 412.00, H, 450), ("Kfz-Rate / Leasing", 289.00, M, None),
+    ("Werkstatt & Reifen", 272.40, M, None), ("Strom", 240.00, W, None), ("Freizeit & Kultur", 209.90, H, 150, 180),
+    ("Urlaub & Reisen", 200.00, H, None), ("Gas / Heizung", 112.00, W, None), ("Kraftstoff / Laden", 74.19, M, 300),
+    ("ÖPNV / Ticket", 58.00, M, None), ("Kommunikation", 53.96, H, None), ("Kfz-Versicherung", 40.60, M, None),
+    ("Internet", 39.99, W, None), ("Rundfunk", 18.36, W, None), ("Kfz-Steuer", 12.00, M, None), ("Hausrat", 7.83, W, None), ("Haftpflicht", 5.67, H, None),
+]
+CSS_K = """
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kt{background:#FFFFFF;border-radius:16px;box-shadow:0 2px 10px rgba(22,36,58,.06);padding:12px 12px 10px;text-decoration:none;color:inherit;display:block;min-width:0}
+.kt .ki{width:30px;height:30px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.kt .kn{margin:8px 0 0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kt .kv{margin:2px 0 0;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.kt .kb{height:4px;border-radius:2px;background:#EEF1F5;margin-top:8px;overflow:hidden}
+.kt .kb i{display:block;height:4px;border-radius:2px}
+.kt .ks{margin:4px 0 0;font-size:11px;color:#637894;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kl2{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:inherit}
+.kl2 .nm{flex:1.5;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kl2 .hb{flex:1;height:8px;border-radius:4px;background:#EEF1F5;overflow:hidden}
+.kl2 .hb i{display:block;height:8px;border-radius:4px}
+.kl2 .am{width:64px;text-align:right;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.strip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 20px}
+.strip .sc{flex:none;background:#FFFFFF;border-radius:14px;padding:10px 12px;min-width:150px;text-decoration:none;color:inherit;box-shadow:0 2px 10px rgba(22,36,58,.06)}
+.strip .sc p{margin:0}
+.env{padding:10px 16px;text-decoration:none;color:inherit;display:block}
+.env .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.env .nm{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.env .rest{font-size:13px;font-weight:600;white-space:nowrap}
+.env .hb{height:8px;border-radius:4px;background:#EEF1F5;overflow:hidden;margin-top:7px}
+.env .hb i{display:block;height:8px;border-radius:4px}
+.env .sub{margin:5px 0 0;font-size:12px;color:#637894}
+"""
+
+def ini(name): return name[0]
+
+def kt(name, amt, col, budget=None, spent=None, href="Kategorie.dc.html", note=None):
+    if budget:
+        sp = spent if spent is not None else amt
+        pct = min(100, round(sp / budget * 100)); over = sp > budget
+        bar = f'<div class="kb"><i style="width: {pct}%; background: {"#E03C31" if over else col}"></i></div>'
+        sub = f'<p class="ks" style="{"color: #E03C31" if over else ""}">{(eur_py(sp-budget) + " über Budget") if over else ("noch " + eur_py(budget-sp) + " von " + eur_py(budget, 0))}</p>'
+    else:
+        bar = ''; sub = f'<p class="ks">{note or "fix · Vertrag"}</p>'
+    return f'<a class="kt" href="{href}"><span class="ki" style="background: {col}">{ini(name)}</span><p class="kn">{name}</p><p class="kv">{eur_py(amt)}</p>{bar}{sub}</a>'
+
+def eur_py(v, dec=2):
+    s = f"{v:,.{dec}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return s
+
+def build_k():
+    tot = sum(c[1] for c in CATS)
+    # ------------------------------------------------------------ V11 Kategorie-Raster
+    tiles = ''.join(kt(*t) for t in CATS[:8])
+    body = f'''  <div class="vh" style="padding-bottom: 18px">
+    {nav()}
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px"><div><p class="k">Noch frei im Oktober</p><p class="z" style="font-size: 30px">592,70 €</p></div><a class="chip" href="Rechnungen.dc.html" style="background: #E03C31; color: #fff">1 überfällig</a></div>
+  </div>
+  <div class="sec" style="padding-top: 14px">
+    <div style="display: flex; gap: 8px; margin-bottom: 12px"><span class="chip lt on">Alle</span><span class="chip lt"><i class="dot" style="background: {W}; margin-right: 6px"></i>Wohnen</span><span class="chip lt"><i class="dot" style="background: {M}; margin-right: 6px"></i>Mobilität</span><span class="chip lt"><i class="dot" style="background: {H}; margin-right: 6px"></i>Haushalt</span></div>
+    <div class="grid2">{tiles}</div>
+    <p class="note" style="text-align: center">9 weitere Kategorien · Summe 2.995,90 €</p>
+  </div>
+'''
+    page("V11_Raster.dc.html", "V11 · Kategorie-Raster", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # ------------------------------------------------------------ V12 Kategorienliste mit Balken
+    mx = CATS[0][1]
+    rows = ''
+    for n, a, c, b, *_ in CATS[:10]:
+        over = n.startswith('Freizeit')
+        rows += f'<a class="kl2" href="Kategorie.dc.html"><span class="dot" style="background: {c}"></span><span class="nm">{n}</span><span class="hb"><i style="width: {round(a/mx*100)}%; background: {"#E03C31" if over else c}"></i></span><span class="am">{eur_py(a, 0)}</span></a><div class="sep" style="margin-left: 38px"></div>'
+    body = f'''  <div class="vh" style="padding-bottom: 18px">
+    {nav()}
+    <p class="k" style="margin-top: 18px">Noch frei im Oktober</p>
+    <p class="z" style="font-size: 30px">592,70 €</p>
+  </div>
+  <div style="margin-top: 14px" class="strip">
+    <a class="sc" href="Rechnung.dc.html" style="border-left: 3px solid #E03C31"><p style="font-size: 11px; color: #E03C31; font-weight: 700">ÜBERFÄLLIG</p><p style="font-size: 14px; font-weight: 600; margin-top: 2px">Stadtwerke</p><p style="font-size: 13px; color: #637894">142,00 € · 21. Okt.</p></a>
+    <a class="sc" href="Vertrag.dc.html"><p style="font-size: 11px; color: #637894; font-weight: 700">DI 27.</p><p style="font-size: 14px; font-weight: 600; margin-top: 2px">HUK24</p><p style="font-size: 13px; color: #637894">487,20 € · Rücklage</p></a>
+    <a class="sc" href="Review.dc.html"><p style="font-size: 11px; color: #637894; font-weight: 700">FR 30.</p><p style="font-size: 14px; font-weight: 600; margin-top: 2px">Inspektion</p><p style="font-size: 13px; color: #637894">212,40 € · prüfen</p></a>
+  </div>
+  <div class="sec">
+    <h2 class="ttl2">Kategorien im Oktober <span>nach Betrag</span></h2>
+    <div class="card" style="padding: 4px 0">{rows}</div>
+    <p class="note">Balken relativ zur größten Kategorie; rot = Budget überschritten. 7 weitere unter 50 €.</p>
+  </div>
+'''
+    page("V12_Liste.dc.html", "V12 · Kategorienliste", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # ------------------------------------------------------------ V13 Ring + Top-Kategorien
+    import math
+    segs = [(1368.18, W), (746.19, M), (881.53, H)]; total = sum(s[0] for s in segs); R = 54; C = 2 * math.pi * R
+    ring = ''; off = 0
+    for v, col in segs:
+        l = v / total * C
+        ring += f'<circle cx="70" cy="70" r="{R}" fill="none" stroke="{col}" stroke-width="16" stroke-dasharray="{l:.1f} {C - l:.1f}" stroke-dashoffset="{-off:.1f}" transform="rotate(-90 70 70)"/>'
+        off += l
+    top = ''.join(f'<a class="kl2" href="Kategorie.dc.html"><span class="dot" style="background: {c}"></span><span class="nm">{n}</span><span class="am" style="width: auto">{eur_py(a)}</span>{CHEV}</a><div class="sep" style="margin-left: 38px"></div>' for n, a, c, b, *_ in CATS[:6])
+    body = f'''  <div class="vh" style="padding-bottom: 18px">
+    {nav()}
+    <div style="display: flex; align-items: center; gap: 18px; margin-top: 18px">
+      <svg width="140" height="140" viewBox="0 0 140 140" aria-label="Verteilung"><circle cx="70" cy="70" r="{R}" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="16"/>{ring}<text x="70" y="66" text-anchor="middle" font-size="11" fill="rgba(255,255,255,.8)">noch frei</text><text x="70" y="86" text-anchor="middle" font-size="19" font-weight="700" fill="#fff">592 €</text></svg>
+      <div style="flex: 1">
+        <p class="k" style="display: flex; justify-content: space-between"><span><i class="dot" style="background: {W}; margin-right: 6px"></i>Wohnen</span><b>1.368</b></p>
+        <p class="k" style="display: flex; justify-content: space-between; margin-top: 8px"><span><i class="dot" style="background: {M}; margin-right: 6px"></i>Mobilität</span><b>746</b></p>
+        <p class="k" style="display: flex; justify-content: space-between; margin-top: 8px"><span><i class="dot" style="background: {H}; margin-right: 6px"></i>Haushalt</span><b>882</b></p>
+        <p class="k" style="display: flex; justify-content: space-between; margin-top: 8px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 8px"><span>Einnahmen</span><b>3.650</b></p>
+      </div>
+    </div>
+  </div>
+  <div class="sec" style="padding-top: 14px">
+    <a class="tile" href="Rechnung.dc.html" style="display: flex; align-items: center; gap: 12px; border-left: 4px solid #E03C31; padding: 12px 16px"><div style="flex: 1; min-width: 0"><p class="tl" style="color: #E03C31; font-weight: 600">Überfällig seit 4 Tagen</p><p class="tv" style="font-size: 16px; margin-top: 2px">Stadtwerke · 142,00 €</p></div>{CHEV}</a>
+  </div>
+  <div class="sec">
+    <h2 class="ttl2">Größte Kategorien <span>Alle 17</span></h2>
+    <div class="card" style="padding: 4px 0">{top}</div>
+  </div>
+'''
+    page("V13_Ring.dc.html", "V13 · Ring + Kategorien", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # ------------------------------------------------------------ V14 Bereiche aufgeklappt
+    def sect(href, col, ic, name, total, cats, warn=None):
+        rows = ''.join(f'<a class="kl2" href="Kategorie.dc.html" style="padding: 7px 16px 7px 62px"><span class="nm" style="font-weight: 500">{n}</span><span class="am" style="width: auto">{eur_py(a)}</span></a>' for n, a in cats)
+        w = f'<p class="s" style="color: #E03C31">{warn}</p>' if warn else ''
+        return f'''<div class="card" style="margin-bottom: 10px"><a class="row" href="{href}" style="min-height: 56px; padding: 8px 16px"><span class="c" style="background: {col}; width: 36px; height: 36px; border-radius: 18px">{ic}</span><div class="mid"><p class="n" style="font-size: 16px">{name}</p>{w}</div><p class="v" style="font-size: 16px">{total}</p>{CHEV}</a><div class="sep" style="margin-left: 62px"></div>{rows}<a class="kl2" href="{href}" style="padding: 8px 16px 10px 62px; color: #2A5480; font-size: 13px; font-weight: 600">Alle Kategorien ›</a></div>'''
+    body = f'''  <div class="vh" style="padding-bottom: 18px">
+    {nav()}
+    <p class="k" style="margin-top: 18px">Noch frei im Oktober</p>
+    <p class="z" style="font-size: 30px">592,70 €</p>
+  </div>
+  <div class="sec" style="padding-top: 14px">
+    {sect("Wohnen.dc.html", W, ICON["home"], "Wohnen", "1.368 €", [("Miete / Hausgeld", 950), ("Strom", 240), ("Gas / Heizung", 112)], "Strom-Nachzahlung überfällig")}
+    {sect("Akte.dc.html", M, ICON["car"], "Mobilität", "746 €", [("Kfz-Rate / Leasing", 289), ("Werkstatt & Reifen", 272.40), ("Kraftstoff / Laden", 74.19)])}
+    {sect("Haushalt.dc.html", H, ICON["bag"], "Haushalt", "882 €", [("Lebensmittel", 412), ("Freizeit & Kultur", 209.90), ("Urlaub & Reisen", 200)])}
+  </div>
+'''
+    page("V14_Aufgeklappt.dc.html", "V14 · Bereiche aufgeklappt", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # ------------------------------------------------------------ V15 Fokus + Kategorie-Kacheln
+    tiles = ''.join(kt(*t) for t in [CATS[1], CATS[5], CATS[8], CATS[3], CATS[0], CATS[4]])
+    body = f'''  <div class="vh" style="padding-bottom: 54px">
+    {nav()}
+    <p class="k" style="margin-top: 18px">Noch frei im Oktober · 592,70 €</p>
+  </div>
+  <div class="sec" style="margin-top: -44px">
+    <a class="focus" href="Rechnung.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 16px; text-decoration: none; color: inherit"><div style="flex: 1; min-width: 0"><span class="cap" style="background: #F7D4D1; color: #943333">Überfällig</span><p style="margin: 8px 0 0; font-size: 17px; font-weight: 700">Stadtwerke · 142,00 €</p><p style="margin: 2px 0 0; font-size: 13px; color: #637894">Nachzahlung Strom · seit 4 Tagen</p></div><span class="btn pri sm" style="padding: 0 14px">Bezahlt</span></a>
+  </div>
+  <div class="sec">
+    <h2 class="ttl2">Deine Kategorien <span>Alle</span></h2>
+    <div class="grid2">{tiles}</div>
+  </div>
+'''
+    page("V15_FokusKategorien.dc.html", "V15 · Fokus + Kategorien", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # ------------------------------------------------------------ V16 Umschläge (Budgets zuerst)
+    def env(name, spent, budget, col, href="Kategorie.dc.html"):
+        over = spent > budget; pct = min(100, round(spent / budget * 100))
+        rest = f'{eur_py(spent-budget)} € über' if over else f'noch {eur_py(budget-spent)} €'
+        return f'<a class="env" href="{href}"><div class="top"><span class="nm"><i class="dot" style="background: {col}; margin-right: 8px"></i>{name}</span><span class="rest" style="{"color: #E03C31" if over else "color: #215F33"}">{rest}</span></div><div class="hb"><i style="width: {pct}%; background: {"#E03C31" if over else col}"></i></div><p class="sub">{eur_py(spent)} von {eur_py(budget, 0)} €</p></a><div class="sep"></div>'
+    body = f'''  <div class="vh" style="padding-bottom: 18px">
+    {nav()}
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 18px"><div><p class="k">Spielraum diese Woche</p><p class="z" style="font-size: 30px">61,40 €</p></div><div style="text-align: right"><p class="k">Noch frei im Monat</p><p class="z" style="font-size: 20px">592,70 €</p></div></div>
+  </div>
+  <div class="sec" style="padding-top: 14px">
+    <h2 class="ttl2">Umschläge <span>7 Tage bis Monatsende</span></h2>
+    <div class="card" style="padding: 2px 0">
+      {env("Lebensmittel", 412, 450, H)}{env("Freizeit & Kultur", 180, 150, H)}{env("Kraftstoff / Laden", 74.19, 300, M)}
+      <a class="kl2" href="Budgets.dc.html" style="color: #2A5480; font-weight: 600; font-size: 13px; padding: 10px 16px">+ Umschlag für Kleidung, Gesundheit, Gastronomie …</a>
+    </div>
+  </div>
+  <div class="sec">
+    <h2 class="ttl2">Fest verplant <span>1.985,30 €</span></h2>
+    <div class="card" style="padding: 4px 0">
+      <a class="kl2" href="Vertraege.dc.html"><span class="nm">16 Verträge · Miete, Energie, Leasing, Abos</span><span class="am" style="width: auto">1.659,20</span>{CHEV}</a><div class="sep"></div>
+      <a class="kl2" href="Ruecklage.dc.html"><span class="nm">6 Rücklagen · Urlaub, Kfz, Versicherungen</span><span class="am" style="width: auto">326,10</span>{CHEV}</a>
+    </div>
+  </div>
+  <div class="sec">
+    <h2 class="ttl2">Fällig <span>1 überfällig</span></h2>
+    <div class="card">{due_row("21", "Okt.", "Stadtwerke Mainstadt", "überfällig", "142,00", True)}{due_row("30", "Okt.", "Autohaus Keller", "in 5 Tagen · prüfen", "212,40", False, "Review.dc.html")}</div>
+  </div>
+'''
+    page("V16_Umschlaege.dc.html", "V16 · Umschläge", body, LOGIC, 'u', CSS_V + CSS_K)
+
+    # canvas
+    p = os.path.join(OUT, "canvas.json")
+    c = json.load(open(p, encoding="utf-8"))
+    names = ["V11_Raster", "V12_Liste", "V13_Ring", "V14_Aufgeklappt", "V15_FokusKategorien", "V16_Umschlaege"]
+    titles = ["V11 Kategorie-Raster", "V12 Kategorienliste mit Balken", "V13 Ring + größte Kategorien", "V14 Bereiche aufgeklappt", "V15 Fokus + Kategorie-Kacheln", "V16 Umschläge (Budgets zuerst)"]
+    Y = 6800
+    for i, (n, t) in enumerate(zip(names, titles)):
+        f = n + ".dc.html"
+        c["boards"][f] = {"x": i * 470, "y": Y, "w": 390, "h": 844, "title": t, "radius": 44, "is_interactive": True}
+        if f not in c["order"]: c["order"].append(f)
+    c["notes"]["t4"] = {"x": 0, "y": Y - 160, "text": "Startseiten-Varianten mit Kategorien (V11–V16) – Kategorien direkt auf der Startseite: Raster, Liste, Ring, aufgeklappte Bereiche, Fokus + Kacheln, Umschläge", "kind": "title1", "maxW": 4000}
     json.dump(c, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
     build()
+    build_k()

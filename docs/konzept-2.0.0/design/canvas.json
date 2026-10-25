@@ -375,6 +375,60 @@
       "title": "V10 Cockpit – alles auf einmal",
       "radius": 44,
       "is_interactive": true
+    },
+    "V11_Raster.dc.html": {
+      "x": 0,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V11 Kategorie-Raster",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V12_Liste.dc.html": {
+      "x": 470,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V12 Kategorienliste mit Balken",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V13_Ring.dc.html": {
+      "x": 940,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V13 Ring + größte Kategorien",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V14_Aufgeklappt.dc.html": {
+      "x": 1410,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V14 Bereiche aufgeklappt",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V15_FokusKategorien.dc.html": {
+      "x": 1880,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V15 Fokus + Kategorie-Kacheln",
+      "radius": 44,
+      "is_interactive": true
+    },
+    "V16_Umschlaege.dc.html": {
+      "x": 2350,
+      "y": 6800,
+      "w": 390,
+      "h": 844,
+      "title": "V16 Umschläge (Budgets zuerst)",
+      "radius": 44,
+      "is_interactive": true
     }
   },
   "order": [
@@ -418,7 +472,13 @@
     "V07_Monatsbrief.dc.html",
     "V08_Haushaltsbuch.dc.html",
     "V09_Fokus.dc.html",
-    "V10_Cockpit.dc.html"
+    "V10_Cockpit.dc.html",
+    "V11_Raster.dc.html",
+    "V12_Liste.dc.html",
+    "V13_Ring.dc.html",
+    "V14_Aufgeklappt.dc.html",
+    "V15_FokusKategorien.dc.html",
+    "V16_Umschlaege.dc.html"
   ],
   "notes": {
     "t1": {
@@ -476,6 +536,13 @@
       "text": "Startseiten-Varianten 25.10. – zehn Aufbaustrukturen aus Sicht Designer, CEO, Psychologe und Vergleichsprodukte (Begründung: docs/konzept-2.0.0/startseiten-varianten.md). Zur Entscheidung, nicht final.",
       "kind": "title1",
       "maxW": 4600
+    },
+    "t4": {
+      "x": 0,
+      "y": 6640,
+      "text": "Startseiten-Varianten mit Kategorien (V11–V16) – Kategorien direkt auf der Startseite: Raster, Liste, Ring, aufgeklappte Bereiche, Fokus + Kacheln, Umschläge",
+      "kind": "title1",
+      "maxW": 4000
     }
   },
   "designSystems": []

@@ -56,3 +56,16 @@ Stiftung Warentest deckelt manuelle Apps wegen überladener Startseiten (Marktve
 Kombination aus **V9 (Fokus) als Zustand „etwas steht an"** und **V3 (Ruhe) als Zustand „alles im Plan"**: Die Startseite zeigt entweder die eine wichtigste Handlung mit Tasten oder eine Zahl mit Tagesbetrag und Weißraum. Darunter in beiden Zuständen dieselben drei Einstiege (Fällig · Bereiche · Konto). Alternative mit mehr Überblick: **V1 (Heute)**, wenn die Zielgruppe mehrere Posten pro Tag erwartet.
 
 Entscheidungsbedarf: (1) Startzustand V9+V3 oder V1, (2) ob der Kontostand auf die Startseite darf (V4) oder in der Liquidität bleibt (Glossar), (3) ob der Eingang (V5) ein eigener Reiter in „Rechnungen" wird – unabhängig von der Startseite sinnvoll.
+
+## Nachtrag: Kategorien auf der Startseite (V11–V16, 25.10.)
+
+| # | Name | Aufbau | Vorbild | Stärke | Risiko |
+| --- | --- | --- | --- | --- | --- |
+| V11 | **Kategorie-Raster** | Noch frei + Überfällig-Chip → Bereichs-Filter-Chips → Kacheln je Kategorie (Initial, Betrag, Budget-Balken oder „fix · Vertrag") | Spendee, Wallet, Buddy | Jede Kategorie ein Tap entfernt; Budgets sichtbar ohne eigenen Screen | 17 Kategorien = langes Scrollen; fixe Kategorien liefern wenig Information |
+| V12 | **Kategorienliste mit Balken** | Noch frei → Fällig-Streifen (wischbar) → Rangliste der Kategorien mit Balken relativ zur größten | Copilot Categories, Monarch | Proportionen auf einen Blick; Überschreitung rot | Miete dominiert den Maßstab; Fälligkeiten nur als Streifen |
+| V13 | **Ring + größte Kategorien** | Ring nach Bereich mit „noch frei" in der Mitte → Überfällig-Hinweis → Top-6-Kategorien | Finanzguru Statistik, Spendee | Verteilung und freie Summe in einem Bild | Ring ohne Zahlen ist Deko; Reihenfolge Bereich → Kategorie bleibt unsichtbar |
+| V14 | **Bereiche aufgeklappt** | Noch frei → je Bereich eine Karte mit Kopfzeile und den drei größten Kategorien eingerückt | Apple Home (Räume mit Geräten), Finanzguru Verträge | Behält das Bereichs-Denkmodell und zeigt trotzdem Kategorien; kein Zähler-Rätsel | Drei Karten füllen die Seite; Fällig rutscht nach unten |
+| V15 | **Fokus + Kategorie-Kacheln** | Fokus-Karte (wichtigster Posten mit Taste) → Kacheln der Budget-Kategorien zuerst, dann große fixe | Headspace + Spendee | Handlung zuerst, dann Orientierung; kombiniert V9 mit V11 | Zwei Sprachen auf einer Seite (Karte und Kacheln) |
+| V16 | **Umschläge** | Spielraum diese Woche + Noch frei → Budget-Umschläge mit „noch x €" → „Fest verplant" (Verträge, Rücklagen zusammengefasst) → Fällig | YNAB, Buddy | Erklärt das Dreistufen-Modell nebenbei: Umschläge variabel, fest verplant, fällig | Nur sinnvoll, wenn der Nutzer Budgets pflegt; ohne Budgets leere Mitte |
+
+Lesart: V14 ist die konsequenteste Antwort auf „Kategorien auf die Startseite" ohne das Bereichsmodell aufzugeben; V16 passt am besten zum neuen Glossar (Spielraum / Noch frei / fest verplant); V11 und V12 sind die üblichen Haushaltsbuch-Muster und damit die geringste Differenzierung.
