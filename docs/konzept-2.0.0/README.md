@@ -9,6 +9,7 @@ Die Dokumente leben weiterhin als bearbeitbare Claude-Docs; hier liegt der einge
 | `marktvergleich.md` | DE/US/UK-Haushaltsbuch-Apps, Muster & Lücken, sechs USPs | [Marktvergleich](https://claude.ai/artifact/14ebQFwB3GdiJ9q7B9MRuf) |
 | `funktionsmodell.md` | Taxonomie, Zuordnungsregel, Objektmodell, OCR-Symbiose, OCR 2.0, eingefrorene Funktionsliste, Glossar, Beispielmonat | [Funktionsmodell](https://claude.ai/artifact/WQdw2oxroqdp27fwcHr1WR) |
 | `darstellungsarchitektur.md` | Funktion → Frage → Datenform → Anzeigemuster → Screen; Muster-Katalog nach Vorbild der Marktführer; Regeln für die Startseite | – |
+| `startseiten-varianten.md` | Zehn Startseiten-Aufbaustrukturen (V1–V10) aus Sicht Designer, CEO, Psychologe, Vergleichsprodukte; Not der Zielgruppe; Empfehlung | Reihe Startseiten-Varianten im Canvas |
 | `navigation-und-faelligkeiten.md` | Zweiter Reiter des Funktionsmodells: Bereiche, Fälligkeiten, Liquidität, Termin-Objekt (Konzeptsprache, „Akte“ = Bereich, „Gebäude“ = Wohnen) | gleiches Dokument, Reiter 2 |
 | `design/` | 27 interaktive Screens als Artboards (`*.dc.html`), `canvas.json` (Anordnung), `generator/` (erzeugt alle Screens, `check2.js`/`check3.js` prüfen jede Taste und 41 Soll-Werte), `screenshots/` (gerendert mit `generator/render.js`, ganze Seitenhöhe) | [App-Screens](https://claude.ai/artifact/ACDyBU4mp3qL8kMp6PbWxZ) |
 
@@ -22,6 +23,8 @@ Reihen in `canvas.json`:
 2. Wohnen, Mobilität (`Akte.dc.html`), Haushalt → Kategorie, Kategorie anlegen, Objekt anlegen, Rücklage, Termin
 3. Rechnungen, Rechnung, Erfassen, Rechnung prüfen (`Review`), Verträge, Vertrag, Vertrag anlegen
 4. Liquidität, Verlauf, Kontostand aktualisieren
+5. (verworfen) StartB/C/D
+6. Startseiten-Varianten V01–V10 (`generator/g_varianten.py`)
 
 ## Beispielmonat Oktober 2026 (alle Screens rechnen damit)
 
