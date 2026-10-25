@@ -129,24 +129,7 @@ a{color:#2A5480}
   </div>
 
   <div class="hchips" style="margin-top: 14px"><sc-for list="{{hchips}}" as="c" hint-placeholder-count="7"><button class="{{c.cls}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
-  <div style="padding: 10px 20px 0 20px; display: flex; gap: 8px; align-items: center">
-    <div class="seg" style="flex: 0 0 150px"><sc-for list="{{views}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div>
-    <div style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none"><sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><button class="{{c.cls}}" style="height: 28px; padding: 0 10px; font-size: 12px" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
-  </div>
-
-  <sc-if value="{{isCal}}" hint-placeholder-val="{{false}}">
-  <div style="padding: 14px 20px 0 20px">
-    <div class="card">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 0"><button class="chip lt" style="height: 30px; width: 34px; padding: 0; justify-content: center" onClick="{{calPrev}}" aria-label="Vormonat">‹</button><p style="margin: 0; font-size: 15px; font-weight: 700">{{calTitle}}</p><button class="chip lt" style="height: 30px; width: 34px; padding: 0; justify-content: center" onClick="{{calNext}}" aria-label="Folgemonat">›</button></div>
-      <div class="cal">
-        <span class="wd">Mo</span><span class="wd">Di</span><span class="wd">Mi</span><span class="wd">Do</span><span class="wd">Fr</span><span class="wd">Sa</span><span class="wd">So</span>
-        <sc-for list="{{cells}}" as="c" hint-placeholder-count="35"><button class="{{c.cls}}" onClick="{{c.pick}}" aria-label="{{c.aria}}"><span>{{c.n}}</span><span class="dots"><sc-for list="{{c.dots}}" as="x" hint-placeholder-count="0"><i style="{{x.st}}"></i></sc-for></span></button></sc-for>
-      </div>
-      <div style="display: flex; gap: 12px; padding: 0 14px 12px; font-size: 11px; color: #637894; flex-wrap: wrap"><span><span class="dot" style="background: #215F33; width: 7px; height: 7px; margin-right: 4px"></span>Einnahme</span><span><span class="dot" style="background: #E8A33D; width: 7px; height: 7px; margin-right: 4px"></span>Wohnen</span><span><span class="dot" style="background: #3C8DBC; width: 7px; height: 7px; margin-right: 4px"></span>Mobilität</span><span><span class="dot" style="background: #4CAF7A; width: 7px; height: 7px; margin-right: 4px"></span>Haushalt</span><span><span class="dot" style="background: #E03C31; width: 7px; height: 7px; margin-right: 4px"></span>überfällig</span></div>
-    </div>
-    <p class="note">{{calMonthLine}}</p>
-  </div>
-  </sc-if>
+  <div style="padding: 10px 20px 0 20px; display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><button class="{{c.cls}}" style="height: 28px; padding: 0 10px; font-size: 12px" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
 
   <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
   <div style="padding: 14px 20px 0 20px">
@@ -182,7 +165,7 @@ function num(s) { if (typeof s === 'number') return s; s = String(s == null ? ''
 function ev(e) { return e && e.target ? e.target.value : e; }
 
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { area: 'all', h: 14, view: 'list', cal: 0, selDay: -1, paid: {}, sel: null, toast: '' }; this.MON = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.']; this.START = 2410; this.PUFFER = 1500; }
+  constructor(p) { super(p); this.state = { area: 'all', h: 14, paid: {}, sel: null, toast: '' }; this.MON = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.']; this.START = 2410; this.PUFFER = 1500; }
 
   segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
   chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
@@ -250,10 +233,7 @@ class Component extends DCLogic {
       Object.keys(fixBy).forEach(function (a) { var l = fixBy[a].slice().sort(function (p, q) { return p.amt - q.amt; }); if (l.length === 1) out.push(l[0]); else out.push({ uid: 'bundle:' + l.map(function (b) { return b.uid; }).join(','), d: l[0].d, amt: l.reduce(function (x, b) { return x + b.amt; }, 0), name: l.map(function (b) { return b.short || b.name; }).join(', '), sub: l.length + ' Fixkosten · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[a], area: a, kind: 'fix', href: 'Vertraege.dc.html', parts: l }); });
       return out.sort(function (a, b) { return b.amt - a.amt; }); };
     var groups = [];
-    if (s.view === 'cal') {
-      var dayItems = s.selDay >= 0 ? shown.filter(function (b) { return b.d === s.selDay; }) : [];
-      if (s.selDay >= 0) groups.push({ title: this.dayLabel(s.selDay), meta: dayItems.length ? dayItems.length + ' Posten · ' + eur(dayItems.reduce(function (a, b) { return a + b.amt; }, 0)) + ' €' : 'nichts geplant', items: bundle(dayItems).map(fmtItem), saldo: '' });
-    } else if (s.h <= 30) {
+    if (s.h <= 30) {
       var byDay = {}; shown.forEach(function (b) { (byDay[b.d] = byDay[b.d] || []).push(b); });
       Object.keys(byDay).map(Number).sort(function (a, b) { return a - b; }).forEach(function (d) { var items = byDay[d], sum = items.reduce(function (a, b) { return a + b.amt; }, 0), over = items.some(function (b) { return b.over; });
         var after = run.points.filter(function (p) { return p.d <= d; }).slice(-1)[0];
@@ -268,16 +248,6 @@ class Component extends DCLogic {
         var lastDay = self.dayIdx(y, m + 1, 0), after = run.points.filter(function (p) { return p.d <= Math.min(lastDay, s.h); }).slice(-1)[0];
         groups.push({ title: self.monthLabel(y, m), meta: items.length + ' Posten · ' + eur(items.reduce(function (a, b) { return a + b.amt; }, 0)) + ' €', items: rows.map(fmtItem), saldo: s.area === 'all' && after ? eur(after.bal) : '', saldoLabel: 'Saldo Monatsende', saldoSt: after && after.bal < self.PUFFER ? 'color: #943333' : '' }); });
     }
-    // Kalender
-    var cy = 2026 + Math.floor((9 + s.cal) / 12), cm = (9 + s.cal) % 12, first = new Date(cy, cm, 1), dim = new Date(cy, cm + 1, 0).getDate(), lead = (first.getDay() + 6) % 7, cells = [];
-    var monthItems = all.filter(function (b) { return !isPaid(b) && inArea(b); });
-    for (var i = 0; i < 42; i++) { var dn = i - lead + 1; if (dn < 1 || dn > dim) { cells.push({ n: '', cls: 'dim', aria: '', dots: [], pick: function () {} }); continue; }
-      (function (dn) { var d = self.dayIdx(cy, cm, dn), its = monthItems.filter(function (b) { return b.d === d; }), dots = [];
-        if (its.some(function (b) { return b.amt > 0; })) dots.push({ st: 'background: #215F33' });
-        ['w', 'm', 'h'].forEach(function (a) { if (its.some(function (b) { return b.amt <= 0 && b.area === a; })) dots.push({ st: 'background: ' + (its.some(function (b) { return b.over && b.area === a; }) ? '#E03C31' : col[a]) }); });
-        cells.push({ n: String(dn), cls: (d === s.selDay ? 'on' : '') + (d === 0 ? ' today' : '') + (d < 0 ? ' dim' : ''), aria: dn + '.' + (cm + 1) + '.', dots: dots.slice(0, 3), pick: function () { if (d < 0) { self.say('Vergangene Tage: siehe Rechnungen'); return; } self.setState({ selDay: d, h: Math.max(s.h, d) }); } }); })(dn);
-    }
-    var monthSum = monthItems.filter(function (b) { var x = self.dateOf(b.d); return x.getFullYear() === cy && x.getMonth() === cm && b.d >= 0; }).reduce(function (a, b) { return a + b.amt; }, 0);
     // Auswahl-Sheet
     var selB = null; if (s.sel) { all.forEach(function (b) { if (b.uid === s.sel) selB = b; }); if (!selB && s.sel.indexOf('bundle:') === 0) { var ids = s.sel.slice(7).split(','); var parts = all.filter(function (b) { return ids.indexOf(b.uid) >= 0; }); if (parts.length) selB = { uid: s.sel, name: parts.length + ' Fixkosten am ' + self.dayLabel(parts[0].d), amt: parts.reduce(function (a, b) { return a + b.amt; }, 0), d: parts[0].d, href: 'Vertraege.dc.html', parts: parts }; }
       if (!selB && (s.sel.indexOf('ein') === 0 || s.sel.indexOf('fix') === 0)) { groups.forEach(function (g) { }); } }
@@ -288,12 +258,9 @@ class Component extends DCLogic {
       balFmt: eur(bal),
       outlook: s.area === 'all' ? hLabel + ': Zuflüsse +' + eur(inflow) + ' · Abflüsse ' + eur(outflow) + ' → ' + eur(endBal) + ' € am ' + this.dayLabel(s.h) : hLabel + ' · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[s.area] + ': Abflüsse ' + eur(outflow) + ' €',
       warn: s.area === 'all' && run.min.bal < this.PUFFER ? 'Unter dem Mindestpuffer (' + eur(this.PUFFER, 0) + ' €) am ' + this.dayLabel(run.min.d) + ': ' + eur(run.min.bal) + ' €' : '',
-      hchips: ([[7, '7 Tage'], [14, '14 Tage'], [30, '30 Tage'], [91, '3 Monate'], [182, '6 Monate'], [273, '9 Monate'], [365, '1 Jahr']]).map(function (x) { return { label: x[1], cls: s.h === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0], selDay: -1 }); } }; }),
-      views: this.segItems('view', [['list', 'Liste'], ['cal', 'Kalender']]),
+      hchips: ([[7, '7 Tage'], [14, '14 Tage'], [30, '30 Tage'], [91, '3 Monate'], [182, '6 Monate'], [273, '9 Monate'], [365, '1 Jahr']]).map(function (x) { return { label: x[1], cls: s.h === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0] }); } }; }),
       chips: this.chipItems('area', [['all', 'Alle'], ['w', 'Wohnen'], ['m', 'Mobilität'], ['h', 'Haushalt']], true),
-      isCal: s.view === 'cal', calTitle: this.monthLabel(cy, cm), calPrev: function () { if (s.cal > 0) self.setState({ cal: s.cal - 1, selDay: -1 }); }, calNext: function () { if (s.cal < 11) self.setState({ cal: s.cal + 1, selDay: -1 }); },
-      cells: cells, calMonthLine: this.monthLabel(cy, cm) + ': ' + eur(monthSum) + ' € geplant (ab heute) · Tag antippen zeigt die Posten; Termine mit Erinnerung stehen auch im Systemkalender „Mnemor“.',
-      groups: groups, empty: groups.length === 0, emptyText: s.view === 'cal' ? 'Tag im Kalender antippen.' : 'Keine geplanten Buchungen in dieser Auswahl.',
+      groups: groups, empty: groups.length === 0, emptyText: 'Keine geplanten Buchungen in dieser Auswahl.',
       pruef: s.area === 'all' ? 'Prüfung: ' + eur(bal) + ' + ' + eur(inflow) + ' − ' + eur(-outflow) + ' = ' + eur(endBal) + ' €. Rücklagen verändern den Kontostand nicht; ihre Verwendung (HUK, HU, Urlaub) schon.' : 'Ein Konto lässt sich nicht je Bereich aufteilen – „Alle“ zeigt den Saldo.',
       sel: !!selB, selName: selB ? selB.name : '', selHref: selB ? selB.href : 'Main.dc.html', selHasParts: selParts.length > 0, selParts: selParts,
       selText: selB ? (selB.amt === 0 ? 'Termin ohne Planbetrag – erscheint im Kalender und in der Liste, nicht im Verlauf.' : (isPaid(selB) ? 'Als gebucht markiert – Kontostand ' + eur(bal) + ' €. Rückgängig setzt die Planung wieder ein.' : (selB.amt > 0 ? '+' : '') + eur(selB.amt) + ' € am ' + self.dayLabel(selB.d) + '. „Gebucht“ schreibt den Kontostand fort, sobald die Buchung auf dem Konto ist.')) : '',

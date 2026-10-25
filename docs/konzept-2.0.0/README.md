@@ -17,7 +17,7 @@ Die Screens sind seit 25.10. interaktiv (Eingaben, Schalter, Sheets, Rechnungen)
 
 Reihen in `canvas.json`:
 
-1. Übersicht → Monatsrechnung, Einnahmen, Budgets, Mehr, Auswertung, Einstellungen, Dokumente, Haushaltskasse
+1. Übersicht → Monatsrechnung, Einnahmen, Budgets, Mehr, Auswertung, Einstellungen, Dokumente, Haushaltskasse, Kalender
 2. Wohnen, Mobilität (`Akte.dc.html`), Haushalt → Kategorie, Kategorie anlegen, Objekt anlegen, Rücklage, Termin
 3. Rechnungen, Rechnung, Erfassen, Rechnung prüfen (`Review`), Verträge, Vertrag, Vertrag anlegen
 4. Liquidität, Verlauf, Kontostand aktualisieren

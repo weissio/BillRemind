@@ -2,7 +2,7 @@
 """Shared look, page skeleton and helpers for the interactive Mnemor 2.0 screens."""
 import os, json
 
-OUT = os.environ.get("MNEMOR_OUT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Repo: design/, Scratch: project/
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "project")
 
 W, M, H = "#E8A33D", "#3C8DBC", "#4CAF7A"
 ACC = "#2A5480"

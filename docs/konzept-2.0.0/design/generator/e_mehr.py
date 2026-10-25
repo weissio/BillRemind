@@ -181,6 +181,8 @@ def build():
       <div class="sep"></div>
       <a class="row" href="Monatsrechnung.dc.html"><span class="c" style="background: #2A5480"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg></span><div class="mid"><p class="n">Monatsrechnung</p><p class="s">Sparpotenzial 592,70 € · Herleitung</p></div>[CHEV]</a>
       <div class="sep"></div>
+      <a class="row" href="Kalender.dc.html"><span class="c" style="background: #637894"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div class="mid"><p class="n">Kalender</p><p class="s">Fälligkeiten und Termine im Monatsblick</p></div>[CHEV]</a>
+      <div class="sep"></div>
       <a class="row" href="Auswertung.dc.html"><span class="c" style="background: [M]"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span><div class="mid"><p class="n">Auswertung</p><p class="s">Monatsvergleich, Jahresblick, Bereiche</p></div>[CHEV]</a>
     </div>
   </div>

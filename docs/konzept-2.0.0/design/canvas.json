@@ -276,6 +276,15 @@
       "title": "Haushaltskasse",
       "x": 3760,
       "is_interactive": true
+    },
+    "Kalender.dc.html": {
+      "x": 4230,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Kalender",
+      "radius": 44,
+      "is_interactive": true
     }
   },
   "order": [
@@ -288,6 +297,7 @@
     "Einstellungen.dc.html",
     "Dokumente.dc.html",
     "Kasse.dc.html",
+    "Kalender.dc.html",
     "Wohnen.dc.html",
     "Akte.dc.html",
     "Haushalt.dc.html",

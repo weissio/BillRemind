@@ -81,24 +81,7 @@ def build():
   </div>
 
   <div class="hchips" style="margin-top: 14px"><sc-for list="{{hchips}}" as="c" hint-placeholder-count="7"><button class="{{c.cls}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
-  <div style="padding: 10px 20px 0 20px; display: flex; gap: 8px; align-items: center">
-    <div class="seg" style="flex: 0 0 150px"><sc-for list="{{views}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div>
-    <div style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none"><sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><button class="{{c.cls}}" style="height: 28px; padding: 0 10px; font-size: 12px" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
-  </div>
-
-  <sc-if value="{{isCal}}" hint-placeholder-val="{{false}}">
-  <div style="padding: 14px 20px 0 20px">
-    <div class="card">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 0"><button class="chip lt" style="height: 30px; width: 34px; padding: 0; justify-content: center" onClick="{{calPrev}}" aria-label="Vormonat">‹</button><p style="margin: 0; font-size: 15px; font-weight: 700">{{calTitle}}</p><button class="chip lt" style="height: 30px; width: 34px; padding: 0; justify-content: center" onClick="{{calNext}}" aria-label="Folgemonat">›</button></div>
-      <div class="cal">
-        <span class="wd">Mo</span><span class="wd">Di</span><span class="wd">Mi</span><span class="wd">Do</span><span class="wd">Fr</span><span class="wd">Sa</span><span class="wd">So</span>
-        <sc-for list="{{cells}}" as="c" hint-placeholder-count="35"><button class="{{c.cls}}" onClick="{{c.pick}}" aria-label="{{c.aria}}"><span>{{c.n}}</span><span class="dots"><sc-for list="{{c.dots}}" as="x" hint-placeholder-count="0"><i style="{{x.st}}"></i></sc-for></span></button></sc-for>
-      </div>
-      <div style="display: flex; gap: 12px; padding: 0 14px 12px; font-size: 11px; color: #637894; flex-wrap: wrap"><span><span class="dot" style="background: #215F33; width: 7px; height: 7px; margin-right: 4px"></span>Einnahme</span><span><span class="dot" style="background: #E8A33D; width: 7px; height: 7px; margin-right: 4px"></span>Wohnen</span><span><span class="dot" style="background: #3C8DBC; width: 7px; height: 7px; margin-right: 4px"></span>Mobilität</span><span><span class="dot" style="background: #4CAF7A; width: 7px; height: 7px; margin-right: 4px"></span>Haushalt</span><span><span class="dot" style="background: #E03C31; width: 7px; height: 7px; margin-right: 4px"></span>überfällig</span></div>
-    </div>
-    <p class="note">{{calMonthLine}}</p>
-  </div>
-  </sc-if>
+  <div style="padding: 10px 20px 0 20px; display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><button class="{{c.cls}}" style="height: 28px; padding: 0 10px; font-size: 12px" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
 
   <sc-for list="{{groups}}" as="g" hint-placeholder-count="4">
   <div style="padding: 14px 20px 0 20px">
@@ -115,7 +98,7 @@ def build():
   <sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><p class="note" style="margin: 16px 24px 0">{{emptyText}}</p></sc-if>
   <p class="note" style="margin: 14px 24px 0">{{pruef}}</p>
 ''') + '''<sc-if value="{{sel}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{selName}}</h3><p>{{selText}}</p><sc-if value="{{selHasParts}}" hint-placeholder-val="{{false}}"><div class="card" style="margin-bottom: 12px"><sc-for list="{{selParts}}" as="p" hint-placeholder-count="3"><div class="f" style="min-height: 40px"><p class="v" style="font-weight: 500">{{p.n}}</p><p class="v" style="flex: none; width: auto; font-variant-numeric: tabular-nums">{{p.v}}</p></div><div class="sep"></div></sc-for></div></sc-if><div style="display: flex; gap: 10px; flex-wrap: wrap"><sc-if value="{{selCanPay}}" hint-placeholder-val="{{true}}"><button class="btn pri" onClick="{{markPaid}}">{{payLabel}}</button></sc-if><a class="btn sec2" href="{{selHref}}">Öffnen</a><button class="btn" style="flex: 0 0 auto; padding: 0 14px; background: #F3F5F8; color: #637894" onClick="{{closeSel}}">Schließen</button></div></div></div></sc-if>'''
-    logic = r'''  constructor(p) { super(p); this.state = { area: 'all', h: 14, view: 'list', cal: 0, selDay: -1, paid: {}, sel: null, toast: '' }; ''' + MON_JS + r''' this.START = 2410; this.PUFFER = 1500; }
+    logic = r'''  constructor(p) { super(p); this.state = { area: 'all', h: 14, paid: {}, sel: null, toast: '' }; ''' + MON_JS + r''' this.START = 2410; this.PUFFER = 1500; }
 ''' + JS_SEG + JS_PLAN + r'''
   renderVals() {
     var self = this, s = this.state, col = { w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A', x: '#215F33' };
@@ -134,10 +117,7 @@ def build():
       Object.keys(fixBy).forEach(function (a) { var l = fixBy[a].slice().sort(function (p, q) { return p.amt - q.amt; }); if (l.length === 1) out.push(l[0]); else out.push({ uid: 'bundle:' + l.map(function (b) { return b.uid; }).join(','), d: l[0].d, amt: l.reduce(function (x, b) { return x + b.amt; }, 0), name: l.map(function (b) { return b.short || b.name; }).join(', '), sub: l.length + ' Fixkosten · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[a], area: a, kind: 'fix', href: 'Vertraege.dc.html', parts: l }); });
       return out.sort(function (a, b) { return b.amt - a.amt; }); };
     var groups = [];
-    if (s.view === 'cal') {
-      var dayItems = s.selDay >= 0 ? shown.filter(function (b) { return b.d === s.selDay; }) : [];
-      if (s.selDay >= 0) groups.push({ title: this.dayLabel(s.selDay), meta: dayItems.length ? dayItems.length + ' Posten · ' + eur(dayItems.reduce(function (a, b) { return a + b.amt; }, 0)) + ' €' : 'nichts geplant', items: bundle(dayItems).map(fmtItem), saldo: '' });
-    } else if (s.h <= 30) {
+    if (s.h <= 30) {
       var byDay = {}; shown.forEach(function (b) { (byDay[b.d] = byDay[b.d] || []).push(b); });
       Object.keys(byDay).map(Number).sort(function (a, b) { return a - b; }).forEach(function (d) { var items = byDay[d], sum = items.reduce(function (a, b) { return a + b.amt; }, 0), over = items.some(function (b) { return b.over; });
         var after = run.points.filter(function (p) { return p.d <= d; }).slice(-1)[0];
@@ -152,16 +132,6 @@ def build():
         var lastDay = self.dayIdx(y, m + 1, 0), after = run.points.filter(function (p) { return p.d <= Math.min(lastDay, s.h); }).slice(-1)[0];
         groups.push({ title: self.monthLabel(y, m), meta: items.length + ' Posten · ' + eur(items.reduce(function (a, b) { return a + b.amt; }, 0)) + ' €', items: rows.map(fmtItem), saldo: s.area === 'all' && after ? eur(after.bal) : '', saldoLabel: 'Saldo Monatsende', saldoSt: after && after.bal < self.PUFFER ? 'color: #943333' : '' }); });
     }
-    // Kalender
-    var cy = 2026 + Math.floor((9 + s.cal) / 12), cm = (9 + s.cal) % 12, first = new Date(cy, cm, 1), dim = new Date(cy, cm + 1, 0).getDate(), lead = (first.getDay() + 6) % 7, cells = [];
-    var monthItems = all.filter(function (b) { return !isPaid(b) && inArea(b); });
-    for (var i = 0; i < 42; i++) { var dn = i - lead + 1; if (dn < 1 || dn > dim) { cells.push({ n: '', cls: 'dim', aria: '', dots: [], pick: function () {} }); continue; }
-      (function (dn) { var d = self.dayIdx(cy, cm, dn), its = monthItems.filter(function (b) { return b.d === d; }), dots = [];
-        if (its.some(function (b) { return b.amt > 0; })) dots.push({ st: 'background: #215F33' });
-        ['w', 'm', 'h'].forEach(function (a) { if (its.some(function (b) { return b.amt <= 0 && b.area === a; })) dots.push({ st: 'background: ' + (its.some(function (b) { return b.over && b.area === a; }) ? '#E03C31' : col[a]) }); });
-        cells.push({ n: String(dn), cls: (d === s.selDay ? 'on' : '') + (d === 0 ? ' today' : '') + (d < 0 ? ' dim' : ''), aria: dn + '.' + (cm + 1) + '.', dots: dots.slice(0, 3), pick: function () { if (d < 0) { self.say('Vergangene Tage: siehe Rechnungen'); return; } self.setState({ selDay: d, h: Math.max(s.h, d) }); } }); })(dn);
-    }
-    var monthSum = monthItems.filter(function (b) { var x = self.dateOf(b.d); return x.getFullYear() === cy && x.getMonth() === cm && b.d >= 0; }).reduce(function (a, b) { return a + b.amt; }, 0);
     // Auswahl-Sheet
     var selB = null; if (s.sel) { all.forEach(function (b) { if (b.uid === s.sel) selB = b; }); if (!selB && s.sel.indexOf('bundle:') === 0) { var ids = s.sel.slice(7).split(','); var parts = all.filter(function (b) { return ids.indexOf(b.uid) >= 0; }); if (parts.length) selB = { uid: s.sel, name: parts.length + ' Fixkosten am ' + self.dayLabel(parts[0].d), amt: parts.reduce(function (a, b) { return a + b.amt; }, 0), d: parts[0].d, href: 'Vertraege.dc.html', parts: parts }; }
       if (!selB && (s.sel.indexOf('ein') === 0 || s.sel.indexOf('fix') === 0)) { groups.forEach(function (g) { }); } }
@@ -172,12 +142,9 @@ def build():
       balFmt: eur(bal),
       outlook: s.area === 'all' ? hLabel + ': Zuflüsse +' + eur(inflow) + ' · Abflüsse ' + eur(outflow) + ' → ' + eur(endBal) + ' € am ' + this.dayLabel(s.h) : hLabel + ' · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[s.area] + ': Abflüsse ' + eur(outflow) + ' €',
       warn: s.area === 'all' && run.min.bal < this.PUFFER ? 'Unter dem Mindestpuffer (' + eur(this.PUFFER, 0) + ' €) am ' + this.dayLabel(run.min.d) + ': ' + eur(run.min.bal) + ' €' : '',
-      hchips: (''' + HORIZONS + r''').map(function (x) { return { label: x[1], cls: s.h === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0], selDay: -1 }); } }; }),
-      views: this.segItems('view', [['list', 'Liste'], ['cal', 'Kalender']]),
+      hchips: (''' + HORIZONS + r''').map(function (x) { return { label: x[1], cls: s.h === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0] }); } }; }),
       chips: this.chipItems('area', [['all', 'Alle'], ['w', 'Wohnen'], ['m', 'Mobilität'], ['h', 'Haushalt']], true),
-      isCal: s.view === 'cal', calTitle: this.monthLabel(cy, cm), calPrev: function () { if (s.cal > 0) self.setState({ cal: s.cal - 1, selDay: -1 }); }, calNext: function () { if (s.cal < 11) self.setState({ cal: s.cal + 1, selDay: -1 }); },
-      cells: cells, calMonthLine: this.monthLabel(cy, cm) + ': ' + eur(monthSum) + ' € geplant (ab heute) · Tag antippen zeigt die Posten; Termine mit Erinnerung stehen auch im Systemkalender „Mnemor“.',
-      groups: groups, empty: groups.length === 0, emptyText: s.view === 'cal' ? 'Tag im Kalender antippen.' : 'Keine geplanten Buchungen in dieser Auswahl.',
+      groups: groups, empty: groups.length === 0, emptyText: 'Keine geplanten Buchungen in dieser Auswahl.',
       pruef: s.area === 'all' ? 'Prüfung: ' + eur(bal) + ' + ' + eur(inflow) + ' − ' + eur(-outflow) + ' = ' + eur(endBal) + ' €. Rücklagen verändern den Kontostand nicht; ihre Verwendung (HUK, HU, Urlaub) schon.' : 'Ein Konto lässt sich nicht je Bereich aufteilen – „Alle“ zeigt den Saldo.',
       sel: !!selB, selName: selB ? selB.name : '', selHref: selB ? selB.href : 'Main.dc.html', selHasParts: selParts.length > 0, selParts: selParts,
       selText: selB ? (selB.amt === 0 ? 'Termin ohne Planbetrag – erscheint im Kalender und in der Liste, nicht im Verlauf.' : (isPaid(selB) ? 'Als gebucht markiert – Kontostand ' + eur(bal) + ' €. Rückgängig setzt die Planung wieder ein.' : (selB.amt > 0 ? '+' : '') + eur(selB.amt) + ' € am ' + self.dayLabel(selB.d) + '. „Gebucht“ schreibt den Kontostand fort, sobald die Buchung auf dem Konto ist.')) : '',
@@ -345,6 +312,63 @@ def build():
     };
   }'''
     page("Kontostand.dc.html", "Kontostand aktualisieren", body, logic, 'l', EXTRA_CSS + CAL_CSS)
+
+    # ================================================================ Kalender (einfaches Hilfsmittel, von der Übersicht aus)
+    body = tpl('''  <div class="hdr" style="padding-bottom: 16px">
+    <div class="nav"><a class="back" href="Main.dc.html">[BACK]Übersicht</a><p class="ttl">Kalender</p><button class="act" onClick="{{today}}">Heute</button></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px"><button class="chip" style="width: 36px; padding: 0; justify-content: center" onClick="{{calPrev}}" aria-label="Vormonat">‹</button><h1 style="margin: 0; font-size: 24px">{{calTitle}}</h1><button class="chip" style="width: 36px; padding: 0; justify-content: center" onClick="{{calNext}}" aria-label="Folgemonat">›</button></div>
+    <p class="sub">{{calMonthLine}}</p>
+  </div>
+
+  <div style="padding: 14px 20px 0 20px">
+    <div class="card">
+      <div class="cal">
+        <span class="wd">Mo</span><span class="wd">Di</span><span class="wd">Mi</span><span class="wd">Do</span><span class="wd">Fr</span><span class="wd">Sa</span><span class="wd">So</span>
+        <sc-for list="{{cells}}" as="c" hint-placeholder-count="35"><button class="{{c.cls}}" onClick="{{c.pick}}" aria-label="{{c.aria}}"><span>{{c.n}}</span><span class="dots"><sc-for list="{{c.dots}}" as="x" hint-placeholder-count="0"><i style="{{x.st}}"></i></sc-for></span></button></sc-for>
+      </div>
+      <div style="display: flex; gap: 12px; padding: 0 14px 12px; font-size: 11px; color: #637894; flex-wrap: wrap"><span><span class="dot" style="background: #215F33; width: 7px; height: 7px; margin-right: 4px"></span>Einnahme</span><span><span class="dot" style="background: #E8A33D; width: 7px; height: 7px; margin-right: 4px"></span>Wohnen</span><span><span class="dot" style="background: #3C8DBC; width: 7px; height: 7px; margin-right: 4px"></span>Mobilität</span><span><span class="dot" style="background: #4CAF7A; width: 7px; height: 7px; margin-right: 4px"></span>Haushalt</span><span><span class="dot" style="background: #E03C31; width: 7px; height: 7px; margin-right: 4px"></span>überfällig</span></div>
+    </div>
+  </div>
+
+  <div style="padding: 16px 20px 0 20px">
+    <h2 class="h2" style="margin-bottom: 6px">{{dayTitle}} <span>{{dayMeta}}</span></h2>
+    <div class="card">
+      <sc-for list="{{items}}" as="b" hint-placeholder-count="2">
+        <a class="row" href="{{b.href}}"><span class="dot" style="{{b.dotst}}"></span><div class="mid"><p class="n" style="{{b.nst}}">{{b.name}}</p><p class="s">{{b.sub}}</p></div><p class="v" style="{{b.vst}}">{{b.val}}</p>[CHEV]</a>
+        <div class="sep"></div>
+      </sc-for>
+      <sc-if value="{{noItems}}" hint-placeholder-val="{{false}}"><div class="f"><p class="v ph">{{emptyText}}</p></div></sc-if>
+    </div>
+    <p class="note">Nur ein Blick auf die Tage – Beträge und Saldo rechnet die Liquidität. Termine mit Erinnerung stehen auch im iOS-Kalender „Mnemor“ (Einstellungen).</p>
+  </div>
+''')
+    logic = r'''  constructor(p) { super(p); this.state = { cal: 0, selDay: 0, toast: '' }; ''' + MON_JS + r''' }
+''' + JS_SEG + JS_PLAN + r'''
+  renderVals() {
+    var self = this, s = this.state, col = { w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A', x: '#215F33' };
+    var all = this.plan(365);
+    var cy = 2026 + Math.floor((9 + s.cal) / 12), cm = (9 + s.cal) % 12, first = new Date(cy, cm, 1), dim = new Date(cy, cm + 1, 0).getDate(), lead = (first.getDay() + 6) % 7, cells = [];
+    for (var i = 0; i < 42; i++) { var dn = i - lead + 1; if (dn < 1 || dn > dim) { cells.push({ n: '', cls: 'dim', aria: '', dots: [], pick: function () {} }); continue; }
+      (function (dn) { var d = self.dayIdx(cy, cm, dn), its = all.filter(function (b) { return b.d === d; }), dots = [];
+        if (its.some(function (b) { return b.amt > 0; })) dots.push({ st: 'background: #215F33' });
+        ['w', 'm', 'h'].forEach(function (a) { if (its.some(function (b) { return b.amt <= 0 && b.area === a; })) dots.push({ st: 'background: ' + (its.some(function (b) { return b.over && b.area === a; }) ? '#E03C31' : col[a]) }); });
+        cells.push({ n: String(dn), cls: (d === s.selDay ? 'on' : '') + (d === 0 ? ' today' : '') + (d < 0 ? ' dim' : ''), aria: dn + '.' + (cm + 1) + '.', dots: dots.slice(0, 3), pick: function () { self.setState({ selDay: d }); } }); })(dn);
+    }
+    var monthItems = all.filter(function (b) { var x = self.dateOf(b.d); return x.getFullYear() === cy && x.getMonth() === cm; });
+    var items = s.selDay >= 0 ? all.filter(function (b) { return b.d === s.selDay; }) : [];
+    var sum = items.reduce(function (a, b) { return a + b.amt; }, 0);
+    return {
+      toast: s.toast,
+      calTitle: this.monthLabel(cy, cm), calPrev: function () { if (s.cal > 0) self.setState({ cal: s.cal - 1, selDay: -1 }); else self.say('Vergangene Monate: Rechnungen › Bezahlt'); }, calNext: function () { if (s.cal < 11) self.setState({ cal: s.cal + 1, selDay: -1 }); else self.say('Planung reicht 12 Monate'); },
+      today: function () { self.setState({ cal: 0, selDay: 0 }); },
+      calMonthLine: monthItems.length + ' Posten · ' + monthItems.filter(function (b) { return b.kind === 'termin'; }).length + ' Termine · Zahltage ' + monthItems.filter(function (b) { return b.amt > 0; }).map(function (b) { return self.shortLabel(b.d); }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', '),
+      cells: cells,
+      dayTitle: s.selDay >= 0 ? this.dayLabel(s.selDay) : 'Tag wählen', dayMeta: s.selDay >= 0 ? (items.length ? items.length + ' Posten · ' + (sum > 0 ? '+' : '') + eur(sum) + ' €' : 'nichts geplant') : '',
+      items: items.map(function (b) { return { name: b.name, sub: b.sub, href: b.href, dotst: 'background: ' + (b.over ? '#E03C31' : col[b.area]), nst: b.over ? 'color: #943333' : '', vst: b.amt > 0 ? 'color: #215F33' : '', val: b.amt === 0 ? '–' : (b.amt > 0 ? '+' : '') + eur(b.amt) }; }),
+      noItems: items.length === 0, emptyText: s.selDay < 0 ? 'Tag antippen.' : (s.selDay === 0 ? 'Heute ist nichts fällig.' : 'Nichts geplant.')
+    };
+  }'''
+    page("Kalender.dc.html", "Kalender", body, logic, 'u', EXTRA_CSS + CAL_CSS)
 
 
 if __name__ == "__main__":

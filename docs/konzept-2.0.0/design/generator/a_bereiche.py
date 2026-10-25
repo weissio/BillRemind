@@ -160,7 +160,10 @@ def build():
         <p class="ttl">{{{{monthLabel}}}}</p>
         <button class="chip" style="height: 28px; padding: 0 10px" onClick="{{{{nextMonth}}}}" aria-label="Folgemonat">›</button>
       </div>
+      <div style="display: flex; gap: 8px">
+      <a href="Kalender.dc.html" aria-label="Kalender" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
+      </div>
     </div>
     <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{{{headline}}}}</p>
     <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">{{{{spar}}}} €</p>
