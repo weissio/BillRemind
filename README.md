@@ -2,6 +2,10 @@
 
 BillRemind ist eine lokale iOS-App (SwiftUI + SwiftData), mit der Privatpersonen Rechnungen scannen, OCR-Felder prüfen und Erinnerungen für Zahlungsziele setzen können.
 
+## Release 2.0.0 – Konzept (Branch `release/2.0.0`)
+
+Mnemor 2.0 macht aus BillRemind eine Haushaltsverwaltung (Bereiche Wohnen / Mobilität / Haushalt, Verträge, Budgets, Rücklagen, Termine, Liquidität, OCR 2.0). Der komplette Stand – Marktvergleich, Funktionsmodell, Glossar, Beispielmonat, 28 Prototyp-Screens mit Screenshots und 16 Startseiten-Varianten – ist in `docs/konzept-2.0.0/` abgelegt. **Einstieg für Reviewer und Agenten: `docs/konzept-2.0.0/AGENT-BRIEFING.md`.**
+
 ## Setup
 1. In den Projektordner wechseln:
    - `cd /Users/jonasweiss/Documents/New project/BillRemind`

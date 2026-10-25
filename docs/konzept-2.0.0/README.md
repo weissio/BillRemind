@@ -6,6 +6,7 @@ Die Dokumente leben weiterhin als bearbeitbare Claude-Docs; hier liegt der einge
 
 | Datei | Inhalt | Live-Dokument |
 | --- | --- | --- |
+| `AGENT-BRIEFING.md` | **Einstieg**: Gesamtstand für Reviewer und Agenten – Produkt, USPs, Struktur, Glossar, Beispielmonat, Prototyp, Startseiten-Frage, offene Entscheidungen, erwartetes Feedback | – |
 | `marktvergleich.md` | DE/US/UK-Haushaltsbuch-Apps, Muster & Lücken, sechs USPs | [Marktvergleich](https://claude.ai/artifact/14ebQFwB3GdiJ9q7B9MRuf) |
 | `funktionsmodell.md` | Taxonomie, Zuordnungsregel, Objektmodell, OCR-Symbiose, OCR 2.0, eingefrorene Funktionsliste, Glossar, Beispielmonat | [Funktionsmodell](https://claude.ai/artifact/WQdw2oxroqdp27fwcHr1WR) |
 | `darstellungsarchitektur.md` | Funktion → Frage → Datenform → Anzeigemuster → Screen; Muster-Katalog nach Vorbild der Marktführer; Regeln für die Startseite | – |
