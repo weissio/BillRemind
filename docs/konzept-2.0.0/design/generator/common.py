@@ -31,6 +31,14 @@ body{margin:0}
 .f .l{margin:0;font-size:14px;color:#637894;width:104px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .f .v.ph{color:#9AA5B4;font-weight:400}
+.kr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #EEF1F5}
+.kr:last-child{border-bottom:0}
+.kr .kl{margin:0;font-size:14px;color:#3E5068;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kr .ks{font-size:12px;color:#943333;margin-left:6px}
+.kr .kv{margin:0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kr.sum{border-top:2px solid #16243A;border-bottom:0;margin-top:2px;padding-top:9px}
+.kr.sum .kl{font-size:15px;font-weight:700;color:#16243A}
+.kr.sum .kv{font-size:20px;font-weight:800;color:#215F33}
 .f .vc{flex:1;min-width:0}
 .f .vc .v{flex:none;-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
 .f .v2{margin:2px 0 0;font-size:13px;font-weight:400;color:#637894;line-height:1.3;white-space:normal}

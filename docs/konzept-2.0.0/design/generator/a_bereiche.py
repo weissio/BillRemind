@@ -166,19 +166,17 @@ def build():
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
       </div>
     </div>
-    <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{{{headline}}}}</p>
-    <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">{{{{spar}}}} €</p>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula}}}}</p>
-    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula2}}}}</p>
-    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula3}}}}</p>
+    <p style="margin: 18px 0 0; font-size: 14px; opacity: .8">{{{{headline}}}}</p>
   </div>
 
-  <div style="padding: 0 20px; margin-top: -40px">
-    <a href="Monatsrechnung.dc.html" class="card" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 14px 6px; text-decoration: none; color: inherit">
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Einnahmen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #215F33">{{{{k.ein}}}}</p></div>
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Fixkosten</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{{{k.fix}}}}</p></div>
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Ausgaben</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{{{k.aus}}}}</p></div>
-      <div style="text-align: center"><p style="margin: 0; font-size: 11.5px; color: #637894">davon offen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #943333">{{{{k.offen}}}}</p></div>
+  <div style="padding: 0 20px; margin-top: -30px">
+    <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 6px 16px 4px; text-decoration: none; color: inherit">
+      <div class="kr"><p class="kl">Einnahmen</p><p class="kv" style="color: #215F33">{{{{k.ein}}}}</p></div>
+      <div class="kr"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{{{k.fix}}}}</p></div>
+      <div class="kr"><p class="kl">Ausgaben <span class="ks">davon offen {{{{k.offen}}}}</span></p><p class="kv">− {{{{k.aus}}}}</p></div>
+      <div class="kr"><p class="kl">Budgets, noch offen</p><p class="kv">− {{{{k.bud}}}}</p></div>
+      <div class="kr"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{{{k.res}}}}</p></div>
+      <div class="kr sum"><p class="kl">{{{{sparLabel}}}}</p><p class="kv">{{{{spar}}}} €</p></div>
     </a>
   </div>
 
@@ -190,7 +188,7 @@ def build():
       <div class="sep" style="margin-left: 64px"></div>
       <a class="row" href="Haushalt.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><p class="s" style="font-size: 12.5px">{{{{a.hs}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
     </div>
-    <p class="note">Summe der Bereiche {{{{sumAreas}}}} € = Fixkosten {{{{k.fix2}}}} + Ausgaben {{{{k.aus2}}}} + Rücklagen {{{{k.res}}}}</p>
+    <p class="note">Bereiche zusammen {{{{sumAreas}}}} € = Fixkosten + Ausgaben + Rücklagen-Raten</p>
   </div>
 
   <div style="padding: 22px 0 0 20px">
@@ -206,7 +204,6 @@ def build():
         </a>
       </sc-for>
     </div>
-    <p class="note" style="margin: 10px 24px 0 4px">Nach rechts wischen: {{{{dueCount}}}} Posten, überfällig zuerst. Antippen öffnet Rechnung oder Vertrag.</p>
   </div>
 '''
     logic = f'''  constructor(p) {{ super(p); this.state = {{ m: 0, toast: '' }}; }}
@@ -233,10 +230,9 @@ def build():
       monthLabel: months[m],
       prevMonth: function () {{ if (m < months.length - 1) self.setState({{ m: m + 1 }}); else self.say('Ältere Monate: Mehr › Auswertung'); }},
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
-      headline: (m === 0 ? 'Sparpotenzial im ' : 'Ergebnis im ') + months[m].split(' ')[0],
-      spar: eur(spar),
-      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten', formula2: '− ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen', formula3: '− ' + eur(d.res) + ' Rücklagen-Raten',
-      k: {{ ein: eur(d.ein, 0), fix: eur(d.fix, 0), aus: eur(aus, 0), offen: eur(d.off), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) }},
+      headline: 'Monatsrechnung ' + months[m].split(' ')[0],
+      spar: eur(spar), sparLabel: m === 0 ? 'Sparpotenzial' : 'Ergebnis',
+      k: {{ ein: eur(d.ein), fix: eur(d.fix), aus: eur(aus), offen: eur(d.off), bud: eur(d.bud), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) }},
       a: {{ ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) }},
       sumAreas: eur(d.w + d.mo + d.h),
       due: due,
