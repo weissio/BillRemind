@@ -166,21 +166,24 @@ def build():
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
       </div>
     </div>
-    <p style="margin: 18px 0 0; font-size: 14px; opacity: .8">{{{{headline}}}}</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 22px">
+      <p style="margin: 0; font-size: 15px; opacity: .85">{{{{sparLabel}}}}</p>
+      <p style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; line-height: 1">{{{{spar}}}} €</p>
+    </div>
+    <button onClick="{{{{flipCalc}}}}" style="margin: 10px 0 0; padding: 0; border: 0; background: none; color: #FFFFFF; opacity: .75; font: inherit; font-size: 13px; cursor: pointer">{{{{calcHint}}}}</button>
+    <sc-if value="{{{{calcOpen}}}}" hint-placeholder-val="{{{{false}}}}">
+    <div style="margin-top: 10px; padding: 2px 14px 4px; background: rgba(255,255,255,.08); border-radius: 12px">
+      <div class="kr dk"><p class="kl">Einnahmen</p><p class="kv">{{{{k.ein}}}}</p></div>
+      <div class="kr dk"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{{{k.fix}}}}</p></div>
+      <div class="kr dk"><p class="kl">Ausgaben <span class="ks">davon offen {{{{k.offen}}}}</span></p><p class="kv">− {{{{k.aus}}}}</p></div>
+      <div class="kr dk"><p class="kl">Budgets, noch offen</p><p class="kv">− {{{{k.bud}}}}</p></div>
+      <div class="kr dk"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{{{k.res}}}}</p></div>
+      <a class="kr dk" href="Monatsrechnung.dc.html" style="text-decoration: none"><p class="kl" style="font-weight: 600">Monatsrechnung mit Einzelposten</p><p class="kv">›</p></a>
+    </div>
+    </sc-if>
   </div>
 
-  <div style="padding: 0 20px; margin-top: -30px">
-    <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 6px 16px 4px; text-decoration: none; color: inherit">
-      <div class="kr"><p class="kl">Einnahmen</p><p class="kv" style="color: #215F33">{{{{k.ein}}}}</p></div>
-      <div class="kr"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{{{k.fix}}}}</p></div>
-      <div class="kr"><p class="kl">Ausgaben <span class="ks">davon offen {{{{k.offen}}}}</span></p><p class="kv">− {{{{k.aus}}}}</p></div>
-      <div class="kr"><p class="kl">Budgets, noch offen</p><p class="kv">− {{{{k.bud}}}}</p></div>
-      <div class="kr"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{{{k.res}}}}</p></div>
-      <div class="kr sum"><p class="kl">{{{{sparLabel}}}}</p><p class="kv">{{{{spar}}}} €</p></div>
-    </a>
-  </div>
-
-  <div style="padding: 24px 20px 0 20px">
+  <div style="padding: 18px 20px 0 20px">
     <div class="card">
       <a class="row" href="Wohnen.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {W}; width: 36px; height: 36px; border-radius: 18px">{ICON["home"]}</span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><p class="s" style="font-size: 12.5px">{{{{a.ws}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.w}}}} €</p>{CHEV}</a>
       <div class="sep" style="margin-left: 64px"></div>
@@ -188,7 +191,6 @@ def build():
       <div class="sep" style="margin-left: 64px"></div>
       <a class="row" href="Haushalt.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: {H}; width: 36px; height: 36px; border-radius: 18px">{ICON["bag"]}</span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><p class="s" style="font-size: 12.5px">{{{{a.hs}}}}</p></div><p class="v" style="font-size: 16px">{{{{a.h}}}} €</p>{CHEV}</a>
     </div>
-    <p class="note">Bereiche zusammen {{{{sumAreas}}}} € = Fixkosten + Ausgaben + Rücklagen-Raten</p>
   </div>
 
   <div style="padding: 22px 0 0 20px">
@@ -206,7 +208,7 @@ def build():
     </div>
   </div>
 '''
-    logic = f'''  constructor(p) {{ super(p); this.state = {{ m: 0, toast: '' }}; }}
+    logic = f'''  constructor(p) {{ super(p); this.state = {{ m: 0, calcOpen: false, toast: '' }}; }}
 {JS_SEG}
   renderVals() {{
     var self = this, m = this.state.m;
@@ -230,8 +232,8 @@ def build():
       monthLabel: months[m],
       prevMonth: function () {{ if (m < months.length - 1) self.setState({{ m: m + 1 }}); else self.say('Ältere Monate: Mehr › Auswertung'); }},
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
-      headline: 'Monatsrechnung ' + months[m].split(' ')[0],
-      spar: eur(spar), sparLabel: m === 0 ? 'Sparpotenzial' : 'Ergebnis',
+      spar: eur(spar), sparLabel: (m === 0 ? 'Sparpotenzial ' : 'Ergebnis ') + months[m].split(' ')[0],
+      calcOpen: this.state.calcOpen, flipCalc: this.flip('calcOpen'), calcHint: this.state.calcOpen ? 'Rechnung ausblenden ▴' : 'So gerechnet ▾',
       k: {{ ein: eur(d.ein), fix: eur(d.fix), aus: eur(aus), offen: eur(d.off), bud: eur(d.bud), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) }},
       a: {{ ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) }},
       sumAreas: eur(d.w + d.mo + d.h),

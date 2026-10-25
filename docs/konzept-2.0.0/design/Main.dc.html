@@ -37,6 +37,11 @@ body{margin:0}
 .kr .kl{margin:0;font-size:14px;color:#3E5068;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kr .ks{font-size:12px;color:#943333;margin-left:6px}
 .kr .kv{margin:0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kr.dk{border-bottom-color:rgba(255,255,255,.12)}
+.kr.dk .kl,.kr.dk .kv{color:#FFFFFF}
+.kr.dk .kl{opacity:.85;font-size:13.5px}
+.kr.dk .kv{font-size:14px}
+.kr.dk .ks{color:#F7B1AA}
 .kr.sum{border-top:2px solid #16243A;border-bottom:0;margin-top:2px;padding-top:9px}
 .kr.sum .kl{font-size:15px;font-weight:700;color:#16243A}
 .kr.sum .kv{font-size:20px;font-weight:800;color:#215F33}
@@ -120,21 +125,24 @@ a{color:#2A5480}
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
       </div>
     </div>
-    <p style="margin: 18px 0 0; font-size: 14px; opacity: .8">{{headline}}</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 22px">
+      <p style="margin: 0; font-size: 15px; opacity: .85">{{sparLabel}}</p>
+      <p style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; line-height: 1">{{spar}} €</p>
+    </div>
+    <button onClick="{{flipCalc}}" style="margin: 10px 0 0; padding: 0; border: 0; background: none; color: #FFFFFF; opacity: .75; font: inherit; font-size: 13px; cursor: pointer">{{calcHint}}</button>
+    <sc-if value="{{calcOpen}}" hint-placeholder-val="{{false}}">
+    <div style="margin-top: 10px; padding: 2px 14px 4px; background: rgba(255,255,255,.08); border-radius: 12px">
+      <div class="kr dk"><p class="kl">Einnahmen</p><p class="kv">{{k.ein}}</p></div>
+      <div class="kr dk"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{k.fix}}</p></div>
+      <div class="kr dk"><p class="kl">Ausgaben <span class="ks">davon offen {{k.offen}}</span></p><p class="kv">− {{k.aus}}</p></div>
+      <div class="kr dk"><p class="kl">Budgets, noch offen</p><p class="kv">− {{k.bud}}</p></div>
+      <div class="kr dk"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{k.res}}</p></div>
+      <a class="kr dk" href="Monatsrechnung.dc.html" style="text-decoration: none"><p class="kl" style="font-weight: 600">Monatsrechnung mit Einzelposten</p><p class="kv">›</p></a>
+    </div>
+    </sc-if>
   </div>
 
-  <div style="padding: 0 20px; margin-top: -30px">
-    <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 6px 16px 4px; text-decoration: none; color: inherit">
-      <div class="kr"><p class="kl">Einnahmen</p><p class="kv" style="color: #215F33">{{k.ein}}</p></div>
-      <div class="kr"><p class="kl">Fixkosten &amp; Kredite</p><p class="kv">− {{k.fix}}</p></div>
-      <div class="kr"><p class="kl">Ausgaben <span class="ks">davon offen {{k.offen}}</span></p><p class="kv">− {{k.aus}}</p></div>
-      <div class="kr"><p class="kl">Budgets, noch offen</p><p class="kv">− {{k.bud}}</p></div>
-      <div class="kr"><p class="kl">Rücklagen-Raten</p><p class="kv">− {{k.res}}</p></div>
-      <div class="kr sum"><p class="kl">{{sparLabel}}</p><p class="kv">{{spar}} €</p></div>
-    </a>
-  </div>
-
-  <div style="padding: 24px 20px 0 20px">
+  <div style="padding: 18px 20px 0 20px">
     <div class="card">
       <a class="row" href="Wohnen.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: #E8A33D; width: 36px; height: 36px; border-radius: 18px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg></span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><p class="s" style="font-size: 12.5px">{{a.ws}}</p></div><p class="v" style="font-size: 16px">{{a.w}} €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep" style="margin-left: 64px"></div>
@@ -142,7 +150,6 @@ a{color:#2A5480}
       <div class="sep" style="margin-left: 64px"></div>
       <a class="row" href="Haushalt.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: #4CAF7A; width: 36px; height: 36px; border-radius: 18px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z"/></svg></span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><p class="s" style="font-size: 12.5px">{{a.hs}}</p></div><p class="v" style="font-size: 16px">{{a.h}} €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
     </div>
-    <p class="note">Bereiche zusammen {{sumAreas}} € = Fixkosten + Ausgaben + Rücklagen-Raten</p>
   </div>
 
   <div style="padding: 22px 0 0 20px">
@@ -189,7 +196,7 @@ function nbDeep(v, key, depth) {
 }
 
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { m: 0, toast: '' }; }
+  constructor(p) { super(p); this.state = { m: 0, calcOpen: false, toast: '' }; }
 
   segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
   chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
@@ -221,8 +228,8 @@ class Component extends DCLogic {
       monthLabel: months[m],
       prevMonth: function () { if (m < months.length - 1) self.setState({ m: m + 1 }); else self.say('Ältere Monate: Mehr › Auswertung'); },
       nextMonth: function () { if (m > 0) self.setState({ m: m - 1 }); else self.say('Oktober ist der laufende Monat'); },
-      headline: 'Monatsrechnung ' + months[m].split(' ')[0],
-      spar: eur(spar), sparLabel: m === 0 ? 'Sparpotenzial' : 'Ergebnis',
+      spar: eur(spar), sparLabel: (m === 0 ? 'Sparpotenzial ' : 'Ergebnis ') + months[m].split(' ')[0],
+      calcOpen: this.state.calcOpen, flipCalc: this.flip('calcOpen'), calcHint: this.state.calcOpen ? 'Rechnung ausblenden ▴' : 'So gerechnet ▾',
       k: { ein: eur(d.ein), fix: eur(d.fix), aus: eur(aus), offen: eur(d.off), bud: eur(d.bud), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) },
       a: { ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) },
       sumAreas: eur(d.w + d.mo + d.h),
