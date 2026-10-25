@@ -11,10 +11,12 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
 .hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
 .hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
 .hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
-.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
 .hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
 .hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
 .hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
@@ -23,88 +25,148 @@ body{margin:0}
 .bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
 .bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
 .h2 span{text-transform:none;font-weight:500;letter-spacing:0}
-.h2 a{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480}
-.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f .v.ph{color:#9AA5B4;font-weight:400}
 .f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
-.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
 .row .n{font-size:15px;font-weight:600;line-height:1.2}
 .row .s{font-size:12px;color:#637894;margin-top:2px}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
 .sep{height:1px;background:#EEF1F5;margin-left:16px}
 .chev{width:8px;height:13px;flex:none}
 .cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
-.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;text-decoration:none}
-.seg span.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
 .pri{background:#2A5480;color:#FFFFFF}
 .sec2{background:#E6EEF6;color:#2A5480}
 .danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
 .bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
 .bar2 i{display:block;height:6px;border-radius:3px}
-.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
 .tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tog.off{background:#D1D6DE}
 .tog.off::after{right:auto;left:2px}
 .note{margin:8px 4px 0;font-size:12px;color:#637894}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
+.urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
 a{color:#2A5480}
+
+.sym{width:40px;height:40px;border-radius:20px;border:1px solid #D1DBE8;background:#FFFFFF;color:#637894;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sym.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.chk{width:24px;height:24px;border-radius:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:2px solid #C4CCD6;background:none;padding:0;cursor:pointer;color:#FFFFFF}
+.chk.on{background:#2A5480;border-color:#2A5480}
+.month{display:flex;gap:6px;align-items:flex-end;height:96px;padding:0 4px}
+.month button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;cursor:pointer;font:inherit;height:100%}
+.month i{display:block;width:100%;border-radius:5px 5px 0 0;background:#D1DBE8}
+.month i.on{background:#2A5480}
+.month span{font-size:11px;color:#637894}
+.month span.on{color:#16243A;font-weight:700}
 </style>
 </helmet>
 <div class="root">
 <div class="scroll">
   <div class="hdr">
-    <div class="nav"><a class="back" href="Mehr.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mehr</a><p class="ttl">Auswertung</p><span style="width: 60px"></span></div>
-
+    <div class="nav"><a class="back" href="Mehr.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mehr</a><p class="ttl">Auswertung</p><button class="act" onClick="{{openExport}}">Export</button></div>
     <h1>Auswertung</h1>
-    <div class="seg" style="margin-top: 14px; background: rgba(255,255,255,.14)"><span class="on">6 Monate</span><span style="color: rgba(255,255,255,.8)">Jahr</span><span style="color: rgba(255,255,255,.8)">Bereiche</span><span style="color: rgba(255,255,255,.8)">Kategorien</span></div>
+    <div style="margin-top: 14px"><div class="seg dark"><sc-for list="{{views}}" as="s" hint-placeholder-count="4"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div>
   </div>
 
+  <sc-if value="{{isBars}}" hint-placeholder-val="{{true}}">
   <div style="padding: 18px 20px 0 20px">
     <div class="card" style="padding: 16px 14px 12px">
-      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px"><p style="margin: 0; font-size: 15px; font-weight: 700">Ausgaben je Monat</p><p style="margin: 0; font-size: 12px; color: #637894">Ø 3.004 € · Okt. 2.996 €</p></div>
-      <div style="display: flex; gap: 6px; margin-top: 12px"><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">2.740</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 37px; background: #4CAF7A"></i><i style="display: block; height: 27px; background: #3C8DBC"></i><i style="display: block; height: 57px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 500; color: #637894">Mai</p></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">2.850</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 40px; background: #4CAF7A"></i><i style="display: block; height: 29px; background: #3C8DBC"></i><i style="display: block; height: 57px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 500; color: #637894">Jun</p></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">3.890</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 63px; background: #4CAF7A"></i><i style="display: block; height: 52px; background: #3C8DBC"></i><i style="display: block; height: 57px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 500; color: #637894">Jul</p></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">2.740</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 38px; background: #4CAF7A"></i><i style="display: block; height: 26px; background: #3C8DBC"></i><i style="display: block; height: 57px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 500; color: #637894">Aug</p></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">2.810</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 38px; background: #4CAF7A"></i><i style="display: block; height: 28px; background: #3C8DBC"></i><i style="display: block; height: 57px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 500; color: #637894">Sep</p></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">2.996</p><div style="width: 26px; height: 150px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden"><i style="display: block; height: 39px; background: #4CAF7A"></i><i style="display: block; height: 33px; background: #3C8DBC"></i><i style="display: block; height: 60px; background: #E8A33D"></i></div><p style="margin: 0; font-size: 11px; font-weight: 700; color: #16243A">Okt</p></div></div>
-      <div style="display: flex; gap: 14px; justify-content: center; margin-top: 10px; font-size: 11.5px; color: #637894"><span><span style="width: 10px; height: 10px; border-radius: 5px; background: #E8A33D; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Wohnen</span><span><span style="width: 10px; height: 10px; border-radius: 5px; background: #3C8DBC; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Mobilität</span><span><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Haushalt</span></div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px"><p style="margin: 0; font-size: 15px; font-weight: 700">{{chartTitle}}</p><p style="margin: 0; font-size: 12px; color: #637894">{{chartMeta}}</p></div>
+      <div style="display: flex; gap: 6px; margin-top: 12px; align-items: flex-end">
+        <sc-for list="{{bars}}" as="b" hint-placeholder-count="6"><button style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; padding: 0; cursor: pointer; font: inherit" onClick="{{b.pick}}" aria-label="{{b.label}}"><p style="margin: 0; font-size: 10px; color: #637894; font-variant-numeric: tabular-nums">{{b.total}}</p><div style="{{b.colst}}"><i style="{{b.h}}"></i><i style="{{b.m}}"></i><i style="{{b.w}}"></i></div><p style="{{b.lst}}">{{b.label}}</p></button></sc-for>
+      </div>
+      <div style="display: flex; gap: 14px; justify-content: center; margin-top: 10px; font-size: 11.5px; color: #637894"><span><span class="dot" style="background: #E8A33D; margin-right: 5px"></span>Wohnen</span><span><span class="dot" style="background: #3C8DBC; margin-right: 5px"></span>Mobilität</span><span><span class="dot" style="background: #4CAF7A; margin-right: 5px"></span>Haushalt</span></div>
     </div>
-    <p class="note">Je Bereich: Fixkosten + variable Ausgaben + Rücklagen-Raten – dieselbe Summe wie auf der Übersicht (Okt. 2.995,90 €). Juli enthält Urlaub und Reifen.</p>
+    <p class="note">{{selNote}}</p>
   </div>
+  </sc-if>
+
+  <sc-if value="{{isAreas}}" hint-placeholder-val="{{false}}">
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Bereiche im Oktober <span>Anteil an 2.995,90 €</span></h2>
+    <div class="card">
+      <sc-for list="{{areaRows}}" as="a" hint-placeholder-count="3">
+        <a class="row" href="{{a.href}}" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px"><div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{a.dotst}}"></span><p class="n" style="flex: 1">{{a.name}}</p><p class="v">{{a.val}} · {{a.pct}} %</p></div><div class="bar2"><i style="{{a.barst}}"></i></div><p class="s">{{a.sub}}</p></a>
+        <div class="sep"></div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{isCats}}" hint-placeholder-val="{{false}}">
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Größte Kategorien im Oktober <span>Top 8</span></h2>
+    <div class="card">
+      <sc-for list="{{cats}}" as="c" hint-placeholder-count="8">
+        <a class="row" href="{{c.href}}"><span class="dot" style="{{c.dotst}}"></span><div class="mid"><p class="n" style="font-weight: 500">{{c.name}}</p><p class="s">{{c.sub}}</p></div><p class="v">{{c.val}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+        <div class="sep"></div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
 
   <div style="padding: 18px 20px 0 20px">
-    <h2 class="h2">Oktober im Vergleich zum Schnitt</h2>
+    <h2 class="h2">Oktober im Vergleich zum Schnitt <span>Mai–Sep.</span></h2>
     <div class="card">
-      <a class="row" href="Wohnen.dc.html"><span style="width: 10px; height: 10px; border-radius: 5px; background: #E8A33D; flex: none"></span><div class="mid"><p class="n">Wohnen</p><p class="s">Nachzahlung Strom 142 € einmalig</p></div><p class="v">1.368,18</p><span class="cap" style="background: #F7D4D1; color: #943333">+5 %</span></a>
-      <div class="sep"></div>
-      <a class="row" href="Akte.dc.html"><span style="width: 10px; height: 10px; border-radius: 5px; background: #3C8DBC; flex: none"></span><div class="mid"><p class="n">Mobilität</p><p class="s">Inspektion 212,40 €</p></div><p class="v">746,19</p><span class="cap" style="background: #EDE3C9; color: #704F2E">+1 %</span></a>
-      <div class="sep"></div>
-      <a class="row" href="Haushalt.dc.html"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; flex: none"></span><div class="mid"><p class="n">Haushalt</p><p class="s">Freizeit über Budget, Lebensmittel im Plan</p></div><p class="v">881,53</p><span class="cap" style="background: #D6EDDB; color: #215F33">−8 %</span></a>
+      <sc-for list="{{cmp}}" as="c" hint-placeholder-count="3">
+        <a class="row" href="{{c.href}}"><span class="dot" style="{{c.dotst}}"></span><div class="mid"><p class="n">{{c.name}}</p><p class="s">{{c.sub}}</p></div><p class="v">{{c.val}}</p><span class="cap" style="{{c.capst}}">{{c.cap}}</span></a>
+        <div class="sep"></div>
+      </sc-for>
     </div>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Jahresblick 2026 <span>hochgerechnet</span></h2>
     <div class="card">
-      <div class="f"><p class="l">Einnahmen</p><p class="v ">44.451,30 € · inkl. Urlaubsgeld</p></div>
+      <div class="f"><p class="l">Einnahmen</p><p class="v">44.451,30 € · inkl. Urlaubsgeld</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Fixkosten</p><p class="v ">19.910,40 € · 45 % der Einnahmen</p></div>
+      <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € · 45 % der Einnahmen</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Sparpotenzial</p><p class="v ">6.930,00 € · Ø 577,50 €/Monat</p></div>
-      <div class="sep"></div>
-      <a class="f" href="#"><p class="l">Export</p><p class="v">CSV oder PDF je Bereich, Jahr oder Monat</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="f"><p class="l">Sparpotenzial</p><p class="v">6.930,00 € · Ø 577,50 €/Monat</p></div>
     </div>
   </div>
-
+<sc-if value="{{exportSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Export</h3><p>Zahlen dieser Auswertung als Datei – lokal erstellt, dann Teilen-Menü.</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Format</p><div class="seg"><sc-for list="{{exFmt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Zeitraum</p><div class="seg"><sc-for list="{{exRange}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeExport}}">Abbrechen</button><button class="btn pri" onClick="{{doExport}}">Erstellen</button></div></div></div></sc-if>
 </div>
 
   <nav class="tabbar" aria-label="Hauptnavigation">
@@ -114,12 +176,51 @@ a{color:#2A5480}
     <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { view: '6m', sel: 5, exportSheet: false, exFmt: 'csv', exRange: 'monat', toast: '' };
+    this.M6 = [['Mai', 1290, 610, 840], ['Jun', 1290, 655, 905], ['Jul', 1290, 1180, 1420], ['Aug', 1290, 590, 860], ['Sep', 1300, 640, 870], ['Okt', 1368.18, 746.19, 881.53]];
+    this.Y = [['J', 1280, 600, 850], ['F', 1280, 590, 830], ['M', 1280, 620, 860], ['A', 1290, 700, 870], ['M', 1290, 610, 840], ['J', 1290, 655, 905], ['J', 1290, 1180, 1420], ['A', 1290, 590, 860], ['S', 1300, 640, 870], ['O', 1368.18, 746.19, 881.53], ['N', 1368, 760, 880], ['D', 1368, 700, 1150]]; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
   renderVals() {
-    return {};
+    var self = this, s = this.state, year = s.view === 'jahr', data = year ? this.Y : this.M6, sel = Math.min(s.sel, data.length - 1);
+    var totals = data.map(function (m) { return m[1] + m[2] + m[3]; }), mx = Math.max.apply(null, totals), avg = totals.reduce(function (a, b) { return a + b; }, 0) / totals.length;
+    var d = data[sel], hh = year ? 110 : 150;
+    var names = { Mai: 'Mai', Jun: 'Juni', Jul: 'Juli', Aug: 'August', Sep: 'September', Okt: 'Oktober' };
+    var avg5 = function (idx) { return this.M6.slice(0, 5).reduce(function (a, m) { return a + m[idx]; }, 0) / 5; }.bind(this);
+    var cmpRow = function (name, idx, href, dotc, sub) { var v = self.M6[5][idx], a = avg5(idx), p = Math.round((v - a) / a * 100); return { name: name, sub: sub, val: eur(v), href: href, dotst: 'background: ' + dotc, cap: (p > 0 ? '+' : '') + p + ' %', capst: p > 4 ? 'background: #F7D4D1; color: #943333' : (p >= 0 ? 'background: #EDE3C9; color: #704F2E' : 'background: #D6EDDB; color: #215F33') }; };
+    var areasTot = 1368.18 + 746.19 + 881.53;
+    return {
+      toast: s.toast,
+      views: this.segItems('view', [['6m', '6 Monate'], ['jahr', 'Jahr'], ['bereiche', 'Bereiche'], ['kat', 'Kategorien']]),
+      isBars: s.view === '6m' || year, isAreas: s.view === 'bereiche', isCats: s.view === 'kat',
+      chartTitle: year ? 'Ausgaben je Monat 2026' : 'Ausgaben je Monat', chartMeta: 'Ø ' + eur(avg, 0) + ' € · ' + (year ? 'Nov./Dez. geplant' : 'Okt. ' + eur(totals[5], 0) + ' €'),
+      bars: data.map(function (m, i) { var t = m[1] + m[2] + m[3], on = i === sel, planned = year && i > 9; var seg = function (v, c) { return 'display: block; height: ' + Math.round(v / mx * hh) + 'px; background: ' + c + (planned ? '; opacity: .45' : '') + (on ? '' : '; opacity: ' + (planned ? '.35' : '.75')); };
+        return { label: m[0], total: year ? '' : eur(t, 0), pick: function () { self.setState({ sel: i }); }, colst: 'width: ' + (year ? 18 : 26) + 'px; height: ' + hh + 'px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden' + (on ? '; outline: 2px solid #2A5480; outline-offset: 2px' : ''), h: seg(m[3], '#4CAF7A'), m: seg(m[2], '#3C8DBC'), w: seg(m[1], '#E8A33D'), lst: 'margin: 0; font-size: 11px; font-weight: ' + (on ? 700 : 500) + '; color: ' + (on ? '#16243A' : '#637894') }; }),
+      selNote: (year ? 'Monat ' + (sel + 1) : names[d[0]]) + ': ' + eur(d[1] + d[2] + d[3]) + ' € = Wohnen ' + eur(d[1]) + ' + Mobilität ' + eur(d[2]) + ' + Haushalt ' + eur(d[3]) + (sel === 5 && !year ? ' – wie auf der Übersicht (Fixkosten + Ausgaben + Rücklagen).' : (d[2] > 1000 ? ' – Juli: Urlaub und Reifen.' : '.')),
+      areaRows: [['Wohnen', 1368.18, 'Wohnen.dc.html', '#E8A33D', 'fix 1.218,35 · variabel 142,00 · Rücklagen 7,83'], ['Mobilität', 746.19, 'Akte.dc.html', '#3C8DBC', 'fix 356,99 · variabel 276,60 · Rücklagen 112,60'], ['Haushalt', 881.53, 'Haushalt.dc.html', '#4CAF7A', 'fix 83,86 · variabel 592,00 · Rücklagen 205,67']].map(function (a) { var p = Math.round(a[1] / areasTot * 100); return { name: a[0], val: eur(a[1]), pct: p, href: a[2], dotst: 'background: ' + a[3], barst: 'width: ' + p + '%; background: ' + a[3], sub: a[4] }; }),
+      cats: [['Miete / Hausgeld', 950, 'w', 'Wohnen · fix'], ['Lebensmittel & Haushalt', 412, 'h', 'Haushalt · variabel · Budget 450'], ['Kfz-Rate / Leasing', 289, 'm', 'Mobilität · Kredit'], ['Werkstatt & Reifen', 272.40, 'm', 'Mobilität · 212,40 offen + 60 Rücklage'], ['Strom', 240, 'w', 'Wohnen · 98 Abschlag + 142 Nachzahlung'], ['Freizeit & Kultur', 209.90, 'h', 'Haushalt · Budget 150 überschritten'], ['Urlaub & Reisen', 200, 'h', 'Haushalt · Rücklage-Rate'], ['Gas / Heizung', 112, 'w', 'Wohnen · fix']].map(function (c) { return { name: c[0], val: eur(c[1]), sub: c[3] + ' · ' + Math.round(c[1] / areasTot * 100) + ' %', href: c[2] === 'w' ? 'Wohnen.dc.html' : (c[2] === 'm' ? 'Akte.dc.html' : 'Haushalt.dc.html'), dotst: 'background: ' + ({ w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' })[c[2]] }; }),
+      cmp: [cmpRow('Wohnen', 1, 'Wohnen.dc.html', '#E8A33D', 'Nachzahlung Strom 142 € einmalig'), cmpRow('Mobilität', 2, 'Akte.dc.html', '#3C8DBC', 'Inspektion 212,40 €'), cmpRow('Haushalt', 3, 'Haushalt.dc.html', '#4CAF7A', 'Freizeit über Budget, Lebensmittel im Plan')],
+      exportSheet: s.exportSheet, openExport: this.go('exportSheet', true), closeExport: this.go('exportSheet', false),
+      exFmt: this.segItems('exFmt', [['csv', 'CSV'], ['pdf', 'PDF']]), exRange: this.segItems('exRange', [['monat', 'Oktober'], ['6m', '6 Monate'], ['jahr', '2026']]),
+      doExport: function () { self.setState({ exportSheet: false }); self.say('mnemor-auswertung-' + s.exRange + '.' + s.exFmt + ' erstellt · Teilen-Menü'); }
+    };
   }
 }
 </script>

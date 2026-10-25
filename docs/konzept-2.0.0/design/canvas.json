@@ -16,7 +16,8 @@
       "w": 390,
       "h": 844,
       "title": "Übersicht",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Monatsrechnung.dc.html": {
       "x": 470,
@@ -24,7 +25,8 @@
       "w": 390,
       "h": 844,
       "title": "Monatsrechnung (Herleitung)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Einnahmen.dc.html": {
       "x": 940,
@@ -32,7 +34,8 @@
       "w": 390,
       "h": 844,
       "title": "Einnahmen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Budgets.dc.html": {
       "x": 1410,
@@ -40,7 +43,8 @@
       "w": 390,
       "h": 844,
       "title": "Budgets",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Mehr.dc.html": {
       "x": 1880,
@@ -48,7 +52,8 @@
       "w": 390,
       "h": 844,
       "title": "Mehr",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Auswertung.dc.html": {
       "x": 2350,
@@ -56,7 +61,8 @@
       "w": 390,
       "h": 844,
       "title": "Auswertung",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Einstellungen.dc.html": {
       "x": 2820,
@@ -64,7 +70,8 @@
       "w": 390,
       "h": 844,
       "title": "Einstellungen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Wohnen.dc.html": {
       "x": 0,
@@ -72,7 +79,8 @@
       "w": 390,
       "h": 844,
       "title": "Wohnen (Bereich)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Akte.dc.html": {
       "x": 470,
@@ -80,7 +88,8 @@
       "w": 390,
       "h": 844,
       "title": "Mobilität (Bereich)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Haushalt.dc.html": {
       "x": 940,
@@ -88,7 +97,8 @@
       "w": 390,
       "h": 844,
       "title": "Haushalt (Bereich)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Kategorie.dc.html": {
       "x": 1410,
@@ -96,7 +106,8 @@
       "w": 390,
       "h": 844,
       "title": "Kategorie · Wohnen › Strom",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "KategorieNeu.dc.html": {
       "x": 1880,
@@ -104,7 +115,8 @@
       "w": 390,
       "h": 844,
       "title": "Kategorie anlegen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "ObjektNeu.dc.html": {
       "x": 2350,
@@ -112,7 +124,8 @@
       "w": 390,
       "h": 844,
       "title": "Objekt anlegen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Ruecklage.dc.html": {
       "x": 2820,
@@ -120,7 +133,8 @@
       "w": 390,
       "h": 844,
       "title": "Rücklage · Urlaub",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Termin.dc.html": {
       "x": 3290,
@@ -128,7 +142,8 @@
       "w": 390,
       "h": 844,
       "title": "Termin · HU/AU",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Rechnungen.dc.html": {
       "x": 0,
@@ -136,7 +151,8 @@
       "w": 390,
       "h": 844,
       "title": "Rechnungen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Rechnung.dc.html": {
       "x": 470,
@@ -144,7 +160,8 @@
       "w": 390,
       "h": 844,
       "title": "Rechnung (Detail)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Erfassen.dc.html": {
       "x": 940,
@@ -152,7 +169,8 @@
       "w": 390,
       "h": 844,
       "title": "Erfassen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Review.dc.html": {
       "x": 1410,
@@ -160,7 +178,8 @@
       "w": 390,
       "h": 844,
       "title": "Rechnung prüfen (nach Scan)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Vertraege.dc.html": {
       "x": 1880,
@@ -168,7 +187,8 @@
       "w": 390,
       "h": 844,
       "title": "Verträge",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Vertrag.dc.html": {
       "x": 2350,
@@ -176,7 +196,8 @@
       "w": 390,
       "h": 844,
       "title": "Vertrag (Detail)",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "VertragNeu.dc.html": {
       "x": 2820,
@@ -184,7 +205,8 @@
       "w": 390,
       "h": 844,
       "title": "Vertrag anlegen",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Liquiditaet.dc.html": {
       "x": 0,
@@ -192,7 +214,8 @@
       "w": 390,
       "h": 844,
       "title": "Liquidität – Termine",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Verlauf.dc.html": {
       "x": 470,
@@ -200,7 +223,8 @@
       "w": 390,
       "h": 844,
       "title": "Liquidität – Verlauf",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "Kontostand.dc.html": {
       "x": 940,
@@ -208,7 +232,8 @@
       "w": 390,
       "h": 844,
       "title": "Kontostand aktualisieren",
-      "radius": 44
+      "radius": 44,
+      "is_interactive": true
     },
     "StartB.dc.html": {
       "x": 0,
@@ -233,6 +258,24 @@
       "h": 844,
       "title": "Verworfen · Nativ 4",
       "radius": 44
+    },
+    "Dokumente.dc.html": {
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "radius": 44,
+      "title": "Dokumente",
+      "x": 3290,
+      "is_interactive": true
+    },
+    "Kasse.dc.html": {
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "radius": 44,
+      "title": "Haushaltskasse",
+      "x": 3760,
+      "is_interactive": true
     }
   },
   "order": [
@@ -243,6 +286,8 @@
     "Mehr.dc.html",
     "Auswertung.dc.html",
     "Einstellungen.dc.html",
+    "Dokumente.dc.html",
+    "Kasse.dc.html",
     "Wohnen.dc.html",
     "Akte.dc.html",
     "Haushalt.dc.html",
@@ -269,9 +314,9 @@
     "t1": {
       "x": 0,
       "y": -300,
-      "text": "Mnemor 2.0 – ein Beispielmonat, alle Module abgestimmt (jeder Tap führt weiter, Tab-Leiste bringt immer zur Übersicht)",
+      "text": "Mnemor 2.0 – klickbarer Prototyp: Play ▶ starten, dann funktionieren Eingaben, Schalter, Sheets und Links (jede Tab-Leiste führt zur Übersicht)",
       "kind": "title1",
-      "maxW": 3200
+      "maxW": 4200
     },
     "n1": {
       "x": 3290,
@@ -307,6 +352,13 @@
       "text": "Verworfen – native Varianten (Referenz)",
       "kind": "title1",
       "maxW": 1330
+    },
+    "n2": {
+      "x": 3760,
+      "y": 560,
+      "w": 420,
+      "fill": "green",
+      "text": "Was im Play-Modus funktioniert (Stand So 25.10.)\n• Jede Zahl wird gerechnet, nicht getippt: Bereichs-Chips filtern Kategorien und Prüfsummen; Budgets, Einnahmen, Rücklage, Kasse, Liquidität rechnen bei jeder Eingabe neu.\n• Formulare prüfen: Review (IBAN-Prüfsumme, Betrag im Text, Empfänger Pflicht), Kategorie/Objekt/Vertrag anlegen (Pflichtfelder, Zuordnungsregel), Kontostand (Abgleich, Differenz → Buchung erfassen).\n• Jede Taste hat eine Wirkung: Sheets für Löschen/Beenden/Export/Backup, Toast-Rückmeldung für Teilen/Kopieren, Schalter in Einstellungen.\n• Nicht im Prototyp: Zustand über Screens hinweg (jede Seite startet mit dem Beispielmonat) und echte Kamera.\n• Kontrolle: check2.js (jede Taste, jede Variable), check3.js (41 Soll-Werte: Sparpotenzial 592,70, Bereiche 2.995,90, Rechnungen 13 bezahlt = 656,20, Verträge 1.713,30, tiefster Stand 1.767,81 …)."
     }
   },
   "designSystems": []

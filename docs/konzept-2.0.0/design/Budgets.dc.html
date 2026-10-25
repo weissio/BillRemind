@@ -11,10 +11,12 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
 .hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
 .hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
 .hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
-.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
 .hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
 .hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
 .hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
@@ -23,97 +25,125 @@ body{margin:0}
 .bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
 .bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
 .h2 span{text-transform:none;font-weight:500;letter-spacing:0}
-.h2 a{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480}
-.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f .v.ph{color:#9AA5B4;font-weight:400}
 .f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
-.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
 .row .n{font-size:15px;font-weight:600;line-height:1.2}
 .row .s{font-size:12px;color:#637894;margin-top:2px}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
 .sep{height:1px;background:#EEF1F5;margin-left:16px}
 .chev{width:8px;height:13px;flex:none}
 .cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
-.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;text-decoration:none}
-.seg span.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
 .pri{background:#2A5480;color:#FFFFFF}
 .sec2{background:#E6EEF6;color:#2A5480}
 .danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
 .bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
 .bar2 i{display:block;height:6px;border-radius:3px}
-.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
 .tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tog.off{background:#D1D6DE}
 .tog.off::after{right:auto;left:2px}
 .note{margin:8px 4px 0;font-size:12px;color:#637894}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
+.urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
 a{color:#2A5480}
+
+.sym{width:40px;height:40px;border-radius:20px;border:1px solid #D1DBE8;background:#FFFFFF;color:#637894;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sym.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.chk{width:24px;height:24px;border-radius:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:2px solid #C4CCD6;background:none;padding:0;cursor:pointer;color:#FFFFFF}
+.chk.on{background:#2A5480;border-color:#2A5480}
+.month{display:flex;gap:6px;align-items:flex-end;height:96px;padding:0 4px}
+.month button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;cursor:pointer;font:inherit;height:100%}
+.month i{display:block;width:100%;border-radius:5px 5px 0 0;background:#D1DBE8}
+.month i.on{background:#2A5480}
+.month span{font-size:11px;color:#637894}
+.month span.on{color:#16243A;font-weight:700}
 </style>
 </helmet>
 <div class="root">
 <div class="scroll">
   <div class="hdr">
-    <div class="nav"><a class="back" href="Mehr.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mehr</a><p class="ttl">Budgets</p><a class="act" href="#">Neu</a></div>
-
+    <div class="nav"><a class="back" href="Mehr.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mehr</a><p class="ttl">Budgets</p><button class="act" onClick="{{openNew}}">Neu</button></div>
     <h1>Budgets im Oktober</h1>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">61,40 €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">noch offen · 3 Budgets · 900 € geplant</p></div>
-    <p class="sub">868,60 € verbraucht · Überschreitungen werden nicht gegengerechnet</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{offen}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">noch offen · {{count}} Budgets · {{geplant}} € geplant</p></div>
+    <p class="sub">{{verbraucht}} € verbraucht · Überschreitungen werden nicht gegengerechnet</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Variable Kategorien <span>7 Tage bis Monatsende</span></h2>
     <div class="card">
-      <a class="row" href="Kategorie.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
-        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; flex: none"></span><p class="n" style="flex: 1">Lebensmittel</p><p class="v">412,00 / 450 €</p></div>
-        <div class="bar2"><i style="width: 92%; background: #E08A1E"></i></div>
-        <p class="s" style="color: #E08A1E; font-weight: 600">noch 38,00 €</p>
-      </a>
-      <div class="sep"></div>
-      <a class="row" href="Kategorie.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
-        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; flex: none"></span><p class="n" style="flex: 1">Freizeit (ohne Fitness-Vertrag)</p><p class="v">180,00 / 150 €</p></div>
-        <div class="bar2"><i style="width: 100%; background: #943333"></i></div>
-        <p class="s" style="color: #943333; font-weight: 600">30,00 € über Budget</p>
-      </a>
-      <div class="sep"></div>
-      <a class="row" href="Akte.dc.html" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px">
-        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #3C8DBC; flex: none"></span><p class="n" style="flex: 1">Mobilität variabel (Laden, Werkstatt)</p><p class="v">276,60 / 300 €</p></div>
-        <div class="bar2"><i style="width: 92%; background: #E08A1E"></i></div>
-        <p class="s" style="color: #E08A1E; font-weight: 600">noch 23,40 €</p>
-      </a>
+      <sc-for list="{{rows}}" as="b" hint-placeholder-count="3">
+        <div class="row" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px; cursor: default">
+          <div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{b.dotst}}"></span><a href="{{b.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{b.name}}</p></a><button class="chip lt" style="height: 30px; font-variant-numeric: tabular-nums" onClick="{{b.edit}}">{{b.amounts}}</button></div>
+          <div class="bar2"><i style="{{b.barst}}"></i></div>
+          <p class="s" style="{{b.stst}}">{{b.state}}</p>
+        </div>
+        <div class="sep"></div>
+      </sc-for>
     </div>
-    <p class="note">Offen = Summe der positiven Reste: 38,00 + 0 + 23,40 = 61,40 €. Dieser Betrag mindert das Sparpotenzial, weil er voraussichtlich noch ausgegeben wird.</p>
+    <p class="note">{{formula}} Dieser Betrag mindert das Sparpotenzial, weil er voraussichtlich noch ausgegeben wird.</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Ohne Budget</h2>
     <div class="card">
-      <a class="f" href="KategorieNeu.dc.html"><p class="v"><span style="width: 10px; height: 10px; border-radius: 5px; background: #4CAF7A; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Kleidung · Gesundheit · Haustier · Geschenke</p><span style="font-size: 13px; color: #2A5480; font-weight: 600">Budget setzen</span><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
-      <div class="sep"></div>
-      <a class="f" href="KategorieNeu.dc.html"><p class="v"><span style="width: 10px; height: 10px; border-radius: 5px; background: #E8A33D; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Instandhaltung · Wasser/Abfall</p><span style="font-size: 13px; color: #2A5480; font-weight: 600">Budget setzen</span><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <sc-for list="{{without}}" as="w" hint-placeholder-count="3">
+        <button class="f" onClick="{{w.add}}"><span class="dot" style="{{w.dotst}}"></span><p class="v">{{w.name}}</p><span style="font-size: 13px; color: #2A5480; font-weight: 600; flex: none">Budget setzen</span><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+        <div class="sep"></div>
+      </sc-for>
+      <sc-if value="{{noneWithout}}" hint-placeholder-val="{{false}}"><div class="f"><p class="v ph">Alle variablen Kategorien haben ein Budget.</p></div></sc-if>
     </div>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <div class="f" style="flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; padding-bottom: 12px"><p class="v wrap"><b>Vorschlag:</b> Freizeit lag in 4 von 6 Monaten über 150 €. Budget auf 200 € anheben?</p><div style="display: flex; gap: 8px"><a class="btn sec2" href="#" style="height: 36px; font-size: 14px">Auf 200 € setzen</a><a class="btn" href="#" style="height: 36px; font-size: 14px; background: #F3F5F8; color: #637894">Später</a></div></div>
-      <div class="sep"></div>
+      <sc-if value="{{showSug}}" hint-placeholder-val="{{true}}"><div class="f" style="flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; padding-bottom: 12px"><p class="v wrap"><b>Vorschlag:</b> Freizeit lag in 4 von 6 Monaten über 150 €. Budget auf 200 € anheben?</p><div style="display: flex; gap: 8px"><button class="btn sec2 sm" onClick="{{applySug}}">Auf 200 € setzen</button><button class="btn sm" style="background: #F3F5F8; color: #637894" onClick="{{dismissSug}}">Später</button></div></div><div class="sep"></div></sc-if>
       <div class="f"><p class="l">Fixkosten</p><p class="v wrap">Brauchen kein Budget – sie stehen als Vertrag fest. Abweichungen zeigt die Monatsrechnung.</p></div>
     </div>
+    <p class="note">{{sparNote}}</p>
   </div>
-
+<sc-if value="{{sheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{sheetTitle}}</h3><p>{{sheetText}}</p><div class="card" style="margin-bottom: 12px"><sc-if value="{{isNew}}" hint-placeholder-val="{{false}}"><div class="f" style="align-items: flex-start; padding-top: 10px"><p class="l" style="padding-top: 6px">Kategorie</p><div style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{catOptions}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.pick}}">{{o.t}}</button></sc-for></div></div><div class="sep"></div></sc-if><div class="f"><p class="l">Monatsbudget</p><input class="in num" value="{{amt}}" onChange="{{setAmt}}" inputmode="decimal" placeholder="0,00"><span style="font-size: 14px; color: #637894">€</span></div><div class="sep"></div><div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Rest in den Folgemonat übertragen</p><button class="{{rollCls}}" aria-label="Rollover" onClick="{{flipRoll}}"></button></div></div><p>{{sheetHint}}</p><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeSheet}}">Abbrechen</button><sc-if value="{{canRemove}}" hint-placeholder-val="{{false}}"><button class="btn danger" style="flex: 0 0 auto; padding: 0 14px" onClick="{{removeBudget}}">Entfernen</button></sc-if><button class="btn pri" onClick="{{saveSheet}}">Sichern</button></div></div></div></sc-if>
 </div>
 
   <nav class="tabbar" aria-label="Hauptnavigation">
@@ -123,12 +153,61 @@ a{color:#2A5480}
     <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { budgets: [ { id: 'lm', name: 'Lebensmittel', area: 'h', spent: 412, budget: 450, href: 'Kategorie.dc.html' }, { id: 'fz', name: 'Freizeit (ohne Fitness-Vertrag)', area: 'h', spent: 180, budget: 150, href: 'Kategorie.dc.html' }, { id: 'mv', name: 'Mobilität variabel (Laden, Werkstatt)', area: 'm', spent: 276.60, budget: 300, href: 'Akte.dc.html' } ],
+    pool: [ { id: 'kl', name: 'Kleidung & Pflege', area: 'h', spent: 0 }, { id: 'ge', name: 'Gesundheit', area: 'h', spent: 0 }, { id: 'ga', name: 'Gastronomie', area: 'h', spent: 0 }, { id: 'ht', name: 'Haustier', area: 'h', spent: 0 }, { id: 'in', name: 'Instandhaltung & Reparatur', area: 'w', spent: 0 }, { id: 'gs', name: 'Geschenke & Spenden', area: 'h', spent: 0 } ],
+    sheet: '', editId: '', newCat: 'kl', amt: '', roll: false, showSug: true, toast: '' }; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
   renderVals() {
-    return {};
+    var self = this, s = this.state, col = { w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' };
+    var offen = 0, geplant = 0, verbraucht = 0, parts = [];
+    s.budgets.forEach(function (b) { var r = Math.max(0, b.budget - b.spent); offen += r; geplant += b.budget; verbraucht += b.spent; parts.push(eur(r)); });
+    var baseOffen = 61.40, delta = offen - baseOffen;
+    var editing = s.budgets.filter(function (b) { return b.id === s.editId; })[0];
+    var a = num(s.amt);
+    return {
+      toast: s.toast,
+      offen: eur(offen), count: s.budgets.length, geplant: eur(geplant, 0), verbraucht: eur(verbraucht),
+      rows: s.budgets.map(function (b) { var over = b.spent > b.budget, pct = b.budget > 0 ? Math.min(100, Math.round(b.spent / b.budget * 100)) : 100, left = b.budget - b.spent, c = over ? '#943333' : (pct >= 85 ? '#E08A1E' : '#2A5480');
+        return { name: b.name, href: b.href, dotst: 'background: ' + col[b.area], amounts: eur(b.spent) + ' / ' + eur(b.budget, 0) + ' €', barst: 'width: ' + pct + '%; background: ' + c, stst: 'color: ' + c + '; font-weight: 600', state: over ? eur(-left) + ' € über Budget' : 'noch ' + eur(left) + ' €', edit: function () { self.setState({ sheet: 'edit', editId: b.id, amt: eur(b.budget), roll: !!b.roll }); } }; }),
+      formula: 'Offen = Summe der positiven Reste: ' + parts.join(' + ') + ' = ' + eur(offen) + ' €.',
+      without: s.pool.map(function (p) { return { name: p.name, dotst: 'background: ' + col[p.area], add: function () { self.setState({ sheet: 'new', newCat: p.id, amt: '', roll: false }); } }; }),
+      noneWithout: s.pool.length === 0,
+      showSug: s.showSug && s.budgets.some(function (b) { return b.id === 'fz' && b.budget < 200; }),
+      applySug: function () { self.setState({ budgets: s.budgets.map(function (b) { return b.id === 'fz' ? Object.assign({}, b, { budget: 200 }) : b; }), showSug: false }); self.say('Freizeit-Budget 200 € · offen jetzt ' + eur(offen + 20) + ' €'); },
+      dismissSug: function () { self.setState({ showSug: false }); },
+      sparNote: Math.abs(delta) < 0.005 ? 'Sparpotenzial Oktober: 592,70 € (Budgets offen 61,40 €).' : 'Sparpotenzial Oktober jetzt ' + eur(592.70 - delta) + ' € (Budgets offen ' + eur(offen) + ' € statt 61,40 €).',
+      sheet: !!s.sheet, isNew: s.sheet === 'new', canRemove: s.sheet === 'edit',
+      sheetTitle: s.sheet === 'new' ? 'Budget setzen' : 'Budget ändern', sheetText: s.sheet === 'new' ? 'Ein Budget gilt pro Monat für eine variable Kategorie.' : (editing ? editing.name + ' · bisher ' + eur(editing.spent) + ' € ausgegeben' : ''),
+      catOptions: s.pool.map(function (p) { return { t: p.name, cls: s.newCat === p.id ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ newCat: p.id }); } }; }),
+      amt: s.amt, setAmt: this.set('amt'), rollCls: this.tog('roll'), flipRoll: this.flip('roll'),
+      sheetHint: a > 0 ? (editing ? (a > editing.spent ? 'Noch ' + eur(a - editing.spent) + ' € frei · Budgets offen ' + eur(offen - Math.max(0, editing.budget - editing.spent) + (a - editing.spent)) + ' €' : eur(editing.spent - a) + ' € über Budget – offen 0') : 'Noch ' + eur(a) + ' € frei – Budgets offen steigen auf ' + eur(offen + a) + ' €, Sparpotenzial sinkt entsprechend.') : 'Betrag eingeben.',
+      openNew: function () { if (!s.pool.length) { self.say('Alle variablen Kategorien haben ein Budget'); return; } self.setState({ sheet: 'new', newCat: s.pool[0].id, amt: '', roll: false }); },
+      closeSheet: this.go('sheet', ''),
+      saveSheet: function () {
+        if (!(a > 0)) { self.say('Bitte einen Betrag über 0 eingeben'); return; }
+        if (s.sheet === 'new') { var p = s.pool.filter(function (x) { return x.id === s.newCat; })[0]; if (!p) { self.say('Kategorie wählen'); return; } self.setState({ budgets: s.budgets.concat([{ id: p.id, name: p.name, area: p.area, spent: p.spent, budget: a, roll: s.roll, href: 'Kategorie.dc.html' }]), pool: s.pool.filter(function (x) { return x.id !== p.id; }), sheet: '' }); self.say('Budget ' + p.name + ' ' + eur(a) + ' €'); }
+        else { self.setState({ budgets: s.budgets.map(function (b) { return b.id === s.editId ? Object.assign({}, b, { budget: a, roll: s.roll }) : b; }), sheet: '' }); self.say('Budget geändert'); }
+      },
+      removeBudget: function () { var b = editing; if (!b) return; self.setState({ budgets: s.budgets.filter(function (x) { return x.id !== b.id; }), pool: s.pool.concat([{ id: b.id, name: b.name, area: b.area, spent: b.spent }]), sheet: '' }); self.say('Budget entfernt – Kategorie bleibt'); }
+    };
   }
 }
 </script>

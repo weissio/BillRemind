@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Liquidität</title>
+<title>Liquidität – Termine</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -11,93 +11,132 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-.hdr{background:#1C3250;color:#FFFFFF;padding:56px 20px 22px}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
+.hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
+.hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
+.hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
+.hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
+.hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
+.hdr .sub{margin:6px 0 0;font-size:13px;opacity:.8}
+.bar{background:#1C3250;color:#FFFFFF;padding:56px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.day{display:flex;align-items:baseline;gap:8px;padding:14px 4px 6px}
-.day h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#637894}
-.day p{margin:0;font-size:12.5px;color:#637894}
-.row{display:flex;align-items:center;gap:12px;min-height:52px;padding:4px 16px;text-decoration:none;color:inherit}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
+.f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .v.ph{color:#9AA5B4;font-weight:400}
+.f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
-.row .n{font-size:16px;font-weight:500;flex:1;min-width:0}
-.row .s{font-size:12.5px;color:#637894;margin-top:2px}
-.row .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#17263B;white-space:nowrap}
-.sep{height:1px;background:#EEF1F5;margin-left:36px}
-.dot{width:8px;height:8px;border-radius:4px;flex:none}
-.seg{display:flex;background:rgba(255,255,255,.14);border-radius:10px;padding:2px;margin-top:16px}
-.seg a{flex:1;text-align:center;font-size:14px;font-weight:600;color:#FFFFFF;text-decoration:none;padding:8px 0;border-radius:8px;min-height:36px;box-sizing:border-box;opacity:.85}
-.seg a.on{background:#FFFFFF;color:#1C3250;opacity:1}
-.chip{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
-.chip.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.row .n{font-size:15px;font-weight:600;line-height:1.2}
+.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
+.row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.chev{width:8px;height:13px;flex:none}
+.cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
+.pri{background:#2A5480;color:#FFFFFF}
+.sec2{background:#E6EEF6;color:#2A5480}
+.danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
+.bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
+.bar2 i{display:block;height:6px;border-radius:3px}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
+.tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.off{background:#D1D6DE}
+.tog.off::after{right:auto;left:2px}
+.note{margin:8px 4px 0;font-size:12px;color:#637894}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
+.urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
 a{color:#2A5480}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
+
+.sym{width:40px;height:40px;border-radius:20px;border:1px solid #D1DBE8;background:#FFFFFF;color:#637894;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sym.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.chk{width:24px;height:24px;border-radius:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:2px solid #C4CCD6;background:none;padding:0;cursor:pointer;color:#FFFFFF}
+.chk.on{background:#2A5480;border-color:#2A5480}
+.month{display:flex;gap:6px;align-items:flex-end;height:96px;padding:0 4px}
+.month button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;cursor:pointer;font:inherit;height:100%}
+.month i{display:block;width:100%;border-radius:5px 5px 0 0;background:#D1DBE8}
+.month i.on{background:#2A5480}
+.month span{font-size:11px;color:#637894}
+.month span.on{color:#16243A;font-weight:700}
 </style>
 </helmet>
 <div class="root">
 <div class="scroll">
-
-  <div class="hdr">
+  <div class="hdr" style="padding-bottom: 18px">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">Liquidität</h1>
-      <p style="margin: 0; font-size: 13px; opacity: .8">Stand Sa 24. Okt.</p>
+      <p class="ttl">Stand Sa 24. Okt.</p>
     </div>
-    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px">
-      <div>
-        <p style="margin: 0; font-size: 13px; opacity: .8">Kontostand heute</p>
-        <p style="margin: 2px 0 0; font-size: 36px; font-weight: 700; letter-spacing: -0.8px; line-height: 1; font-variant-numeric: tabular-nums">2.410,00 €</p>
-      </div>
-      <a href="Kontostand.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; background: #FFFFFF; color: #1C3250; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; text-decoration: none">Aktualisieren</a>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 14px">
+      <div><p style="margin: 0; font-size: 13px; opacity: .8">{{balLabel}}</p><p class="big" style="margin: 2px 0 0; font-size: 36px">{{balFmt}} €</p></div>
+      <a href="Kontostand.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; background: #FFFFFF; color: #1C3250; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; text-decoration: none; flex: none">Aktualisieren</a>
     </div>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">Tiefster Stand <strong style="font-weight: 600; opacity: 1">1.767,81 € am Mi 29. Okt.</strong> · Gehalt 3.400 € am 30. Okt.</p>
-    <div class="seg" role="tablist" aria-label="Ansicht">
-      <a href="Liquiditaet.dc.html" role="tab" class="on" aria-selected="true">Termine</a>
-      <a href="Verlauf.dc.html" role="tab">Verlauf</a>
-    </div>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">{{minLine}}</p>
+    <div class="seg dark" style="margin-top: 14px"><button class="on">Termine</button><a href="Verlauf.dc.html" style="flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.8); padding: 6px 0; text-decoration: none">Verlauf</a></div>
   </div>
 
-  <div style="padding: 14px 20px 0 20px; display: flex; gap: 8px">
-    <a class="chip on" href="Liquiditaet.dc.html">Alle</a>
-    <a class="chip" href="Liquiditaet.dc.html">Wohnen</a>
-    <a class="chip" href="Akte.dc.html">Mobilität</a>
-    <a class="chip" href="Liquiditaet.dc.html">Haushalt</a>
+  <div style="padding: 14px 20px 0 20px; display: flex; gap: 8px; flex-wrap: wrap">
+    <sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><button class="{{c.cls}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for>
+    <button class="{{horizonCls}}" onClick="{{flipHorizon}}">{{horizonLabel}}</button>
   </div>
 
-  <div style="padding: 0 20px">
-    <div class="day"><h2>Überfällig</h2></div>
+  <sc-for list="{{days}}" as="g" hint-placeholder-count="4">
+  <div style="padding: 16px 20px 0 20px">
+    <h2 class="h2" style="margin-bottom: 6px">{{g.title}} <span>{{g.meta}}</span></h2>
     <div class="card">
-      <a class="row" href="Rechnung.dc.html"><span class="dot" style="background: #E03C31"></span><div class="n"><p style="color: #943333">Stadtwerke – Nachzahlung</p><p class="s">seit 21. Okt. · Wohnen</p></div><p class="v" style="color: #943333">−142,00</p></a>
-    </div>
-
-    <div class="day"><h2>Mo 27. Okt.</h2><p>in 3 Tagen</p></div>
-    <div class="card">
-      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Kfz-Versicherung HUK24</p><p class="s">Jahresbeitrag · aus Rücklage · Mobilität</p></div><p class="v">−487,20</p></a>
-    </div>
-
-    <div class="day"><h2>Mi 29. Okt.</h2></div>
-    <div class="card">
-      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #4CAF7A"></span><div class="n"><p>Netflix</p><p class="s">Abo · Haushalt</p></div><p class="v">−12,99</p></a>
-    </div>
-
-    <div class="day"><h2>Do 30. Okt.</h2></div>
-    <div class="card">
-      <a class="row" href="Review.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Autohaus Keller – Inspektion</p><p class="s">Rechnung · Mobilität</p></div><p class="v">−212,40</p></a>
-      <div class="sep"></div>
-      <a class="row" href="Einnahmen.dc.html"><span class="dot" style="background: #215F33"></span><div class="n"><p>Gehalt</p><p class="s">Einnahme</p></div><p class="v" style="color: #215F33">+3.400,00</p></a>
-    </div>
-
-    <div class="day"><h2>Sa 1. Nov.</h2><p>Monatswechsel</p></div>
-    <div class="card">
-      <a class="row" href="Vertraege.dc.html"><span class="dot" style="background: #E8A33D"></span><div class="n"><p>Miete, Strom, Gas, Internet</p><p class="s">4 Fixkosten · Wohnen</p></div><p class="v">−1.199,99</p></a>
-      <div class="sep"></div>
-      <a class="row" href="Vertrag.dc.html"><span class="dot" style="background: #3C8DBC"></span><div class="n"><p>Leasing VW Financial</p><p class="s">Fixkosten · Mobilität</p></div><p class="v">−289,00</p></a>
+      <sc-for list="{{g.items}}" as="b" hint-placeholder-count="2">
+        <button class="row" onClick="{{b.open}}"><span class="dot" style="{{b.dotst}}"></span><div class="mid"><p class="n" style="{{b.nst}}">{{b.name}}</p><p class="s">{{b.sub}}</p></div><p class="v" style="{{b.vst}}">{{b.val}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+        <div class="sep"></div>
+      </sc-for>
     </div>
   </div>
-
-
+  </sc-for>
+  <sc-if value="{{empty}}" hint-placeholder-val="{{false}}"><p class="note" style="margin: 16px 24px 0">Keine geplanten Buchungen in dieser Auswahl.</p></sc-if>
+  <p class="note" style="margin: 14px 24px 0">{{pruef}}</p>
+<sc-if value="{{sel}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{selName}}</h3><p>{{selText}}</p><div style="display: flex; gap: 10px; flex-wrap: wrap"><sc-if value="{{selCanPay}}" hint-placeholder-val="{{true}}"><button class="btn pri" onClick="{{markPaid}}">{{payLabel}}</button></sc-if><a class="btn sec2" href="{{selHref}}">Öffnen</a><button class="btn" style="flex: 0 0 auto; padding: 0 14px; background: #F3F5F8; color: #637894" onClick="{{closeSel}}">Schließen</button></div></div></div></sc-if>
 </div>
+
   <nav class="tabbar" aria-label="Hauptnavigation">
     <a class="tab" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
     <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
@@ -105,12 +144,84 @@ a{color:#2A5480}
     <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab on" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { area: 'all', horizon: 14, paid: {}, sel: null, toast: '' }; this.B = [
+  { id: 'sw', d: 1, amt: -142.00, name: 'Stadtwerke – Nachzahlung', sub: 'Rechnung · überfällig seit 21. Okt.', area: 'w', kind: 'rechnung', href: 'Rechnung.dc.html' },
+  { id: 'huk', d: 3, amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage gedeckt', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'nfx', d: 5, amt: -12.99, name: 'Netflix', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'ak', d: 6, amt: -212.40, name: 'Autohaus Keller – Inspektion', sub: 'Rechnung · fällig 30. Okt.', area: 'm', kind: 'rechnung', href: 'Review.dc.html' },
+  { id: 'geh', d: 6, amt: 3400.00, name: 'Gehalt', sub: 'Einnahme · Muster AG', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
+  { id: 'miete', d: 8, amt: -1199.99, name: 'Miete, Strom, Gas, Internet', sub: '4 Fixkosten · Wohnen', area: 'w', kind: 'vertrag', href: 'Vertraege.dc.html' },
+  { id: 'leas', d: 8, amt: -289.00, name: 'Leasing VW Financial', sub: 'Kredit · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'enbw', d: 8, amt: -9.99, name: 'EnBW mobility+', sub: 'Ladetarif', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'fit', d: 8, amt: -29.90, name: 'FitnessFirst', sub: 'Mitgliedschaft · Ben', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'tick', d: 10, amt: -58.00, name: 'Deutschlandticket', sub: 'Abo · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'spot', d: 10, amt: -17.99, name: 'Spotify Family', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'kg', d: 12, amt: 250.00, name: 'Kindergeld', sub: 'Einnahme · Familienkasse', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
+  { id: 'icl', d: 15, amt: -2.99, name: 'iCloud+', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'hu', d: 19, amt: -150.00, name: 'HU/AU · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage', area: 'm', kind: 'termin', href: 'Termin.dc.html' },
+  { id: 'mob', d: 22, amt: -19.99, name: 'Telekom Mobilfunk', sub: 'Vertrag · Anna', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'zahn', d: 27, amt: 0, name: 'Zahnarzt Vorsorge · Ben', sub: 'Termin ohne Betrag', area: 'h', kind: 'termin', href: 'Termin.dc.html' },
+  { id: 'geh2', d: 37, amt: 3400.00, name: 'Gehalt', sub: 'Einnahme · Muster AG', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
+  { id: 'miete2', d: 38, amt: -1199.99, name: 'Miete, Strom, Gas, Internet', sub: '4 Fixkosten · Wohnen', area: 'w', kind: 'vertrag', href: 'Vertraege.dc.html' },
+  { id: 'leas2', d: 38, amt: -289.00, name: 'Leasing VW Financial', sub: 'Kredit · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
+  { id: 'fix2', d: 38, amt: -39.89, name: 'EnBW, FitnessFirst', sub: '2 Fixkosten', area: 'h', kind: 'vertrag', href: 'Vertraege.dc.html' },
+  { id: 'tick2', d: 40, amt: -75.99, name: 'Deutschlandticket, Spotify', sub: '2 Abos', area: 'm', kind: 'vertrag', href: 'Vertraege.dc.html' },
+  { id: 'kg2', d: 42, amt: 250.00, name: 'Kindergeld', sub: 'Einnahme', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
+  { id: 'zs', d: 52, amt: 0, name: 'Zählerstände Strom und Gas', sub: 'Termin · Wohnung', area: 'w', kind: 'termin', href: 'Termin.dc.html' },
+  { id: 'mob2', d: 52, amt: -22.98, name: 'Mobilfunk, iCloud+', sub: '2 Verträge', area: 'h', kind: 'vertrag', href: 'Vertraege.dc.html' }
+]; this.START = 2410; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
+  dateOf(d) { var x = new Date(2026, 9, 24); x.setDate(x.getDate() + d); return x; }
+  dayLabel(d) { var x = this.dateOf(d); return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][x.getDay()] + ' ' + x.getDate() + '. ' + ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.'][x.getMonth()]; }
+  shortLabel(d) { var x = this.dateOf(d); return x.getDate() + '.' + (x.getMonth() + 1) + '.'; }
+  running(list, start) { var bal = start, out = [], min = { bal: start, d: 0 }; var byDay = {}; list.forEach(function (b) { byDay[b.d] = (byDay[b.d] || 0) + b.amt; }); Object.keys(byDay).map(Number).sort(function (a, b) { return a - b; }).forEach(function (d) { bal += byDay[d]; out.push({ d: d, bal: bal }); if (bal < min.bal) min = { bal: bal, d: d }; }); return { points: out, min: min, end: bal }; }
+
   renderVals() {
-    return {};
+    var self = this, s = this.state, col = { w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A', x: '#215F33' };
+    var planned = this.B.filter(function (b) { return !s.paid[b.id]; });
+    var bal = this.START + this.B.filter(function (b) { return s.paid[b.id]; }).reduce(function (a, b) { return a + b.amt; }, 0);
+    var run = this.running(planned.filter(function (b) { return b.d <= 60 && b.amt !== 0; }), bal);
+    var inArea = function (b) { return s.area === 'all' || b.area === s.area; };
+    var shown = planned.filter(function (b) { return b.d <= s.horizon && inArea(b); });
+    var groups = {}; shown.forEach(function (b) { (groups[b.d] = groups[b.d] || []).push(b); });
+    var days = Object.keys(groups).map(Number).sort(function (a, b) { return a - b; }).map(function (d) { var items = groups[d], sum = items.reduce(function (a, b) { return a + b.amt; }, 0), over = d === 1 && items.some(function (b) { return b.id === 'sw'; });
+      return { title: over ? 'Überfällig' : self.dayLabel(d), meta: (d === 1 ? 'sofort' : 'in ' + d + ' Tagen') + ' · ' + eur(sum) + ' €', items: items.map(function (b) { return { name: b.name, sub: b.sub, dotst: 'background: ' + (b.id === 'sw' ? '#E03C31' : col[b.area]), nst: b.id === 'sw' ? 'color: #943333' : '', vst: b.amt > 0 ? 'color: #215F33' : '', val: b.amt === 0 ? '–' : (b.amt > 0 ? '+' : '') + eur(b.amt), open: function () { self.setState({ sel: b.id }); } }; }) }; });
+    var out14 = shown.filter(function (b) { return b.amt < 0; }).reduce(function (a, b) { return a + b.amt; }, 0), in14 = shown.filter(function (b) { return b.amt > 0; }).reduce(function (a, b) { return a + b.amt; }, 0);
+    var sel = this.B.filter(function (b) { return b.id === s.sel; })[0];
+    var areaName = { all: 'Alle', w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' }[s.area];
+    return {
+      toast: s.toast,
+      balLabel: s.area === 'all' ? 'Kontostand heute' : 'Abflüsse ' + areaName + ' · ' + s.horizon + ' Tage',
+      balFmt: s.area === 'all' ? eur(bal) : eur(out14),
+      minLine: s.area === 'all' ? 'Tiefster Stand ' + eur(run.min.bal) + ' € am ' + this.dayLabel(run.min.d) + ' · Gehalt 3.400 € am ' + this.dayLabel(6) : 'Ein Konto lässt sich nicht je Bereich aufteilen – hier zählen nur die Abflüsse des Bereichs.',
+      chips: this.chipItems('area', [['all', 'Alle'], ['w', 'Wohnen'], ['m', 'Mobilität'], ['h', 'Haushalt']], true),
+      horizonCls: s.horizon === 14 ? 'chip lt' : 'chip lt on', horizonLabel: s.horizon === 14 ? '14 Tage' : '60 Tage', flipHorizon: function () { self.setState({ horizon: s.horizon === 14 ? 60 : 14 }); },
+      days: days, empty: days.length === 0,
+      pruef: s.area === 'all' ? 'Prüfung: ' + eur(bal) + ' − Abflüsse ' + eur(-out14) + ' + Zuflüsse ' + eur(in14) + ' = ' + eur(bal + out14 + in14) + ' € nach ' + s.horizon + ' Tagen. Rücklagen verändern den Kontostand nicht; ihre Verwendung (HUK, HU) schon.' : 'Abflüsse ' + areaName + ' in ' + s.horizon + ' Tagen: ' + eur(-out14) + ' €. Umschalten auf „Alle“ zeigt den Saldo.',
+      sel: !!sel, selName: sel ? sel.name : '', selHref: sel ? sel.href : 'Main.dc.html',
+      selText: sel ? (sel.amt === 0 ? 'Termin ohne Planbetrag – erscheint nur in der Liste, nicht im Verlauf.' : (s.paid[sel.id] ? 'Als gebucht markiert: Kontostand ' + eur(bal) + ' €. Rückgängig setzt die Planung wieder ein.' : (sel.amt > 0 ? '+' : '') + eur(sel.amt) + ' € am ' + self.dayLabel(sel.d) + '. Als gebucht markieren, sobald die Buchung auf dem Konto ist – der Kontostand wird dann fortgeschrieben.')) : '',
+      selCanPay: !!sel && sel.amt !== 0, payLabel: sel && s.paid[sel.id] ? 'Rückgängig' : 'Als gebucht markieren',
+      markPaid: function () { if (!sel) return; var p = Object.assign({}, s.paid); p[sel.id] = !p[sel.id]; self.setState({ paid: p, sel: null }); self.say(p[sel.id] ? sel.name + ' gebucht · Kontostand ' + eur(bal + sel.amt) + ' €' : 'Wieder geplant'); },
+      closeSel: this.go('sel', null)
+    };
   }
 }
 </script>

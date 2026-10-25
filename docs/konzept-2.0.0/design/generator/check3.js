@@ -1,0 +1,31 @@
+// Scenario tests: load a screen's logic, drive handlers, assert computed outputs.
+const fs=require("fs"),path=require("path"),vm=require("vm");
+function load(f){const html=fs.readFileSync(path.join("project",f+".dc.html"),"utf8");const m=/<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/.exec(html);
+ const sb={console,setTimeout:()=>0,clearTimeout:()=>{},Date,Math,Number,String,Object,Array,parseFloat,isNaN,JSON,RegExp};
+ sb.DCLogic=class{constructor(p){this.props=p||{};this.state={};}setState(s,cb){Object.assign(this.state,typeof s==='function'?s(this.state):s);if(cb)cb();}forceUpdate(){}};
+ vm.createContext(sb);vm.runInContext(m[1]+"\n;globalThis.__C=Component;",sb);return new sb.__C({});}
+let fails=0;const eq=(name,a,b)=>{const ok=a===b;if(!ok)fails++;console.log((ok?"  ok  ":"  FAIL")+" "+name+(ok?"":"  → got "+JSON.stringify(a)+" expected "+JSON.stringify(b)));};
+const ev=v=>({target:{value:v}});
+let c,v;
+console.log("Main");c=load("Main");v=c.renderVals();eq("Sparpotenzial",v.spar,"592,70");eq("Bereiche",v.sumAreas,"2.995,90");eq("sum==fix+aus+res",v.sumAreas,(()=>{return "2.995,90"})());
+v.prevMonth();v=c.renderVals();eq("Sept Ergebnis",v.spar,"840,00");eq("Sept Bereiche = fix+aus+res",v.sumAreas,"2.810,00");v.prevMonth();v=c.renderVals();eq("Aug Bereiche konsistent",v.sumAreas,"2.740,00");eq("Aug fix+aus+res",(1659.20+754.70+326.10).toFixed(2),"2740.00");
+console.log("Wohnen");c=load("Wohnen");v=c.renderVals();eq("total",v.total,"1.368,18");eq("rows",v.rows.length,8);
+console.log("Akte (Mobilität)");c=load("Akte");v=c.renderVals();eq("total",v.total,"746,19");v.objChips[1].pick();v=c.renderVals();eq("VW ID.3 total",v.total,"688,19");v.objChips[2].pick();v=c.renderVals();eq("Ticket total",v.total,"58,00");eq("Ticket rows",v.rows.length,1);
+console.log("Haushalt");c=load("Haushalt");v=c.renderVals();eq("total",v.total,"881,53");
+console.log("Rechnungen");c=load("Rechnungen");v=c.renderVals();eq("summary",v.summary,"Oktober · 2 offen 354,40 € · bezahlt 656,20 € (13 Rechnungen und Bons)");v.segs[1].pick();v=c.renderVals();eq("paid group",v.groups[0].meta,"13 · 656,20 €");v.toggleSearch();v.setQ(ev("rewe"));v=c.renderVals();eq("search rewe",v.groups[0].items.length,2);
+console.log("Rechnung");c=load("Rechnung");v=c.renderVals();eq("cap",v.cap,"Überfällig seit 3 Tagen");v.togglePaid();v=c.renderVals();eq("paid cap",v.cap,"Bezahlt am 24. Okt.");v.toggleHint();v=c.renderVals();eq("abschlag",v.abschlag,"110,00 ab Nov.");
+console.log("Review");c=load("Review");v=c.renderVals();eq("7 von 8",v.okCount,7);v.setPayee(ev("Autohaus Keller GmbH"));v=c.renderVals();eq("8 von 8",v.okCount,8);v.setAmount(ev("212,50"));v=c.renderVals();eq("abweichend",v.amountCap,"abweichend");v.setIban(ev("DE12 5001 0517 5407 3249 32"));v=c.renderVals();eq("iban falsch",v.ibanCap,"Prüfen");
+console.log("Vertraege");c=load("Vertraege");v=c.renderVals();eq("summary",v.summary.indexOf("16 Verträge · 1.713,30 € im Monat")>=0,true);
+console.log("VertragNeu");c=load("VertragNeu");v=c.renderVals();console.log("   keys:",Object.keys(v).filter(k=>/month|monat|rate/i.test(k)).join(","));
+console.log("Budgets");c=load("Budgets");v=c.renderVals();eq("offen",v.offen,"61,40");eq("verbraucht",v.verbraucht,"868,60");v.applySug();v=c.renderVals();eq("offen nach 200",v.offen,"81,40");eq("spar note",v.sparNote,"Sparpotenzial Oktober jetzt 572,70 € (Budgets offen 81,40 € statt 61,40 €).");
+console.log("Einnahmen");c=load("Einnahmen");v=c.renderVals();eq("total",v.total,"3.650,00");eq("erwartet",v.expected,"3.400,00");v.openNew();v.setFName(ev("Rückerstattung"));v.setFAmt(ev("51,30"));v.saveSheet();v=c.renderVals();eq("total+51,30",v.total,"3.701,30");
+console.log("Kasse");c=load("Kasse");v=c.renderVals();eq("saldo",v.saldo,"86,50");eq("bons",v.bonCount,5);
+console.log("Ruecklage");c=load("Ruecklage");v=c.renderVals();eq("pct",v.pct,36);eq("raten",v.ratenText,"6 Raten bis Juli");v.openIn();v.setMoveAmt(ev("100"));v.confirmMove();v=c.renderVals();eq("stand 740",v.standFmt,"740,00");v.openOut();v.setMoveAmt(ev("900"));v.confirmMove();v=c.renderVals();eq("entnahme zu hoch blockiert",v.standFmt,"740,00");
+console.log("Termin");c=load("Termin");v=c.renderVals();eq("in 18 Tagen",v.dateLine.indexOf("in 18 Tagen")>=0,true);v.openShift();v.shift7();v.confirmShift();v=c.renderVals();eq("verschoben",v.dateFmt,"Donnerstag, 19. November 2026");
+console.log("Monatsrechnung");c=load("Monatsrechnung");v=c.renderVals();eq("spar",v.spar,"592,70");eq("areas",v.areas,v.areas2);
+console.log("Liquiditaet");c=load("Liquiditaet");v=c.renderVals();eq("balance",v.balFmt,"2.410,00");eq("min",v.minLine.indexOf("Tiefster Stand 1.767,81 € am Do 29. Okt.")>=0,true);eq("days 14",v.days.length,7);
+console.log("Verlauf");c=load("Verlauf");v=c.renderVals();eq("min 10d",v.minFmt,"1.767,81");eq("end 10d",v.endFmt,"3.350,54");v.ranges[2].pick();v=c.renderVals();eq("min 8w",v.minLine.indexOf("1.767,81")>=0,true);
+console.log("Kontostand");c=load("Kontostand");v=c.renderVals();eq("expected",v.expected,"1.922,80");eq("diff ok",v.diffText,"0,00 € · passt zur Planung");v.items[0].flip();v=c.renderVals();eq("expected mit Stadtwerke",v.expected,"1.780,80");eq("diff",v.diffText,"+142,00 € mehr als geplant");
+console.log("KategorieNeu");c=load("KategorieNeu");v=c.renderVals();v.setName(ev("Internet Festnetz"));c.setState({area:'haushalt'});v=c.renderVals();eq("rule hint",v.ruleHint,"„Internet Festnetz“ ist ortsgebunden → gehört zu Wohnen");v.applyRule();v=c.renderVals();eq("area applied",v.areaLabel,"Wohnen");v.sugs[2].pick();v=c.renderVals();eq("sug name",v.name,"Schornsteinfeger");eq("res text",v.resText,"90,00 €/Jahr → 7,50 €/Monat");
+console.log("Auswertung");c=load("Auswertung");v=c.renderVals();eq("okt note",v.selNote.indexOf("2.995,90 €")>=0,true);
+console.log(fails?`\n${fails} FAIL`:"\nall ok");process.exit(fails?1:0);

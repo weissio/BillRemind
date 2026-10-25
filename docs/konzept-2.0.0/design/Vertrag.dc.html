@@ -11,10 +11,12 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
 .hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
 .hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
 .hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
-.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
 .hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
 .hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
 .hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
@@ -23,40 +25,65 @@ body{margin:0}
 .bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
 .bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
 .h2 span{text-transform:none;font-weight:500;letter-spacing:0}
-.h2 a{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480}
-.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .f .v.ph{color:#9AA5B4;font-weight:400}
 .f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
-.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
 .row .n{font-size:15px;font-weight:600;line-height:1.2}
 .row .s{font-size:12px;color:#637894;margin-top:2px}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
 .sep{height:1px;background:#EEF1F5;margin-left:16px}
 .chev{width:8px;height:13px;flex:none}
 .cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
-.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;text-decoration:none}
-.seg span.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
 .pri{background:#2A5480;color:#FFFFFF}
 .sec2{background:#E6EEF6;color:#2A5480}
 .danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
 .bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
 .bar2 i{display:block;height:6px;border-radius:3px}
-.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
 .tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tog.off{background:#D1D6DE}
 .tog.off::after{right:auto;left:2px}
 .note{margin:8px 4px 0;font-size:12px;color:#637894}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
+.urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
@@ -66,23 +93,36 @@ a{color:#2A5480}
 <div class="root">
 <div class="scroll">
   <div class="hdr">
-    <div class="nav"><a class="back" href="Vertraege.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Verträge</a><p class="ttl">Vertrag</p><a class="act" href="VertragNeu.dc.html">Bearbeiten</a></div>
-
-    <span class="cap" style="background: rgba(255,255,255,.16); color: #FFFFFF; margin-top: 14px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #E8A33D; display: inline-block; margin-right: 6px; vertical-align: middle"></span>Wohnen › Strom · Versorger</span>
+    <div class="nav"><a class="back" href="Vertraege.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Verträge</a><p class="ttl">Vertrag</p><button class="act" onClick="{{toggleEdit}}">{{editLabel}}</button></div>
+    <span class="cap" style="background: rgba(255,255,255,.16); color: #FFFFFF; margin-top: 14px"><span class="dot" style="background: #E8A33D; margin-right: 6px"></span>Wohnen › Strom · Versorger</span>
     <h1 style="margin-top: 10px">Stadtwerke Mainstadt · Strom</h1>
-    <p class="sub">Wohnung Hauptstr. 12 · Kundennr. 4471120</p>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">98,00 €</p><p style="margin: 0; font-size: 13px; opacity: .85">monatlich · 1.176,00 €/Jahr</p></div>
+    <p class="sub">Wohnung Hauptstr. 12 · Kundennr. 4471120 · {{stateLine}}</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{abschlag}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">monatlich · {{jahr}} €/Jahr</p></div>
   </div>
+
+  <sc-if value="{{edit}}" hint-placeholder-val="{{false}}">
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Bearbeiten</h2>
+    <div class="card">
+      <div class="f"><p class="l">Abschlag</p><input class="in num" value="{{abschlagIn}}" onChange="{{setAbschlag}}" inputmode="decimal"><span style="font-size: 14px; color: #637894">€ / Monat</span></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Zahltag</p><select class="in" value="{{payday}}" onChange="{{setPayday}}"><option value="1">1. des Monats</option><option value="15">15. des Monats</option><option value="28">28. des Monats</option></select></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Kündigungsfrist</p><select class="in" value="{{notice}}" onChange="{{setNotice}}"><option value="6w">6 Wochen zum Laufzeitende</option><option value="4w">4 Wochen</option><option value="3m">3 Monate</option><option value="none">keine, jederzeit</option></select></div>
+    </div>
+    <p class="note">{{editEffect}}</p>
+  </div>
+  </sc-if>
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <div class="f"><p class="l">Nächste Abbuchung</p><p class="v ">1. Nov. 2026 · Lastschrift</p></div>
+      <div class="f"><p class="l">Nächste Abbuchung</p><p class="v">{{nextDebit}}</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Abschlag</p><p class="v ">98,00 € <span style='color:#637894;font-weight:400'>· seit Jan. 2026</span></p></div>
+      <div class="f"><p class="l">Abschlag</p><p class="v">{{abschlag}} € <span style="color: #637894; font-weight: 400">· seit Jan. 2026</span></p></div>
       <div class="sep"></div>
       <a class="f" href="Rechnung.dc.html"><p class="l">Jahresabrechnung</p><p class="v" style="color: #943333">Nachzahlung 142,00 € · überfällig</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep"></div>
-      <a class="f" href="#"><p class="l">Vorschlag</p><p class="v wrap">Abschlag auf 110 € anheben – dann keine Nachzahlung 2027. Übernehmen?</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <button class="f" onClick="{{applyHint}}"><p class="l">Vorschlag</p><p class="v wrap">{{hintText}}</p><span class="cap" style="{{hintSt}}">{{hintCap}}</span></button>
     </div>
   </div>
 
@@ -91,9 +131,9 @@ a{color:#2A5480}
     <div class="card">
       <div class="f"><p class="l">Laufzeit</p><p class="v wrap">seit 1. Jan. 2024 · bis 31. Dez. 2026, dann +12 Monate</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Kündigungsfrist</p><p class="v wrap">6 Wochen · <b>kündbar bis 19. Nov. 2026</b></p></div>
+      <div class="f"><p class="l">Kündigungsfrist</p><p class="v wrap">{{noticeText}}</p></div>
       <div class="sep"></div>
-      <a class="f" href="#"><p class="l">Erinnerung</p><p class="v ">4 Wochen vorher · 22. Okt. ✓</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <button class="f" onClick="{{cycleRemind}}"><p class="l">Erinnerung</p><p class="v">{{remind}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
   </div>
 
@@ -104,17 +144,21 @@ a{color:#2A5480}
       <div class="sep"></div>
       <a class="f" href="Rechnungen.dc.html"><p class="l">Buchungen</p><p class="v">10 Abschläge 2026 · 1 Abrechnung</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep"></div>
-      <a class="f" href="#"><p class="l">Dokumente</p><p class="v">Vertrag.pdf · Abrechnung 2025.pdf</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <button class="f" onClick="{{openDocs}}"><p class="l">Dokumente</p><p class="v">Vertrag.pdf · Abrechnung 2025.pdf</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
       <a class="f" href="Termin.dc.html"><p class="l">Termin</p><p class="v">Zählerstand melden · 15. Dez.</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
     </div>
   </div>
 
   <div style="padding: 16px 20px 0 20px; display: flex; gap: 10px">
-    <a class="btn sec2" href="#">Kündigungsschreiben</a>
-    <a class="btn danger" href="#" style="flex: 0 0 auto; padding: 0 16px">Beenden</a>
+    <button class="btn sec2" onClick="{{openLetter}}">Kündigungsschreiben</button>
+    <button class="btn {{endCls}}" style="flex: 0 0 auto; padding: 0 16px" onClick="{{askEnd}}">{{endLabel}}</button>
   </div>
-  <p class="note" style="margin-left: 24px">„Beenden" setzt ein Enddatum; der Vertrag bleibt in der Historie und fällt ab dem Folgemonat aus den Fixkosten.</p>
+  <p class="note" style="margin: 10px 24px 0">„Beenden“ setzt ein Enddatum; der Vertrag bleibt in der Historie und fällt ab dem Folgemonat aus den Fixkosten.</p>
+
+  <sc-if value="{{letter}}" hint-placeholder-val="{{false}}"><div class="sheetbg" style="align-items: stretch; background: #16243A"><div style="flex: 1; display: flex; flex-direction: column; color: #FFFFFF"><div style="display: flex; justify-content: space-between; align-items: center; padding: 56px 20px 10px"><button class="act" style="text-align: left" onClick="{{closeLetter}}">Fertig</button><p class="ttl">Kündigungsschreiben</p><button class="act" onClick="{{shareLetter}}">Teilen</button></div><div style="flex: 1; margin: 10px 24px 24px; background: #FFFFFF; border-radius: 8px; color: #16243A; padding: 26px 22px; font-size: 11.5px; line-height: 1.6; overflow: auto; white-space: pre-line">{{letterText}}</div></div></div></sc-if>
+  <sc-if value="{{docs}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Dokumente</h3><p>Originale bleiben auf dem iPhone, Teil des ZIP-Backups.</p><div class="card"><button class="f" onClick="{{shareDoc}}"><p class="v">Vertrag.pdf</p><p class="v ph" style="flex: none; width: auto">12. Dez. 2023 · 2 Seiten</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button><div class="sep"></div><button class="f" onClick="{{shareDoc}}"><p class="v">Abrechnung 2025.pdf</p><p class="v ph" style="flex: none; width: auto">3. Okt. 2026 · 3 Seiten</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button></div><div style="display: flex; gap: 10px; margin-top: 14px"><button class="btn sec2" onClick="{{closeDocs}}">Schließen</button><a class="btn pri" href="Erfassen.dc.html">Dokument hinzufügen</a></div></div></div></sc-if>
+  <sc-if value="{{confirmEnd}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Vertrag beenden?</h3><p>{{endText}}</p><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{cancelEnd}}">Abbrechen</button><button class="btn danger" onClick="{{doEnd}}">Beenden zum 31.12.</button></div></div></div></sc-if>
 
 </div>
 
@@ -125,12 +169,55 @@ a{color:#2A5480}
     <a class="tab on" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { edit: false, abschlagIn: '98,00', abschlag: 98, payday: '1', notice: '6w', hint: false, remind: 0, letter: false, docs: false, confirmEnd: false, ended: false, toast: '' }; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
   renderVals() {
-    return {};
+    var self = this, s = this.state, a = s.abschlag;
+    var notices = { '6w': '6 Wochen · kündbar bis 19. Nov. 2026', '4w': '4 Wochen · kündbar bis 3. Dez. 2026', '3m': '3 Monate · kündbar bis 30. Sep. 2026 (verpasst → Verlängerung bis 31. Dez. 2027)', 'none': 'keine · jederzeit zum Monatsende' };
+    var reminds = ['4 Wochen vorher · 22. Okt. ✓', '2 Wochen vorher · 5. Nov.', '1 Woche vorher · 12. Nov.', 'aus'];
+    var newA = num(s.abschlagIn) || a;
+    return {
+      toast: s.toast,
+      edit: s.edit, editLabel: s.edit ? 'Fertig' : 'Bearbeiten',
+      toggleEdit: function () { if (s.edit) { self.setState({ edit: false, abschlag: newA }); if (newA !== a) self.say('Abschlag ' + eur(newA) + ' € · Fixkosten Wohnen ' + (newA > a ? '+' : '−') + eur(Math.abs(newA - a)) + ' €/Monat'); } else self.setState({ edit: true, abschlagIn: eur(a) }); },
+      abschlagIn: s.abschlagIn, setAbschlag: this.set('abschlagIn'),
+      payday: s.payday, setPayday: this.set('payday'), notice: s.notice, setNotice: this.set('notice'),
+      editEffect: 'Neuer Abschlag ' + eur(newA) + ' € ab ' + s.payday + '. Nov. → Fixkosten Wohnen ' + eur(1218.35 - a + newA) + ' €, Sparpotenzial ' + eur(592.70 + a - newA) + ' €.',
+      stateLine: s.ended ? 'beendet zum 31. Dez. 2026' : 'aktiv',
+      abschlag: eur(a), jahr: eur(a * 12),
+      nextDebit: s.ended ? '1. Nov. 2026 · letzte: 1. Dez. 2026' : s.payday + '. Nov. 2026 · Lastschrift',
+      hintText: s.hint ? 'Übernommen: Abschlag 110 € ab Nov. – keine Nachzahlung 2027 bei gleichem Verbrauch.' : 'Abschlag auf 110 € anheben – dann keine Nachzahlung 2027. Übernehmen?',
+      hintCap: s.hint ? 'Übernommen' : 'Übernehmen', hintSt: s.hint ? 'background: #D6EDDB; color: #215F33' : 'background: #E6EEF6; color: #2A5480',
+      applyHint: function () { if (s.hint) { self.setState({ hint: false, abschlag: 98, abschlagIn: '98,00' }); } else { self.setState({ hint: true, abschlag: 110, abschlagIn: '110,00' }); self.say('Abschlag 110,00 € ab 1. Nov. · Fixkosten Wohnen +12,00 €'); } },
+      noticeText: notices[s.notice],
+      remind: reminds[s.remind], cycleRemind: function () { self.setState({ remind: (s.remind + 1) % reminds.length }); },
+      openDocs: this.go('docs', true), closeDocs: this.go('docs', false), docs: s.docs, shareDoc: function () { self.say('PDF geöffnet'); },
+      openLetter: this.go('letter', true), closeLetter: this.go('letter', false), letter: s.letter, shareLetter: function () { self.say('Als PDF geteilt · Erinnerung „Bestätigung prüfen“ in 14 Tagen'); },
+      letterText: 'Arjen Muster\nHauptstr. 12\n76131 Mainstadt\n\nStadtwerke Mainstadt GmbH\nKundenservice\nEnergiestr. 1\n76131 Mainstadt\n\nMainstadt, 24. Oktober 2026\n\nKündigung Stromliefervertrag · Kundennummer 4471120 · Zählernummer 1 EMH 00 2345 6789\n\nSehr geehrte Damen und Herren,\n\nhiermit kündige ich den oben genannten Stromliefervertrag fristgerecht zum nächstmöglichen Zeitpunkt, nach meiner Berechnung zum 31. Dezember 2026. Bitte bestätigen Sie mir den Eingang dieser Kündigung sowie das Vertragsende schriftlich.\n\nDen Zählerstand zum Vertragsende teile ich Ihnen gesondert mit. Ein eventuelles Guthaben überweisen Sie bitte auf das Ihnen bekannte Konto.\n\nMit freundlichen Grüßen\n\nArjen Muster',
+      endCls: s.ended ? 'ok' : 'danger', endLabel: s.ended ? 'Beendet' : 'Beenden',
+      askEnd: function () { if (s.ended) { self.setState({ ended: false }); self.say('Vertrag wieder aktiv'); } else self.setState({ confirmEnd: true }); },
+      confirmEnd: s.confirmEnd, cancelEnd: this.go('confirmEnd', false),
+      endText: 'Enddatum 31. Dez. 2026. Ab Januar fallen ' + eur(a) + ' €/Monat aus den Fixkosten; die Jahresabrechnung 2026 wird als letzte Buchung erwartet.',
+      doEnd: function () { self.setState({ confirmEnd: false, ended: true }); self.say('Beendet zum 31.12.2026 · Fixkosten ab Jan. −' + eur(a) + ' €'); }
+    };
   }
 }
 </script>

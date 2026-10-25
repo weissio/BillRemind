@@ -11,73 +11,156 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
 .hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
 .hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
 .hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
+.hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
 .hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
-.hdr .sub{margin:4px 0 0;font-size:13px;opacity:.8}
+.hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
+.hdr .sub{margin:6px 0 0;font-size:13px;opacity:.8}
+.bar{background:#1C3250;color:#FFFFFF;padding:56px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px}
-.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit}
-.f .l{margin:0;font-size:14px;color:#637894;width:128px;flex:none}
-.f .v{margin:0;font-size:16px;font-weight:500;flex:1;min-width:0}
-.row{display:flex;align-items:center;gap:12px;min-height:46px;padding:3px 16px}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
+.f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .v.ph{color:#9AA5B4;font-weight:400}
+.f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
-.row .n{font-size:15px;font-weight:500;flex:1}
-.row .s{font-size:12px;color:#637894}
-.row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.row .n{font-size:15px;font-weight:600;line-height:1.2}
+.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
+.row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
 .sep{height:1px;background:#EEF1F5;margin-left:16px}
 .chev{width:8px;height:13px;flex:none}
-.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;flex:1}
+.cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
+.pri{background:#2A5480;color:#FFFFFF}
+.sec2{background:#E6EEF6;color:#2A5480}
+.danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
+.bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
+.bar2 i{display:block;height:6px;border-radius:3px}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
+.tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.off{background:#D1D6DE}
+.tog.off::after{right:auto;left:2px}
+.note{margin:8px 4px 0;font-size:12px;color:#637894}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
+.urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
 a{color:#2A5480}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
+
+.sym{width:40px;height:40px;border-radius:20px;border:1px solid #D1DBE8;background:#FFFFFF;color:#637894;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sym.on{background:#2A5480;border-color:#2A5480;color:#FFFFFF}
+.chk{width:24px;height:24px;border-radius:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;border:2px solid #C4CCD6;background:none;padding:0;cursor:pointer;color:#FFFFFF}
+.chk.on{background:#2A5480;border-color:#2A5480}
+.month{display:flex;gap:6px;align-items:flex-end;height:96px;padding:0 4px}
+.month button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;background:none;border:0;padding:0;cursor:pointer;font:inherit;height:100%}
+.month i{display:block;width:100%;border-radius:5px 5px 0 0;background:#D1DBE8}
+.month i.on{background:#2A5480}
+.month span{font-size:11px;color:#637894}
+.month span.on{color:#16243A;font-weight:700}
 </style>
 </helmet>
 <div class="root">
 <div class="scroll">
   <div class="hdr">
-    <div class="nav"><a class="back" href="Akte.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mobilität</a><p style="margin: 0; font-size: 15px; font-weight: 600; opacity: .85">Termin</p><a href="#" style="color: #FFFFFF; font-size: 15px; font-weight: 700; text-decoration: none">Bearbeiten</a></div>
+    <div class="nav"><a class="back" href="Akte.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Mobilität</a><p class="ttl">Termin</p><button class="act" onClick="{{toggleEdit}}">{{editLabel}}</button></div>
     <h1>HU/AU · VW ID.3</h1>
-    <p class="sub">Donnerstag, 12. November 2026 · in 19 Tagen · wiederholt sich alle 24 Monate</p>
+    <p class="sub">{{dateLine}}</p>
   </div>
+
+  <sc-if value="{{edit}}" hint-placeholder-val="{{false}}">
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Termin bearbeiten</h2>
+    <div class="card">
+      <div class="f"><p class="l">Datum</p><input class="in" value="{{dateDraft}}" onChange="{{setDateDraft}}" placeholder="TT.MM.JJJJ"></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Planbetrag</p><input class="in num" value="{{planDraft}}" onChange="{{setPlanDraft}}" inputmode="decimal"><span style="font-size: 14px; color: #637894">€</span></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Wiederholung</p><select class="in" value="{{rec}}" onChange="{{setRec}}"><option value="24">alle 24 Monate</option><option value="12">jährlich</option><option value="6">halbjährlich</option><option value="0">einmalig</option></select></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Erinnerung</p><select class="in" value="{{rem}}" onChange="{{setRem}}"><option value="30">30 Tage vorher + 7 Tage vorher</option><option value="14">14 Tage vorher</option><option value="7">7 Tage vorher</option><option value="0">keine</option></select></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Kilometerstand</p><input class="in num" value="{{kmDraft}}" onChange="{{setKmDraft}}" inputmode="numeric"><span style="font-size: 14px; color: #637894">km</span></div>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 12px"><button class="btn pri sm" onClick="{{saveEdit}}">Sichern</button><button class="btn danger sm" onClick="{{askDelete}}">Termin löschen</button></div>
+  </div>
+  </sc-if>
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <div class="f"><p class="l">Planbetrag</p><p class="v">150,00 € <span style="color: #637894; font-weight: 400">· aus Rücklage HU und Reifen</span></p></div>
+      <div class="f"><p class="l">Planbetrag</p><p class="v">{{planFmt}} € <span style="color: #637894; font-weight: 400">· aus Rücklage HU und Reifen</span></p></div>
       <div class="sep"></div>
-      <a class="f" href="Ruecklage.dc.html"><p class="l">Rücklage</p><p class="v">HU und Reifen · 120 von 190 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <a class="f" href="Ruecklage.dc.html"><p class="l">Rücklage</p><p class="v">HU und Reifen · {{resLine}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep"></div>
-      <div class="f"><p class="l">Erinnerung</p><p class="v">30 Tage vorher · war am 13. Okt. · nochmals 7 Tage vorher</p></div>
+      <div class="f"><p class="l">Erinnerung</p><p class="v wrap">{{remText}}</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Kategorie</p><p class="v">Mobilität › Werkstatt &amp; Reifen</p></div>
+      <a class="f" href="Kategorie.dc.html"><p class="l">Kategorie</p><p class="v">Mobilität › Werkstatt &amp; Reifen</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep"></div>
-      <div class="f"><p class="l">Kilometerstand</p><p class="v">61.240 km <span style="color: #637894; font-weight: 400">· zuletzt 16. Okt.</span></p></div>
+      <div class="f"><p class="l">Kilometerstand</p><p class="v">{{kmFmt}} km <span style="color: #637894; font-weight: 400">· zuletzt 16. Okt.</span></p></div>
       <div class="sep"></div>
-      <a class="f" href="#"><p class="l">Systemkalender</p><p class="v">Eingetragen · „Mnemor"</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Im Systemkalender</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{calText}}</p><button class="{{calCls}}" aria-label="Systemkalender" onClick="{{flipCal}}"></button></div>
     </div>
   </div>
 
   <div style="padding: 20px 20px 0 20px">
     <h2 class="h2">Bisher</h2>
     <div class="card">
-      <div class="row"><div><p class="n">HU/AU bestanden</p><p class="s">14. Nov. 2024 · 139,90 € · Prüfstelle Süd</p></div><p class="v">139,90</p></div>
-      <div class="sep"></div>
-      <div class="row"><div><p class="n">HU/AU bestanden</p><p class="s">9. Nov. 2022 · 129,00 €</p></div><p class="v">129,00</p></div>
+      <sc-for list="{{hist}}" as="h" hint-placeholder-count="2">
+        <div class="row"><div class="mid"><p class="n" style="font-weight: 500">{{h.name}}</p><p class="s">{{h.sub}}</p></div><p class="v">{{h.val}}</p></div>
+        <div class="sep"></div>
+      </sc-for>
     </div>
   </div>
 
   <div style="padding: 16px 20px 0 20px; display: flex; gap: 10px">
-    <a class="btn" href="Erfassen.dc.html" style="background: #2A5480; color: #FFFFFF">Erledigt – Beleg erfassen</a>
-    <a class="btn" href="#" style="background: #E6EEF6; color: #2A5480; flex: 0 0 auto; padding: 0 16px">Verschieben</a>
+    <button class="btn {{doneCls}}" onClick="{{openDone}}">{{doneLabel}}</button>
+    <button class="btn sec2" style="flex: 0 0 auto; padding: 0 16px" onClick="{{openShift}}">Verschieben</button>
   </div>
-  <p style="margin: 10px 24px 0; font-size: 12px; color: #637894">„Erledigt" legt den nächsten Termin an (Nov. 2028), bucht den Beleg in Werkstatt &amp; Reifen und entnimmt den Betrag aus der Rücklage.</p>
-
-
+  <p class="note" style="margin: 10px 24px 0">„Erledigt“ legt den nächsten Termin an, bucht den Beleg in Werkstatt &amp; Reifen und entnimmt den Betrag aus der Rücklage.</p>
+<sc-if value="{{shift}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Termin verschieben</h3><p>Aktuell {{dateFmt}}. Erinnerungen werden mitverschoben.</p><div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px"><button class="chip lt" onClick="{{shift7}}">+1 Woche</button><button class="chip lt" onClick="{{shift30}}">+1 Monat</button><button class="chip lt" onClick="{{shiftM7}}">−1 Woche</button></div><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Neues Datum</p><input class="in" value="{{shiftDate}}" onChange="{{setShiftDate}}" placeholder="TT.MM.JJJJ"></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeShift}}">Abbrechen</button><button class="btn pri" onClick="{{confirmShift}}">Verschieben</button></div></div></div></sc-if><sc-if value="{{doneSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>HU/AU erledigt?</h3><p>Mit Beleg: Werkstattrechnung scannen, Betrag ersetzt den Planbetrag {{planFmt}} € und wird aus der Rücklage entnommen. Ohne Beleg: Planbetrag wird gebucht.</p><div style="display: flex; gap: 10px"><a class="btn pri" href="Erfassen.dc.html">Beleg erfassen</a><button class="btn sec2" onClick="{{doneNoDoc}}">Ohne Beleg</button></div><button class="btn" style="margin-top: 10px; background: none; color: #637894" onClick="{{closeDone}}">Abbrechen</button></div></div></sc-if><sc-if value="{{confirmDelete}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Termin löschen?</h3><p>Die Wiederholung endet. Erledigte Termine bleiben in der Historie.</p><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{cancelDelete}}">Abbrechen</button><a class="btn danger" href="Akte.dc.html">Löschen</a></div></div></div></sc-if>
 </div>
+
   <nav class="tabbar" aria-label="Hauptnavigation">
     <a class="tab on" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
     <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
@@ -85,12 +168,57 @@ a{color:#2A5480}
     <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { date: new Date(2026, 10, 12), plan: 150, rec: '24', rem: '30', km: 61240, cal: true, edit: false, dateDraft: '', planDraft: '', kmDraft: '', shift: false, shiftDate: '', doneSheet: false, done: false, confirmDelete: false, toast: '',
+    hist: [ { name: 'HU/AU bestanden', sub: '14. Nov. 2024 · 139,90 € · Prüfstelle Süd', val: '139,90' }, { name: 'HU/AU bestanden', sub: '9. Nov. 2022 · 129,00 €', val: '129,00' } ] }; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
+  fmtDate(d) { var days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'], mons = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']; return days[d.getDay()] + ', ' + d.getDate() + '. ' + mons[d.getMonth()] + ' ' + d.getFullYear(); }
+  shortDate(d) { return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear(); }
+  parseDate(s) { var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(s).trim()); return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null; }
   renderVals() {
-    return {};
+    var self = this, s = this.state, today = new Date(2026, 9, 25);
+    var diff = Math.round((s.date - today) / 86400000);
+    var recText = { '24': 'wiederholt sich alle 24 Monate', '12': 'jährlich', '6': 'halbjährlich', '0': 'einmalig' }[s.rec];
+    var remText = s.rem === '0' ? 'keine' : s.rem + ' Tage vorher' + (s.rem === '30' ? ' · war am 13. Okt. · nochmals 7 Tage vorher' : '');
+    var shiftTo = function (days) { var d = new Date(s.date); d.setDate(d.getDate() + days); self.setState({ shiftDate: self.shortDate(d) }); };
+    return {
+      toast: s.toast,
+      dateLine: s.done ? 'Erledigt am 25. Okt. 2026 · nächster Termin ' + this.fmtDate(s.date) : this.fmtDate(s.date) + ' · ' + (diff >= 0 ? 'in ' + diff + ' Tagen' : 'seit ' + (-diff) + ' Tagen überfällig') + ' · ' + recText,
+      dateFmt: this.fmtDate(s.date),
+      edit: s.edit, editLabel: s.edit ? 'Fertig' : 'Bearbeiten',
+      toggleEdit: function () { self.setState({ edit: !s.edit, dateDraft: self.shortDate(s.date), planDraft: eur(s.plan), kmDraft: String(s.km) }); },
+      dateDraft: s.dateDraft, setDateDraft: this.set('dateDraft'), planDraft: s.planDraft, setPlanDraft: this.set('planDraft'), kmDraft: s.kmDraft, setKmDraft: this.set('kmDraft'),
+      rec: s.rec, setRec: this.set('rec'), rem: s.rem, setRem: this.set('rem'),
+      saveEdit: function () { var d = self.parseDate(s.dateDraft); if (!d) { self.say('Datum als TT.MM.JJJJ eingeben'); return; } self.setState({ date: d, plan: num(s.planDraft), km: Math.round(num(s.kmDraft)), edit: false }); self.say('Gespeichert · Planbetrag ' + eur(num(s.planDraft)) + ' € in der Liquidität am ' + self.shortDate(d)); },
+      askDelete: this.go('confirmDelete', true), cancelDelete: this.go('confirmDelete', false), confirmDelete: s.confirmDelete,
+      planFmt: eur(s.plan), resLine: '120 von 190 €' + (s.plan > 190 ? ' · Planbetrag übersteigt die Rücklage um ' + eur(s.plan - 190) + ' €' : ''),
+      remText: remText, kmFmt: eur(s.km, 0),
+      calCls: this.tog('cal'), flipCal: function () { self.setState({ cal: !s.cal }); self.say(s.cal ? 'Aus dem Kalender entfernt' : 'In Kalender „Mnemor“ eingetragen'); }, calText: s.cal ? 'Kalender „Mnemor“' : 'nicht eingetragen',
+      hist: s.hist,
+      doneCls: s.done ? 'ok' : 'pri', doneLabel: s.done ? 'Erledigt ✓' : 'Erledigt – Beleg erfassen',
+      openDone: function () { if (s.done) { self.say('Nächster Termin ' + self.shortDate(s.date)); return; } self.setState({ doneSheet: true }); }, closeDone: this.go('doneSheet', false), doneSheet: s.doneSheet,
+      doneNoDoc: function () { var h = s.hist.slice(); h.unshift({ name: 'HU/AU bestanden', sub: '25. Okt. 2026 · Planbetrag · aus Rücklage entnommen', val: eur(s.plan) }); var d = new Date(s.date); d.setMonth(d.getMonth() + Number(s.rec || 24)); self.setState({ done: true, doneSheet: false, hist: h, date: Number(s.rec) ? d : s.date }); self.say(eur(s.plan) + ' € aus Rücklage entnommen · Folgetermin ' + (Number(s.rec) ? self.shortDate(d) : 'keiner')); },
+      shift: s.shift, openShift: function () { self.setState({ shift: true, shiftDate: self.shortDate(s.date) }); }, closeShift: this.go('shift', false),
+      shiftDate: s.shiftDate, setShiftDate: this.set('shiftDate'), shift7: function () { shiftTo(7); }, shift30: function () { shiftTo(30); }, shiftM7: function () { shiftTo(-7); },
+      confirmShift: function () { var d = self.parseDate(s.shiftDate); if (!d) { self.say('Datum als TT.MM.JJJJ eingeben'); return; } self.setState({ date: d, shift: false }); self.say('Verschoben auf ' + self.shortDate(d) + ' · Erinnerungen angepasst'); }
+    };
   }
 }
 </script>

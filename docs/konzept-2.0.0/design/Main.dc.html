@@ -11,113 +11,139 @@
 <style>
 body{margin:0}
 .root{width:390px;height:844px;box-sizing:border-box;background:#F3F5F8;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#16243A;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-.hdr{background:#1C3250;color:#FFFFFF;padding:56px 20px 64px}
+.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.hdr{background:#1C3250;color:#FFFFFF;padding:52px 20px 22px}
+.hdr .nav{display:flex;align-items:center;justify-content:space-between;min-height:34px}
+.hdr .back{display:inline-flex;align-items:center;gap:4px;color:#FFFFFF;text-decoration:none;font-size:15px;opacity:.9}
+.hdr .act{color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;background:none;border:0;padding:0;font-family:inherit;cursor:pointer;min-width:60px;text-align:right}
+.hdr .ttl{margin:0;font-size:15px;font-weight:600;opacity:.85}
+.hdr h1{margin:14px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.15}
+.hdr .big{margin:12px 0 0;white-space:nowrap;font-size:34px;font-weight:700;letter-spacing:-0.8px;line-height:1;font-variant-numeric:tabular-nums}
+.hdr .sub{margin:6px 0 0;font-size:13px;opacity:.8}
+.bar{background:#1C3250;color:#FFFFFF;padding:56px 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.bar a,.bar button{font:inherit;font-size:16px;color:#FFFFFF;text-decoration:none;background:none;border:0;padding:0;cursor:pointer;min-height:44px;display:inline-flex;align-items:center}
+.bar p{margin:0;font-size:17px;font-weight:600}
 .card{background:#FFFFFF;border-radius:18px;box-shadow:0 2px 10px rgba(22,36,58,.06)}
-.sec{display:flex;align-items:baseline;justify-content:space-between;padding:0 4px 10px}
-.sec h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-0.3px}
-.sec a{font-size:14px;font-weight:600;text-decoration:none;color:#2A5480}
-.inv{flex:none;width:272px;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;box-shadow:0 2px 6px rgba(0,0,0,.03);text-decoration:none;color:inherit}
+.h2{margin:0 0 8px 4px;font-size:13px;font-weight:600;color:#637894;text-transform:uppercase;letter-spacing:.3px;display:flex;justify-content:space-between;gap:8px}
+.h2 span{text-transform:none;font-weight:500;letter-spacing:0}
+.h2 a,.h2 button{text-transform:none;font-weight:600;letter-spacing:0;text-decoration:none;color:#2A5480;background:none;border:0;padding:0;font:inherit;font-size:13px;cursor:pointer}
+.f{display:flex;align-items:center;gap:12px;min-height:48px;padding:3px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.f .l{margin:0;font-size:14px;color:#637894;width:118px;flex:none}
+.f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .v.ph{color:#9AA5B4;font-weight:400}
+.f .v.wrap{white-space:normal;font-size:14px;font-weight:400}
+.in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
+.in:focus{border-bottom-color:#2A5480}
+.in.num{text-align:right;max-width:120px;flex:none}
+select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
+.row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.row p{margin:0}
+.row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.row .n{font-size:15px;font-weight:600;line-height:1.2}
+.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .v.m{color:#637894;font-weight:500}
+.row .mid{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:5px;flex:none;display:inline-block}
+.sep{height:1px;background:#EEF1F5;margin-left:16px}
+.chev{width:8px;height:13px;flex:none}
+.cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
+.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg.dark{background:rgba(255,255,255,.14)}
+.seg.dark button{color:rgba(255,255,255,.8)}
+.seg.dark button.on{background:#FFFFFF;color:#1C3250}
+.chip{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;background:rgba(255,255,255,.14);color:#FFFFFF;border:0;font-family:inherit;cursor:pointer}
+.chip.on{background:#FFFFFF;color:#1C3250}
+.chip.lt{background:#FFFFFF;color:#16243A;border:1px solid #D1DBE8}
+.chip.lt.on{background:#2A5480;color:#FFFFFF;border-color:#2A5480}
+.btn{height:48px;border-radius:13px;border:0;font:inherit;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;text-decoration:none;flex:1;box-sizing:border-box}
+.btn.sm{height:38px;font-size:14px;border-radius:11px}
+.pri{background:#2A5480;color:#FFFFFF}
+.sec2{background:#E6EEF6;color:#2A5480}
+.danger{background:#FBE9E7;color:#943333}
+.ok{background:#D6EDDB;color:#215F33}
+.bar2{height:6px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:6px}
+.bar2 i{display:block;height:6px;border-radius:3px}
+.tog{width:44px;height:26px;border-radius:13px;background:#34C759;position:relative;flex:none;border:0;padding:0;cursor:pointer}
+.tog::after{content:"";position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:11px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.off{background:#D1D6DE}
+.tog.off::after{right:auto;left:2px}
+.note{margin:8px 4px 0;font-size:12px;color:#637894}
+.toast{position:absolute;left:20px;right:20px;bottom:104px;background:#16243A;color:#FFFFFF;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:5}
+.sheetbg{position:absolute;inset:0;background:rgba(22,36,58,.45);z-index:6;display:flex;align-items:flex-end}
+.sheet{background:#F3F5F8;border-radius:22px 22px 0 0;padding:14px 20px 36px;width:100%;box-sizing:border-box}
+.sheet h3{margin:6px 0 4px;font-size:18px;font-weight:700}
+.sheet p{margin:0 0 12px;font-size:14px;color:#637894}
+.grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
+.inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
 .inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
 .inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
-.cap{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;font-size:12px;font-weight:700;white-space:nowrap}
 .urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
 .urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
-.akte{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 16px;text-decoration:none;color:inherit}
-.akte .c{width:36px;height:36px;border-radius:18px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
-.akte p{margin:0}
-.akte .n{font-size:16px;font-weight:600;line-height:1.2}
-.akte .s{font-size:12.5px;color:#637894;margin-top:1px}
-.akte .v{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:#17263B}
-.sep{height:1px;background:#EEF1F5;margin-left:64px}
-.chev{width:8px;height:13px;flex:none}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:#8A94A3;width:66px;min-height:48px;text-decoration:none}
 .tab.on{color:#2A5480;font-weight:700}
 a{color:#2A5480}
-.scroll{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:18px;scrollbar-width:none}
-.scroll::-webkit-scrollbar{display:none}
 </style>
 </helmet>
 <div class="root">
 <div class="scroll">
-
-  <div class="hdr">
+  <div class="hdr" style="padding: 56px 20px 64px">
     <div style="display: flex; align-items: center; justify-content: space-between">
-      <p style="margin: 0; font-size: 15px; font-weight: 600; opacity: .85">Oktober 2026</p>
+      <div style="display: flex; gap: 6px; align-items: center">
+        <button class="chip" style="height: 28px; padding: 0 10px" onClick="{{prevMonth}}" aria-label="Vormonat">‹</button>
+        <p class="ttl">{{monthLabel}}</p>
+        <button class="chip" style="height: 28px; padding: 0 10px" onClick="{{nextMonth}}" aria-label="Folgemonat">›</button>
+      </div>
       <a href="Mehr.dc.html" aria-label="Mehr" style="width: 34px; height: 34px; border-radius: 17px; background: rgba(255,255,255,.14); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; text-decoration: none"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></a>
     </div>
-    <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">Sparpotenzial im Oktober</p>
-    <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">592,70 €</p>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">3.650,00 Einnahmen − 1.659,20 Fixkosten − 1.010,60 Ausgaben − 61,40 Budgets offen − 326,10 Rücklagen</p>
+    <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{headline}}</p>
+    <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">{{spar}} €</p>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">{{formula}}</p>
   </div>
 
   <div style="padding: 0 20px; margin-top: -40px">
     <a href="Monatsrechnung.dc.html" class="card" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 14px 6px; text-decoration: none; color: inherit">
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Einnahmen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #215F33">3.650</p></div>
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Fixkosten</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">1.659</p></div>
-      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Ausgaben</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">1.011</p></div>
-      <div style="text-align: center"><p style="margin: 0; font-size: 11.5px; color: #637894">davon offen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #943333">354,40</p></div>
+      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Einnahmen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #215F33">{{k.ein}}</p></div>
+      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Fixkosten</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{k.fix}}</p></div>
+      <div style="text-align: center; border-right: 1px solid #EEF1F5"><p style="margin: 0; font-size: 11.5px; color: #637894">Ausgaben</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{k.aus}}</p></div>
+      <div style="text-align: center"><p style="margin: 0; font-size: 11.5px; color: #637894">davon offen</p><p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: #943333">{{k.offen}}</p></div>
     </a>
   </div>
 
   <div style="padding: 24px 20px 0 20px">
     <div class="card">
-      <a class="akte" href="Wohnen.dc.html"><span class="c" style="background: #E8A33D"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg></span><div style="flex: 1; min-width: 0"><p class="n">Wohnen</p><p class="s">Nachzahlung Strom überfällig</p></div><p class="v">1.368 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
-      <div class="sep"></div>
-      <a class="akte" href="Akte.dc.html"><span class="c" style="background: #3C8DBC"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1v6h-2v2h-3v-2H9v2H6v-2H4v-6zm2.2 0h9.6l-1-3H8.2zM7 15a1.3 1.3 0 1 0 0-2.6A1.3 1.3 0 0 0 7 15zm10 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg></span><div style="flex: 1; min-width: 0"><p class="n">Mobilität</p><p class="s">Inspektion 212,40 € offen · HU 12. Nov.</p></div><p class="v">746 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
-      <div class="sep"></div>
-      <a class="akte" href="Haushalt.dc.html"><span class="c" style="background: #4CAF7A"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z"/></svg></span><div style="flex: 1; min-width: 0"><p class="n">Haushalt</p><p class="s">Budget Freizeit überschritten</p></div><p class="v">882 €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <a class="row" href="Wohnen.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: #E8A33D; width: 36px; height: 36px; border-radius: 18px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg></span><div class="mid"><p class="n" style="font-size: 16px">Wohnen</p><p class="s" style="font-size: 12.5px">{{a.ws}}</p></div><p class="v" style="font-size: 16px">{{a.w}} €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep" style="margin-left: 64px"></div>
+      <a class="row" href="Akte.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: #3C8DBC; width: 36px; height: 36px; border-radius: 18px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1v6h-2v2h-3v-2H9v2H6v-2H4v-6zm2.2 0h9.6l-1-3H8.2zM7 15a1.3 1.3 0 1 0 0-2.6A1.3 1.3 0 0 0 7 15zm10 0a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6z"/></svg></span><div class="mid"><p class="n" style="font-size: 16px">Mobilität</p><p class="s" style="font-size: 12.5px">{{a.ms}}</p></div><p class="v" style="font-size: 16px">{{a.mo}} €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+      <div class="sep" style="margin-left: 64px"></div>
+      <a class="row" href="Haushalt.dc.html" style="min-height: 56px; padding: 6px 16px"><span class="c" style="background: #4CAF7A; width: 36px; height: 36px; border-radius: 18px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z"/></svg></span><div class="mid"><p class="n" style="font-size: 16px">Haushalt</p><p class="s" style="font-size: 12.5px">{{a.hs}}</p></div><p class="v" style="font-size: 16px">{{a.h}} €</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
     </div>
-    <p style="margin: 8px 4px 0; font-size: 12px; color: #637894">Summe der Bereiche 2.995,90 € = Fixkosten 1.659,20 + Ausgaben 1.010,60 + Rücklagen 326,10</p>
+    <p class="note">Summe der Bereiche {{sumAreas}} € = Fixkosten {{k.fix2}} + Ausgaben {{k.aus2}} + Rücklagen {{k.res}}</p>
   </div>
 
   <div style="padding: 22px 0 0 20px">
-    <div class="sec" style="padding-right: 20px">
-      <h2>Fällig</h2>
-      <a href="Rechnungen.dc.html">1 überfällig · 3 in 7 Tagen</a>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 20px 10px 4px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.3px">Fällig</h2>
+      <a href="Rechnungen.dc.html" style="font-size: 14px; font-weight: 600; text-decoration: none">{{dueLine}}</a>
     </div>
-    <div style="display: flex; gap: 10px; overflow: hidden; padding-right: 20px">
-      <a class="inv" href="Rechnung.dc.html">
-        <div style="flex: 1; min-width: 0">
-          <p class="n">Stadtwerke Mainstadt</p>
-          <p class="a">142,00 €</p>
-          <p class="d">Fällig: 21. Okt. 2026 · Wohnen</p>
-        </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end">
-          <span class="cap" style="background: #F7D4D1; color: #943333">Offen</span>
-          <span class="urg" style="color: #E03C31"><i style="background: #E03C31"></i>Überfällig</span>
-        </div>
-      </a>
-      <a class="inv" href="Vertrag.dc.html">
-        <div style="flex: 1; min-width: 0">
-          <p class="n">HUK24 Kfz-Versicherung</p>
-          <p class="a">487,20 €</p>
-          <p class="d">Fällig: 27. Okt. 2026 · aus Rücklage</p>
-        </div>
-        <div style="display: flex; flex-direction: column; align-items: flex-end">
-          <span class="cap" style="background: #EDE3C9; color: #704F2E">Offen</span>
-          <span class="urg" style="color: #E08A1E"><i style="background: #E08A1E"></i>Bald fällig</span>
-        </div>
-      </a>
-      <a class="inv" href="Vertrag.dc.html" style="width: 120px; overflow: hidden">
-        <div style="flex: 1; min-width: 0">
-          <p class="n">Netflix</p>
-          <p class="a">12,99 €</p>
-          <p class="d">Fällig: 29. Ok</p>
-        </div>
-      </a>
+    <div style="display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-right: 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch">
+      <sc-for list="{{due}}" as="d" hint-placeholder-count="3">
+        <a class="inv" href="{{d.href}}" style="flex: none; width: 272px; scroll-snap-align: start">
+          <div style="flex: 1; min-width: 0"><p class="n">{{d.name}}</p><p class="a">{{d.amount}} €</p><p class="d">{{d.sub}}</p></div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{d.capst}}">{{d.cap}}</span><span class="urg" style="{{d.urgst}}"><i style="{{d.dotst}}"></i>{{d.urg}}</span></div>
+        </a>
+      </sc-for>
     </div>
-    <div style="display: flex; gap: 6px; justify-content: center; padding: 12px 20px 0 0">
-      <span style="width: 7px; height: 7px; border-radius: 4px; background: #2A5480"></span>
-      <span style="width: 7px; height: 7px; border-radius: 4px; background: #C9D3DF"></span>
-      <span style="width: 7px; height: 7px; border-radius: 4px; background: #C9D3DF"></span>
-      <span style="width: 7px; height: 7px; border-radius: 4px; background: #C9D3DF"></span>
-    </div>
+    <p class="note" style="margin: 10px 24px 0 4px">Nach rechts wischen: {{dueCount}} Posten, überfällig zuerst. Antippen öffnet Rechnung oder Vertrag.</p>
   </div>
 
-
 </div>
+
   <nav class="tabbar" aria-label="Hauptnavigation">
     <a class="tab on" href="Main.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-2.5v9h-5v-6h-3v6h-5v-9H3z"/></svg>Übersicht</a>
     <a class="tab" href="Rechnungen.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 13h6M9.5 16.5h4"/></svg>Rechnungen</a>
@@ -125,12 +151,58 @@ a{color:#2A5480}
     <a class="tab" href="Vertraege.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Verträge</a>
     <a class="tab" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 18h18M3 21h18"/></svg>Liquidität</a>
   </nav>
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}"><div class="toast">{{toast}}</div></sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+
+function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; var s = Math.abs(n).toFixed(dec); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (n < 0 ? '−' : '') + p.join(','); }
+function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
+function ev(e) { return e && e.target ? e.target.value : e; }
+
 class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { m: 0, toast: '' }; }
+
+  segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
+  say(msg) { var self = this; clearTimeout(this._t); this.setState({ toast: msg }); this._t = setTimeout(function () { self.setState({ toast: '' }); }, 1800); }
+  set(key) { var self = this; return function (e) { var s = {}; s[key] = ev(e); self.setState(s); }; }
+  flip(key) { var self = this; return function () { var s = {}; s[key] = !self.state[key]; self.setState(s); }; }
+  go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
+  tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
+
   renderVals() {
-    return {};
+    var self = this, m = this.state.m;
+    var months = ['Oktober 2026', 'September 2026', 'August 2026'];
+    // Beispielmonat Oktober; Vormonate als Vergleich (abgeschlossen: keine offenen Posten)
+    var D = [
+      { ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 € offen · HU 12. Nov.', hs: 'Budget Freizeit überschritten' },
+      { ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, ws: 'abgeschlossen', ms: 'abgeschlossen', hs: 'abgeschlossen' },
+      { ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, ws: 'Rückerstattung Strom 51,30', ms: 'abgeschlossen', hs: 'abgeschlossen' }
+    ];
+    var d = D[m], aus = d.bez + d.off, spar = d.ein - d.fix - aus - d.bud - d.res;
+    var dueAll = [
+      { name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig: 21. Okt. 2026 · Wohnen', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' },
+      { name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig: 27. Okt. 2026 · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
+      { name: 'Netflix', amount: eur(12.99), sub: 'Fällig: 29. Okt. 2026 · Haushalt', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
+      { name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig: 30. Okt. 2026 · Mobilität', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }
+    ];
+    var due = m === 0 ? dueAll : [];
+    return {
+      toast: this.state.toast,
+      monthLabel: months[m],
+      prevMonth: function () { if (m < months.length - 1) self.setState({ m: m + 1 }); else self.say('Ältere Monate: Mehr › Auswertung'); },
+      nextMonth: function () { if (m > 0) self.setState({ m: m - 1 }); else self.say('Oktober ist der laufende Monat'); },
+      headline: (m === 0 ? 'Sparpotenzial im ' : 'Ergebnis im ') + months[m].split(' ')[0],
+      spar: eur(spar),
+      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten − ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen − ' + eur(d.res) + ' Rücklagen',
+      k: { ein: eur(d.ein, 0), fix: eur(d.fix, 0), aus: eur(aus, 0), offen: eur(d.off), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) },
+      a: { ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) },
+      sumAreas: eur(d.w + d.mo + d.h),
+      due: due,
+      dueCount: due.length,
+      dueLine: m === 0 ? '1 überfällig · 3 in 7 Tagen' : 'nichts offen'
+    };
   }
 }
 </script>
