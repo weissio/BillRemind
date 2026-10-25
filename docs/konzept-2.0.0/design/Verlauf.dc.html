@@ -99,6 +99,17 @@ a{color:#2A5480}
 .month i.on{background:#2A5480}
 .month span{font-size:11px;color:#637894}
 .month span.on{color:#16243A;font-weight:700}
+
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:6px 8px 10px}
+.cal .wd{font-size:11px;color:#637894;text-align:center;padding:4px 0}
+.cal button{height:44px;border:0;background:none;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:inherit;font-size:14px;color:#16243A;cursor:pointer;padding:0}
+.cal button.dim{color:#B9C2CE}
+.cal button.on{background:#2A5480;color:#FFFFFF}
+.cal button.today{font-weight:700;text-decoration:underline}
+.cal .dots{display:flex;gap:2px;height:5px}
+.cal .dots i{width:5px;height:5px;border-radius:3px;display:block}
+.hchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding: 0 20px}
+.hchips::-webkit-scrollbar{display:none}
 </style>
 </helmet>
 <div class="root">
@@ -106,23 +117,22 @@ a{color:#2A5480}
   <div class="hdr">
     <div class="nav"><a class="back" href="Liquiditaet.dc.html"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Liquidität</a><p class="ttl">Verlauf</p><a class="act" href="Kontostand.dc.html">Aktualisieren</a></div>
     <p class="sub" style="margin-top: 14px">Kontostand · zuletzt heute 09:12</p>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px"><p class="big" style="margin: 4px 0 0">2.410,00 €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">{{minLine}}</p></div>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px"><p class="big" style="margin: 4px 0 0">2.410,00 €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">{{endLine}}</p></div>
     <div class="seg dark" style="margin-top: 14px"><a href="Liquiditaet.dc.html" style="flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.8); padding: 6px 0; text-decoration: none">Termine</a><button class="on">Verlauf</button></div>
   </div>
 
-  <div style="padding: 14px 20px 0 20px"><div class="seg"><sc-for list="{{ranges}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div>
+  <div class="hchips" style="margin-top: 14px"><sc-for list="{{hchips}}" as="c" hint-placeholder-count="7"><button class="{{c.cls}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
 
   <div style="padding: 14px 20px 0 20px">
     <div class="card" style="padding: 14px 14px 8px">
-      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px"><p style="margin: 0; font-size: 15px; font-weight: 700">{{title}}</p><p style="margin: 0; font-size: 12px; color: #637894">Ende {{endFmt}} €</p></div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px"><p style="margin: 0; font-size: 15px; font-weight: 700">{{title}}</p><p style="margin: 0; font-size: 12px; color: #637894">{{meta}}</p></div>
       <svg width="100%" height="170" viewBox="0 0 350 170" preserveAspectRatio="none" role="img" aria-label="Kontostand-Verlauf" style="display: block; margin-top: 8px">
         <line x1="10" y1="{{yPuffer}}" x2="340" y2="{{yPuffer}}" stroke="#E08A1E" stroke-dasharray="4 3"/>
         <text x="12" y="{{yPufferT}}" font-size="9" fill="#704F2E">Puffer {{pufferFmt}}</text>
-        <line x1="10" y1="{{yZero}}" x2="340" y2="{{yZero}}" stroke="#E3E8EF"/>
         <path d="{{area}}" fill="#2A5480" opacity=".08"/>
         <path d="{{path}}" fill="none" stroke="#2A5480" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="{{minX}}" cy="{{minY}}" r="4" fill="#E08A1E" stroke="#FFFFFF" stroke-width="1.5"/>
-        <text x="{{minX}}" y="{{minLabelY}}" font-size="10" font-weight="700" fill="#704F2E" text-anchor="middle">{{minFmt}}</text>
+        <circle cx="{{minX}}" cy="{{minY}}" r="3.5" fill="#E08A1E" stroke="#FFFFFF" stroke-width="1.5"/>
+        <text x="{{minX}}" y="{{minLabelY}}" font-size="9" fill="#704F2E" text-anchor="{{minAnchor}}">{{minFmt}}</text>
         <text x="{{t0x}}" y="166" font-size="10" fill="#637894" text-anchor="start">{{t0}}</text><text x="{{t1x}}" y="166" font-size="10" fill="#637894" text-anchor="middle">{{t1}}</text><text x="{{t2x}}" y="166" font-size="10" fill="#637894" text-anchor="middle">{{t2}}</text><text x="{{t3x}}" y="166" font-size="10" fill="#637894" text-anchor="middle">{{t3}}</text><text x="{{t4x}}" y="166" font-size="10" fill="#637894" text-anchor="end">{{t4}}</text>
       </svg>
     </div>
@@ -133,7 +143,17 @@ a{color:#2A5480}
     <div class="card">
       <div class="f"><p class="l">Mindestpuffer</p><input class="in num" value="{{puffer}}" onChange="{{setPuffer}}" inputmode="decimal"><span style="font-size: 14px; color: #637894">€</span></div>
       <div class="sep"></div>
-      <div class="f"><p class="v wrap">{{pufferNote}}</p></div>
+      <div class="f"><p class="v wrap" style="{{pufferSt}}">{{pufferNote}}</p></div>
+    </div>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Größte Einzelposten <span>ohne Monatsfixkosten und Budgets</span></h2>
+    <div class="card">
+      <sc-for list="{{big}}" as="b" hint-placeholder-count="4">
+        <a class="row" href="{{b.href}}"><span class="dot" style="{{b.dotst}}"></span><div class="mid"><p class="n" style="font-weight: 500">{{b.name}}</p><p class="s">{{b.sub}}</p></div><p class="v" style="{{b.vst}}">{{b.val}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
+        <div class="sep"></div>
+      </sc-for>
     </div>
   </div>
 
@@ -143,8 +163,6 @@ a{color:#2A5480}
       <div class="row"><div class="mid"><p class="n">Sa 24. Okt. · 09:12</p><p class="s">manuell · Abweichung zur Planung 0,00 €</p></div><p class="v">2.410,00</p></div>
       <div class="sep"></div>
       <div class="row"><div class="mid"><p class="n">Di 20. Okt.</p><p class="s">nach Bons REWE, dm · Abweichung −4,10 € (Bargeld)</p></div><p class="v">2.532,57</p></div>
-      <div class="sep"></div>
-      <div class="row"><div class="mid"><p class="n">Do 15. Okt.</p><p class="s">nach Netflix-Abbuchung</p></div><p class="v">2.701,10</p></div>
       <div class="sep"></div>
       <div class="row"><div class="mid"><p class="n">Do 1. Okt.</p><p class="s">nach Miete, Leasing, Abschlägen</p></div><p class="v">2.964,65</p></div>
     </div>
@@ -169,32 +187,7 @@ function num(s) { if (typeof s === 'number') return s; s = String(s == null ? ''
 function ev(e) { return e && e.target ? e.target.value : e; }
 
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { range: 10, puffer: '1.500', toast: '' }; this.B = [
-  { id: 'sw', d: 1, amt: -142.00, name: 'Stadtwerke – Nachzahlung', sub: 'Rechnung · überfällig seit 21. Okt.', area: 'w', kind: 'rechnung', href: 'Rechnung.dc.html' },
-  { id: 'huk', d: 3, amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage gedeckt', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'nfx', d: 5, amt: -12.99, name: 'Netflix', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'ak', d: 6, amt: -212.40, name: 'Autohaus Keller – Inspektion', sub: 'Rechnung · fällig 30. Okt.', area: 'm', kind: 'rechnung', href: 'Review.dc.html' },
-  { id: 'geh', d: 6, amt: 3400.00, name: 'Gehalt', sub: 'Einnahme · Muster AG', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
-  { id: 'miete', d: 8, amt: -1199.99, name: 'Miete, Strom, Gas, Internet', sub: '4 Fixkosten · Wohnen', area: 'w', kind: 'vertrag', href: 'Vertraege.dc.html' },
-  { id: 'leas', d: 8, amt: -289.00, name: 'Leasing VW Financial', sub: 'Kredit · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'enbw', d: 8, amt: -9.99, name: 'EnBW mobility+', sub: 'Ladetarif', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'fit', d: 8, amt: -29.90, name: 'FitnessFirst', sub: 'Mitgliedschaft · Ben', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'tick', d: 10, amt: -58.00, name: 'Deutschlandticket', sub: 'Abo · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'spot', d: 10, amt: -17.99, name: 'Spotify Family', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'kg', d: 12, amt: 250.00, name: 'Kindergeld', sub: 'Einnahme · Familienkasse', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
-  { id: 'icl', d: 15, amt: -2.99, name: 'iCloud+', sub: 'Abo', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'hu', d: 19, amt: -150.00, name: 'HU/AU · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage', area: 'm', kind: 'termin', href: 'Termin.dc.html' },
-  { id: 'mob', d: 22, amt: -19.99, name: 'Telekom Mobilfunk', sub: 'Vertrag · Anna', area: 'h', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'zahn', d: 27, amt: 0, name: 'Zahnarzt Vorsorge · Ben', sub: 'Termin ohne Betrag', area: 'h', kind: 'termin', href: 'Termin.dc.html' },
-  { id: 'geh2', d: 37, amt: 3400.00, name: 'Gehalt', sub: 'Einnahme · Muster AG', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
-  { id: 'miete2', d: 38, amt: -1199.99, name: 'Miete, Strom, Gas, Internet', sub: '4 Fixkosten · Wohnen', area: 'w', kind: 'vertrag', href: 'Vertraege.dc.html' },
-  { id: 'leas2', d: 38, amt: -289.00, name: 'Leasing VW Financial', sub: 'Kredit · Mobilität', area: 'm', kind: 'vertrag', href: 'Vertrag.dc.html' },
-  { id: 'fix2', d: 38, amt: -39.89, name: 'EnBW, FitnessFirst', sub: '2 Fixkosten', area: 'h', kind: 'vertrag', href: 'Vertraege.dc.html' },
-  { id: 'tick2', d: 40, amt: -75.99, name: 'Deutschlandticket, Spotify', sub: '2 Abos', area: 'm', kind: 'vertrag', href: 'Vertraege.dc.html' },
-  { id: 'kg2', d: 42, amt: 250.00, name: 'Kindergeld', sub: 'Einnahme', area: 'x', kind: 'einnahme', href: 'Einnahmen.dc.html' },
-  { id: 'zs', d: 52, amt: 0, name: 'Zählerstände Strom und Gas', sub: 'Termin · Wohnung', area: 'w', kind: 'termin', href: 'Termin.dc.html' },
-  { id: 'mob2', d: 52, amt: -22.98, name: 'Mobilfunk, iCloud+', sub: '2 Verträge', area: 'h', kind: 'vertrag', href: 'Vertraege.dc.html' }
-]; this.START = 2410; }
+  constructor(p) { super(p); this.state = { h: 30, puffer: '1.500', toast: '' }; this.MON = ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.']; this.START = 2410; }
 
   segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
   chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
@@ -204,14 +197,50 @@ class Component extends DCLogic {
   go(key, val) { var self = this; return function () { var s = {}; s[key] = val; self.setState(s); }; }
   tog(key) { return this.state[key] ? 'tog' : 'tog off'; }
 
-  dateOf(d) { var x = new Date(2026, 9, 24); x.setDate(x.getDate() + d); return x; }
-  dayLabel(d) { var x = this.dateOf(d); return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][x.getDay()] + ' ' + x.getDate() + '. ' + ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.'][x.getMonth()]; }
+  base() { return new Date(2026, 9, 24); }
+  dateOf(d) { var x = this.base(); x.setDate(x.getDate() + d); return x; }
+  dayIdx(y, m, d) { var a = new Date(y, m, d), b = this.base(); return Math.round((a - b) / 86400000); }
+  dayLabel(d) { var x = this.dateOf(d); return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][x.getDay()] + ' ' + x.getDate() + '. ' + this.MON[x.getMonth()]; }
   shortLabel(d) { var x = this.dateOf(d); return x.getDate() + '.' + (x.getMonth() + 1) + '.'; }
+  monthLabel(y, m) { return ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'][m] + ' ' + y; }
+  plan(days) {
+    var self = this, out = [], seen = {};
+    var push = function (d, b) { if (d < 0 || d > days) return; var id = b.id + '@' + d; if (seen[id]) return; seen[id] = 1; out.push(Object.assign({ d: d, uid: id }, b)); };
+    // feste Einzelposten
+    push(1, { id: 'sw', amt: -142, name: 'Stadtwerke – Nachzahlung', sub: 'Rechnung · überfällig seit 21. Okt.', area: 'w', kind: 'rechnung', href: 'Rechnung.dc.html', over: true });
+    push(6, { id: 'ak', amt: -212.40, name: 'Autohaus Keller – Inspektion', sub: 'Rechnung · fällig 30. Okt.', area: 'm', kind: 'rechnung', href: 'Review.dc.html' });
+    push(this.dayIdx(2026, 10, 2), { id: 'reifen', amt: -40, name: 'Reifenwechsel · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage HU/Reifen', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
+    push(this.dayIdx(2026, 10, 12), { id: 'hu', amt: -150, name: 'HU/AU · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage HU/Reifen', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
+    push(this.dayIdx(2026, 10, 20), { id: 'zahn', amt: 0, name: 'Zahnarzt Vorsorge · Ben', sub: 'Termin ohne Betrag', area: 'h', kind: 'termin', href: 'Termin.dc.html' });
+    push(this.dayIdx(2026, 11, 15), { id: 'zs', amt: 0, name: 'Zählerstände Strom und Gas', sub: 'Termin · Wohnung', area: 'w', kind: 'termin', href: 'Termin.dc.html' });
+    push(this.dayIdx(2027, 6, 15), { id: 'urlaub', amt: -1800, name: 'Urlaub Juli', sub: 'Sparziel · aus Rücklage (1.800 € angespart)', area: 'h', kind: 'termin', href: 'Ruecklage.dc.html' });
+    // Monatsverträge und Einnahmen
+    var monthly = [
+      ['miete', 1, -950, 'Miete Hauptstr. 12', 'w', 'Miete'], ['strom', 1, -98, 'Stadtwerke Strom', 'w', 'Strom'], ['gas', 1, -112, 'Stadtwerke Gas', 'w', 'Gas'], ['inet', 1, -39.99, 'Telekom Internet', 'w', 'Internet'],
+      ['leas', 1, -289, 'VW Leasing ID.3', 'm', 'Leasing'], ['enbw', 1, -9.99, 'EnBW mobility+', 'm', 'Ladetarif'], ['fit', 1, -29.90, 'FitnessFirst', 'h', 'Fitness'],
+      ['tick', 3, -58, 'Deutschlandticket', 'm', 'Ticket'], ['spot', 3, -17.99, 'Spotify Family', 'h', 'Spotify'], ['icl', 8, -2.99, 'iCloud+', 'h', 'iCloud'], ['mob', 15, -19.99, 'Telekom Mobilfunk', 'h', 'Mobilfunk'], ['nfx', 29, -12.99, 'Netflix', 'h', 'Netflix'],
+      ['geh', 30, 3400, 'Gehalt', 'x', 'Gehalt'], ['kg', 5, 250, 'Kindergeld', 'x', 'Kindergeld']
+    ];
+    // Variable Ausgaben: Rest der Oktober-Budgets, danach die vollen Monatsbudgets (Lebensmittel 450 + Freizeit 150 + Mobilität variabel 300)
+    push(7, { id: 'var', amt: -61.40, name: 'Variable Ausgaben (Budgets, noch offen)', sub: 'Lebensmittel 38,00 · Mobilität variabel 23,40 · bis Monatsende', area: 'h', kind: 'var', href: 'Budgets.dc.html' });
+    for (var k = 0; k <= 13; k++) { var y = 2026 + Math.floor((9 + k) / 12), m = (9 + k) % 12; var dim = new Date(y, m + 1, 0).getDate();
+      monthly.forEach(function (r) { var d = self.dayIdx(y, m, Math.min(r[1], dim)); push(d, { id: r[0], amt: r[2], name: r[3], short: r[5], sub: r[2] > 0 ? 'Einnahme · monatlich' : 'Vertrag · monatlich', area: r[4], kind: r[2] > 0 ? 'einnahme' : 'fix', href: r[2] > 0 ? 'Einnahmen.dc.html' : 'Vertrag.dc.html' }); });
+      if (k > 0) push(self.dayIdx(y, m, 15), { id: 'var', amt: -900, name: 'Variable Ausgaben (Budgets)', sub: 'Lebensmittel 450 · Freizeit 150 · Mobilität variabel 300 · Planwert zur Monatsmitte', area: 'h', kind: 'var', href: 'Budgets.dc.html' }); }
+    // Quartal und Jahr
+    [[2027, 0, 15], [2027, 3, 15], [2027, 6, 15], [2027, 9, 15]].forEach(function (q) { push(self.dayIdx(q[0], q[1], q[2]), { id: 'rf', amt: -55.08, name: 'Rundfunkbeitrag', sub: 'Vertrag · vierteljährlich · Monatsanteil 18,36 in den Fixkosten', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' }); });
+    push(3, { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage gedeckt', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 9, 27), { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 2, 1), { id: 'hausrat', amt: -94, name: 'Hausrat Allianz', sub: 'Jahresbeitrag · aus Rücklage', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 2, 1), { id: 'haft', amt: -68, name: 'Privathaftpflicht', sub: 'Jahresbeitrag · aus Rücklage', area: 'h', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 4, 15), { id: 'kfzst', amt: -144, name: 'Kfz-Steuer', sub: 'jährlich · aus Rücklage', area: 'm', kind: 'jahr', href: 'Termin.dc.html' });
+    out.sort(function (a, b) { return a.d - b.d || b.amt - a.amt; });
+    return out;
+  }
   running(list, start) { var bal = start, out = [], min = { bal: start, d: 0 }; var byDay = {}; list.forEach(function (b) { byDay[b.d] = (byDay[b.d] || 0) + b.amt; }); Object.keys(byDay).map(Number).sort(function (a, b) { return a - b; }).forEach(function (d) { bal += byDay[d]; out.push({ d: d, bal: bal }); if (bal < min.bal) min = { bal: bal, d: d }; }); return { points: out, min: min, end: bal }; }
 
   renderVals() {
-    var self = this, s = this.state, R = s.range, puffer = num(s.puffer);
-    var list = this.B.filter(function (b) { return b.d <= R && b.amt !== 0; });
+    var self = this, s = this.state, R = s.h, puffer = num(s.puffer), col = { w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A', x: '#215F33' };
+    var list = this.plan(R).filter(function (b) { return b.amt !== 0; });
     var run = this.running(list, this.START);
     var pts = [{ d: 0, bal: this.START }].concat(run.points); if (pts[pts.length - 1].d < R) pts.push({ d: R, bal: run.end });
     var vals = pts.map(function (p) { return p.bal; }).concat([puffer]); var mn = Math.min.apply(null, vals) - 200, mx = Math.max.apply(null, vals) + 300;
@@ -219,20 +248,25 @@ class Component extends DCLogic {
     var X = function (d) { return x0 + d / R * (x1 - x0); }, Y = function (v) { return y1 - (v - mn) / (mx - mn) * (y1 - y0); };
     var dpath = ''; pts.forEach(function (p, i) { var prev = pts[i - 1]; if (i === 0) dpath = 'M' + X(p.d).toFixed(1) + ',' + Y(p.bal).toFixed(1); else dpath += ' L' + X(p.d).toFixed(1) + ',' + Y(prev.bal).toFixed(1) + ' L' + X(p.d).toFixed(1) + ',' + Y(p.bal).toFixed(1); });
     var area = dpath + ' L' + x1 + ',' + y1 + ' L' + x0 + ',' + y1 + ' Z';
-    var tickDays = R === 10 ? [0, 3, 6, 8, 10] : (R === 30 ? [0, 8, 15, 22, 30] : [0, 14, 28, 42, 56]);
-    var steps = run.points.map(function (p) { var day = self.B.filter(function (b) { return b.d === p.d && b.d <= R && b.amt !== 0; }); return day.map(function (b) { return (b.amt > 0 ? '+' : '−') + eur(Math.abs(b.amt)); }).join(' ') + ' (' + self.shortLabel(p.d) + ') → ' + eur(p.bal); });
+    var ticks = [0, 1, 2, 3, 4].map(function (i) { return Math.round(R * i / 4); });
+    var hLabel = ([[7, '7 Tage'], [14, '14 Tage'], [30, '30 Tage'], [91, '3 Monate'], [182, '6 Monate'], [273, '9 Monate'], [365, '1 Jahr']]).filter(function (x) { return x[0] === R; })[0][1];
+    var inflow = list.filter(function (b) { return b.amt > 0; }).reduce(function (a, b) { return a + b.amt; }, 0), outflow = list.filter(function (b) { return b.amt < 0; }).reduce(function (a, b) { return a + b.amt; }, 0);
+    var big = list.filter(function (b) { return b.amt < 0 && b.kind !== 'fix' && b.kind !== 'var'; }).sort(function (a, b) { return a.amt - b.amt; }).slice(0, 5);
+    var below = run.points.filter(function (p) { return p.bal < puffer; });
     return {
       toast: s.toast,
-      ranges: this.segItems('range', [[10, '10 Tage'], [30, '30 Tage'], [56, '8 Wochen']]),
-      title: 'Nächste ' + (R === 56 ? '8 Wochen' : R + ' Tage'), endFmt: eur(run.end),
-      minLine: 'Tiefster Stand ' + eur(run.min.bal) + ' € am ' + this.dayLabel(run.min.d),
-      yPuffer: Y(puffer).toFixed(1), yPufferT: (Y(puffer) - 4).toFixed(1), pufferFmt: eur(puffer, 0), yZero: Y(0).toFixed(1),
+      hchips: ([[7, '7 Tage'], [14, '14 Tage'], [30, '30 Tage'], [91, '3 Monate'], [182, '6 Monate'], [273, '9 Monate'], [365, '1 Jahr']]).map(function (x) { return { label: x[1], cls: R === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0] }); } }; }),
+      title: 'Saldo · ' + hLabel, meta: 'Ende ' + eur(run.end) + ' € am ' + this.shortLabel(R),
+      endLine: hLabel + ': +' + eur(inflow) + ' / ' + eur(outflow) + ' → ' + eur(run.end) + ' €',
+      yPuffer: Y(puffer).toFixed(1), yPufferT: (Y(puffer) - 4).toFixed(1), pufferFmt: eur(puffer, 0),
       path: dpath, area: area,
-      minX: X(run.min.d).toFixed(1), minY: Y(run.min.bal).toFixed(1), minLabelY: (Y(run.min.bal) + 14).toFixed(1), minFmt: eur(run.min.bal),
-      t0: this.shortLabel(tickDays[0]), t0x: X(tickDays[0]).toFixed(1), t1: this.shortLabel(tickDays[1]), t1x: X(tickDays[1]).toFixed(1), t2: this.shortLabel(tickDays[2]), t2x: X(tickDays[2]).toFixed(1), t3: this.shortLabel(tickDays[3]), t3x: X(tickDays[3]).toFixed(1), t4: this.shortLabel(tickDays[4]), t4x: X(tickDays[4]).toFixed(1),
-      calc: 'Rechnung: ' + eur(this.START) + ' ' + steps.slice(0, 6).join(' · ') + (steps.length > 6 ? ' · …' : '') + '. Rücklagen verändern den Kontostand nicht.',
+      minX: X(run.min.d).toFixed(1), minY: Y(run.min.bal).toFixed(1), minLabelY: (Y(run.min.bal) + 13).toFixed(1), minFmt: eur(run.min.bal, 0), minAnchor: run.min.d < R * 0.15 ? 'start' : (run.min.d > R * 0.85 ? 'end' : 'middle'),
+      t0: this.shortLabel(ticks[0]), t0x: X(ticks[0]).toFixed(1), t1: this.shortLabel(ticks[1]), t1x: X(ticks[1]).toFixed(1), t2: this.shortLabel(ticks[2]), t2x: X(ticks[2]).toFixed(1), t3: this.shortLabel(ticks[3]), t3x: X(ticks[3]).toFixed(1), t4: this.shortLabel(ticks[4]), t4x: X(ticks[4]).toFixed(1),
+      calc: 'Saldo = Kontostand ' + eur(this.START) + ' + Einnahmen ' + eur(inflow) + ' − Abflüsse ' + eur(-outflow) + ' = ' + eur(run.end) + ' €. Rücklagen-Raten sind kein Abfluss; die Jahresbeträge (HUK, Hausrat, Kfz-Steuer) und der Urlaub erscheinen an ihrem Zahltag.',
       puffer: s.puffer, setPuffer: this.set('puffer'),
-      pufferNote: run.min.bal >= puffer ? 'Tiefster Stand liegt ' + eur(run.min.bal - puffer) + ' € über dem Mindestpuffer von ' + eur(puffer) + ' €. Ohne die Kfz-Rücklage (487,20 €) wären es ' + eur(run.min.bal - puffer - 487.20) + ' €.' : 'Achtung: am ' + this.dayLabel(run.min.d) + ' liegt der Stand ' + eur(puffer - run.min.bal) + ' € unter dem Mindestpuffer von ' + eur(puffer) + ' €. Vorschlag: Rechnung Autohaus Keller nach dem Gehalt am 30. zahlen.'
+      pufferSt: below.length ? 'color: #943333' : 'color: #215F33',
+      pufferNote: below.length ? 'An ' + below.length + ' Tagen unter dem Puffer, erstmals am ' + this.dayLabel(below[0].d) + ' (' + eur(below[0].bal) + ' €). Vorschlag: Inspektion nach dem Gehalt am 30. zahlen.' : 'Alle Tage über dem Puffer.',
+      big: big.map(function (b) { return { name: b.name, sub: self.dayLabel(b.d) + ' · ' + b.sub, href: b.href, dotst: 'background: ' + col[b.area], vst: b.amt > 0 ? 'color: #215F33' : '', val: (b.amt > 0 ? '+' : '') + eur(b.amt) }; })
     };
   }
 }

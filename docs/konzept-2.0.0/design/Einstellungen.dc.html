@@ -121,8 +121,10 @@ a{color:#2A5480}
       <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Kündigungsfristen</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">4 Wochen vorher</p><button class="{{kdCls}}" aria-label="Kündigungsfristen" onClick="{{flipKd}}"></button></div>
       <div class="sep"></div>
       <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Kontostand-Erinnerung</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">nach jeder Abbuchung</p><button class="{{ksCls}}" aria-label="Kontostand-Erinnerung" onClick="{{flipKs}}"></button></div>
+      <div class="sep"></div>
+      <button class="f" onClick="{{cycleCal}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Systemkalender „Mnemor“</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{calText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
-    <p class="note">{{monatNote}}</p>
+    <p class="note">{{monatNote}} {{calNote}}</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -182,7 +184,7 @@ function num(s) { if (typeof s === 'number') return s; s = String(s == null ? ''
 function ev(e) { return e && e.target ? e.target.value : e; }
 
 class Component extends DCLogic {
-  constructor(p) { super(p); this.state = { monat: 0, win: 1, rem: 1, kd: true, ks: true, ocr: 0, keep: true, bon: true, learn: 23, resetSheet: false, restored: false, lock: true, backup: 1, wipe: false, wipe2: false, wipeWord: '', toast: '' }; }
+  constructor(p) { super(p); this.state = { monat: 0, win: 1, rem: 1, kd: true, ks: true, cal: 1, ocr: 0, keep: true, bon: true, learn: 23, resetSheet: false, restored: false, lock: true, backup: 1, wipe: false, wipe2: false, wipeWord: '', toast: '' }; }
 
   segItems(key, options) { var self = this; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? 'on' : '', pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
   chipItems(key, options, light) { var self = this; var base = light ? 'chip lt' : 'chip'; return options.map(function (o) { return { label: o[1], cls: self.state[key] === o[0] ? base + ' on' : base, pick: function () { var s = {}; s[key] = o[0]; self.setState(s); } }; }); }
@@ -201,6 +203,8 @@ class Component extends DCLogic {
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),
       monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Sparpotenzial rechnet ab ' + monat[s.monat] + '.',
       kdCls: this.tog('kd'), flipKd: this.flip('kd'), ksCls: this.tog('ks'), flipKs: this.flip('ks'),
+      calText: ['aus', 'Termine mit Erinnerung', 'alle Fälligkeiten (Rechnungen, Abbuchungen, Termine)'][s.cal], cycleCal: this.cyc('cal', 3),
+      calNote: s.cal === 0 ? 'Kalender: nichts wird gespiegelt.' : (s.cal === 1 ? 'Kalender: HU, Wartung, Zählerstände erscheinen als Termine im iOS-Kalender „Mnemor“ – nur lesend gespiegelt, Daten bleiben in der App.' : 'Kalender: auch jede Rechnung und Abbuchung als ganztägiger Eintrag – gut für Familienkalender, aber voll.'),
       ocrText: ocr[s.ocr], cycleOcr: function () { self.setState({ ocr: (s.ocr + 1) % 2 }); self.say(s.ocr === 0 ? 'Nur Regelwerk: Erkennung einfacher, Felder öfter „Prüfen“' : 'Apple Intelligence aktiv – auf dem Gerät'); },
       keepCls: this.tog('keep'), flipKeep: this.flip('keep'), bonCls: this.tog('bon'), flipBon: this.flip('bon'),
       learnText: s.learn + ' Anbieter gelernt · zurücksetzen', askReset: this.go('resetSheet', true), cancelReset: this.go('resetSheet', false), resetSheet: s.resetSheet, doReset: function () { self.setState({ learn: 0, resetSheet: false }); self.say('Lernregeln zurückgesetzt'); },

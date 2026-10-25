@@ -453,8 +453,10 @@ def build():
       ''' + trow("Kündigungsfristen", "4 Wochen vorher", "kdCls", "flipKd") + '''
       <div class="sep"></div>
       ''' + trow("Kontostand-Erinnerung", "nach jeder Abbuchung", "ksCls", "flipKs") + '''
+      <div class="sep"></div>
+      ''' + srow("Systemkalender „Mnemor“", "calText", "cycleCal") + '''
     </div>
-    <p class="note">{{monatNote}}</p>
+    <p class="note">{{monatNote}} {{calNote}}</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -496,7 +498,7 @@ def build():
   </div>
 ''') + sheet("resetSheet", "Lernregeln zurücksetzen?", "23 gelernte Anbieterprofile (Kategorie, Empfänger, Fälligkeits-Offset) werden gelöscht. Rechnungen bleiben erhalten; die Erkennung lernt neu.", '<button class="btn sec2" onClick="{{cancelReset}}">Abbrechen</button><button class="btn danger" onClick="{{doReset}}">Zurücksetzen</button>') \
       + '''<sc-if value="{{wipe}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Alle Daten löschen?</h3><p>{{wipeText}}</p><sc-if value="{{wipe2}}" hint-placeholder-val="{{false}}"><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Tippe LÖSCHEN</p><input class="in" value="{{wipeWord}}" onChange="{{setWipeWord}}" placeholder="LÖSCHEN"></div></div></sc-if><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{cancelWipe}}">Abbrechen</button><button class="btn danger" onClick="{{nextWipe}}">{{wipeBtn}}</button></div></div></div></sc-if>'''
-    logic = r'''  constructor(p) { super(p); this.state = { monat: 0, win: 1, rem: 1, kd: true, ks: true, ocr: 0, keep: true, bon: true, learn: 23, resetSheet: false, restored: false, lock: true, backup: 1, wipe: false, wipe2: false, wipeWord: '', toast: '' }; }
+    logic = r'''  constructor(p) { super(p); this.state = { monat: 0, win: 1, rem: 1, kd: true, ks: true, cal: 1, ocr: 0, keep: true, bon: true, learn: 23, resetSheet: false, restored: false, lock: true, backup: 1, wipe: false, wipe2: false, wipeWord: '', toast: '' }; }
 ''' + JS_SEG + r'''
   cyc(key, n) { var self = this; return function () { var s = {}; s[key] = (self.state[key] + 1) % n; self.setState(s); }; }
   renderVals() {
@@ -507,6 +509,8 @@ def build():
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),
       monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Sparpotenzial rechnet ab ' + monat[s.monat] + '.',
       kdCls: this.tog('kd'), flipKd: this.flip('kd'), ksCls: this.tog('ks'), flipKs: this.flip('ks'),
+      calText: ['aus', 'Termine mit Erinnerung', 'alle Fälligkeiten (Rechnungen, Abbuchungen, Termine)'][s.cal], cycleCal: this.cyc('cal', 3),
+      calNote: s.cal === 0 ? 'Kalender: nichts wird gespiegelt.' : (s.cal === 1 ? 'Kalender: HU, Wartung, Zählerstände erscheinen als Termine im iOS-Kalender „Mnemor“ – nur lesend gespiegelt, Daten bleiben in der App.' : 'Kalender: auch jede Rechnung und Abbuchung als ganztägiger Eintrag – gut für Familienkalender, aber voll.'),
       ocrText: ocr[s.ocr], cycleOcr: function () { self.setState({ ocr: (s.ocr + 1) % 2 }); self.say(s.ocr === 0 ? 'Nur Regelwerk: Erkennung einfacher, Felder öfter „Prüfen“' : 'Apple Intelligence aktiv – auf dem Gerät'); },
       keepCls: this.tog('keep'), flipKeep: this.flip('keep'), bonCls: this.tog('bon'), flipBon: this.flip('bon'),
       learnText: s.learn + ' Anbieter gelernt · zurücksetzen', askReset: this.go('resetSheet', true), cancelReset: this.go('resetSheet', false), resetSheet: s.resetSheet, doReset: function () { self.setState({ learn: 0, resetSheet: false }); self.say('Lernregeln zurückgesetzt'); },
