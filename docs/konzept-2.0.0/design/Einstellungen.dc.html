@@ -248,7 +248,7 @@ class Component extends DCLogic {
     return {
       toast: s.toast,
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),
-      monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Sparpotenzial rechnet ab ' + monat[s.monat] + '.',
+      monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Spielraum rechnet ab ' + monat[s.monat] + '.',
       kdCls: this.tog('kd'), flipKd: this.flip('kd'), ksCls: this.tog('ks'), flipKs: this.flip('ks'),
       calText: ['aus', 'Termine mit Erinnerung', 'alle Fälligkeiten (Rechnungen, Abbuchungen, Termine)'][s.cal], cycleCal: this.cyc('cal', 3),
       calNote: s.cal === 0 ? 'Kalender: nichts wird gespiegelt.' : (s.cal === 1 ? 'Kalender: HU, Wartung, Zählerstände erscheinen als Termine im iOS-Kalender „Mnemor“ – nur lesend gespiegelt, Daten bleiben in der App.' : 'Kalender: auch jede Rechnung und Abbuchung als ganztägiger Eintrag – gut für Familienkalender, aber voll.'),

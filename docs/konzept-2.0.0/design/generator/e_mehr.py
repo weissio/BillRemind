@@ -12,8 +12,9 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Mehr.dc.html">[BACK]Mehr</a><p class="ttl">Budgets</p><button class="act" onClick="{{openNew}}">Neu</button></div>
     <h1>Budgets im Oktober</h1>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{offen}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right; white-space: nowrap">noch offen · {{count}} Budgets</p></div>
-    <p class="sub">{{verbraucht}} € verbraucht von {{geplant}} € geplant · Überschreitungen werden nicht gegengerechnet</p>
+    <p class="sub" style="margin-top: 4px">Umschläge innerhalb deines Spielraums von 1.664,70 €</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{offen}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right; white-space: nowrap">reserviert · {{count}} Budgets</p></div>
+    <p class="sub">{{verbraucht}} € ausgegeben von {{geplant}} € geplant</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -28,7 +29,7 @@ def build():
         <div class="sep"></div>
       </sc-for>
     </div>
-    <p class="note">{{formula}} Dieser Betrag mindert das Sparpotenzial, weil er voraussichtlich noch ausgegeben wird.</p>
+    <p class="note">{{formula}} Reserviert im Spielraum – mindert Noch frei, bis es ausgegeben ist oder der Monat endet.</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -44,8 +45,10 @@ def build():
 
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
-      <sc-if value="{{showSug}}" hint-placeholder-val="{{true}}"><div class="f" style="flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; padding-bottom: 12px"><p class="v wrap"><b>Vorschlag:</b> Freizeit lag in 4 von 6 Monaten über 150 €. Budget auf 200 € anheben?</p><div style="display: flex; gap: 8px"><button class="btn sec2 sm" onClick="{{applySug}}">Auf 200 € setzen</button><button class="btn sm" style="background: #F3F5F8; color: #637894" onClick="{{dismissSug}}">Später</button></div></div><div class="sep"></div></sc-if>
-      <div class="f"><p class="l">Fixkosten</p><p class="v wrap">Brauchen kein Budget – sie stehen als Vertrag fest. Abweichungen zeigt die Monatsrechnung.</p></div>
+      <sc-if value="{{showSug}}" hint-placeholder-val="{{true}}"><div class="f" style="flex-direction: column; align-items: stretch; gap: 10px; padding-top: 12px; padding-bottom: 12px"><p class="v wrap"><b>Vorschlag:</b> Freizeit liegt 30 € über Budget – in 4 von 6 Monaten über 150 €.</p><div style="display: flex; gap: 8px; flex-wrap: wrap"><button class="btn sec2 sm" style="flex: 1 1 150px" onClick="{{applySug}}">Auf 200 € anheben</button><button class="btn sec2 sm" style="flex: 1 1 150px" onClick="{{coverSug}}">Aus Lebensmittel decken</button><button class="btn sm" style="background: #F3F5F8; color: #637894" onClick="{{dismissSug}}">Später</button></div></div><div class="sep"></div></sc-if>
+      <div class="f"><p class="l">Überschritten</p><p class="v wrap">Mehrausgabe zählt unter „Ausgegeben“, reserviert wird 0. Spielraum bleibt, Noch frei sinkt.</p></div>
+      <div class="sep"></div>
+      <div class="f"><p class="l">Fixkosten</p><p class="v wrap">Brauchen kein Budget – sie stehen als Vertrag fest.</p></div>
     </div>
     <p class="note">{{sparNote}}</p>
   </div>
@@ -66,18 +69,19 @@ def build():
       offen: eur(offen), count: s.budgets.length, geplant: eur(geplant, 0), verbraucht: eur(verbraucht),
       rows: s.budgets.map(function (b) { var over = b.spent > b.budget, pct = b.budget > 0 ? Math.min(100, Math.round(b.spent / b.budget * 100)) : 100, left = b.budget - b.spent, c = over ? '#943333' : (pct >= 85 ? '#E08A1E' : '#2A5480');
         return { name: b.name, href: b.href, dotst: 'background: ' + col[b.area], amounts: eur(b.spent) + ' / ' + eur(b.budget, 0) + ' €', barst: 'width: ' + pct + '%; background: ' + c, stst: 'color: ' + c + '; font-weight: 600', state: over ? eur(-left) + ' € über Budget' : 'noch ' + eur(left) + ' €', edit: function () { self.setState({ sheet: 'edit', editId: b.id, amt: eur(b.budget), roll: !!b.roll }); } }; }),
-      formula: 'Offen = Summe der positiven Reste: ' + parts.join(' + ') + ' = ' + eur(offen) + ' €.',
+      formula: 'Reserviert = Budget − Ausgegeben, nie unter 0: ' + parts.join(' + ') + ' = ' + eur(offen) + ' €.',
       without: s.pool.map(function (p) { return { name: p.name, dotst: 'background: ' + col[p.area], add: function () { self.setState({ sheet: 'new', newCat: p.id, amt: '', roll: false }); } }; }),
       noneWithout: s.pool.length === 0,
       showSug: s.showSug && s.budgets.some(function (b) { return b.id === 'fz' && b.budget < 200; }),
+      coverSug: function () { var b = s.budgets.map(function (x) { return x.id === 'lm' ? Object.assign({}, x, { budget: x.budget - 30 }) : (x.id === 'fz' ? Object.assign({}, x, { budget: x.budget + 30 }) : x); }); self.setState({ budgets: b, showSug: false }); self.say('30 € von Lebensmittel nach Freizeit – reserviert jetzt ' + eur(Math.max(0, offen - 30)) + ' €'); },
       applySug: function () { self.setState({ budgets: s.budgets.map(function (b) { return b.id === 'fz' ? Object.assign({}, b, { budget: 200 }) : b; }), showSug: false }); self.say('Freizeit-Budget 200 € · offen jetzt ' + eur(offen + 20) + ' €'); },
       dismissSug: function () { self.setState({ showSug: false }); },
-      sparNote: Math.abs(delta) < 0.005 ? 'Sparpotenzial Oktober: 592,70 € (Budgets offen 61,40 €).' : 'Sparpotenzial Oktober jetzt ' + eur(592.70 - delta) + ' € (Budgets offen ' + eur(offen) + ' € statt 61,40 €).',
+      sparNote: Math.abs(delta) < 0.005 ? 'Noch frei im Oktober: 592,70 € (reserviert 61,40 €).' : 'Noch frei im Oktober jetzt ' + eur(592.70 - delta) + ' € (reserviert ' + eur(offen) + ' € statt 61,40 €).',
       sheet: !!s.sheet, isNew: s.sheet === 'new', canRemove: s.sheet === 'edit',
       sheetTitle: s.sheet === 'new' ? 'Budget setzen' : 'Budget ändern', sheetText: s.sheet === 'new' ? 'Ein Budget gilt pro Monat für eine variable Kategorie.' : (editing ? editing.name + ' · bisher ' + eur(editing.spent) + ' € ausgegeben' : ''),
       catOptions: s.pool.map(function (p) { return { t: p.name, cls: s.newCat === p.id ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ newCat: p.id }); } }; }),
       amt: s.amt, setAmt: this.set('amt'), rollCls: this.tog('roll'), flipRoll: this.flip('roll'),
-      sheetHint: a > 0 ? (editing ? (a > editing.spent ? 'Noch ' + eur(a - editing.spent) + ' € frei · Budgets offen ' + eur(offen - Math.max(0, editing.budget - editing.spent) + (a - editing.spent)) + ' €' : eur(editing.spent - a) + ' € über Budget – offen 0') : 'Noch ' + eur(a) + ' € frei – Budgets offen steigen auf ' + eur(offen + a) + ' €, Sparpotenzial sinkt entsprechend.') : 'Betrag eingeben.',
+      sheetHint: a > 0 ? (editing ? (a > editing.spent ? 'Noch ' + eur(a - editing.spent) + ' € frei · Budgets offen ' + eur(offen - Math.max(0, editing.budget - editing.spent) + (a - editing.spent)) + ' €' : eur(editing.spent - a) + ' € über Budget – offen 0') : 'Noch ' + eur(a) + ' € frei – Budgets offen steigen auf ' + eur(offen + a) + ' €, Noch frei sinkt entsprechend.') : 'Betrag eingeben.',
       openNew: function () { if (!s.pool.length) { self.say('Alle variablen Kategorien haben ein Budget'); return; } self.setState({ sheet: 'new', newCat: s.pool[0].id, amt: '', roll: false }); },
       closeSheet: this.go('sheet', ''),
       saveSheet: function () {
@@ -105,7 +109,7 @@ def build():
         <div class="sep"></div>
       </sc-for>
     </div>
-    <p class="note">Wiederkehrende Einnahmen werden je Monat geplant und zählen ab dem Eingangstag in die Liquidität. Das Sparpotenzial rechnet immer mit dem vollen Monat: {{sparNote}}</p>
+    <p class="note">Wiederkehrende Einnahmen werden je Monat geplant und zählen ab dem Eingangstag in die Liquidität. Spielraum und Noch frei rechnen immer mit dem vollen Monat: {{sparNote}}</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -144,7 +148,7 @@ def build():
       toast: s.toast,
       total: eur(total), received: eur(rec), expected: eur(exp),
       items: s.items.map(function (i) { return { name: i.name, sub: self.dayName(i.date) + ' · ' + recLabel[i.rec], amt: eur(i.amt), state: i.st === 'in' ? 'eingegangen' : 'erwartet', open: openEdit(i) }; }),
-      sparNote: total === 3650 ? 'Einnahmen 3.650,00 € → Sparpotenzial 592,70 €.' : 'Einnahmen ' + eur(total) + ' € → Sparpotenzial ' + eur(592.70 + total - 3650) + ' €.',
+      sparNote: total === 3650 ? 'Einnahmen 3.650,00 € → Noch frei 592,70 €.' : 'Einnahmen ' + eur(total) + ' € → Noch frei ' + eur(592.70 + total - 3650) + ' €.',
       recurring: s.items.filter(function (i) { return i.rec !== 'einmal'; }).map(function (i) { return { name: i.name, amt: eur(i.amt), when: i.when || recLabel[i.rec], open: openEdit(i) }; }),
       openNew: function () { self.setState({ sheet: 'new', editId: 0, fName: '', fAmt: '', fDate: '25.10.2026', frec: 'einmal', fst: 'in' }); },
       sheet: !!s.sheet, canDelete: s.sheet === 'edit',
@@ -179,7 +183,7 @@ def build():
       <div class="sep"></div>
       <a class="row" href="Einnahmen.dc.html"><span class="c" style="background: #215F33">''' + UP + '''</span><div class="mid"><p class="n">Einnahmen</p><p class="s">3.650,00 € im Oktober</p></div>[CHEV]</a>
       <div class="sep"></div>
-      <a class="row" href="Monatsrechnung.dc.html"><span class="c" style="background: #2A5480"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg></span><div class="mid"><p class="n">Monatsrechnung</p><p class="s">Sparpotenzial 592,70 € · Herleitung</p></div>[CHEV]</a>
+      <a class="row" href="Monatsrechnung.dc.html"><span class="c" style="background: #2A5480"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/></svg></span><div class="mid"><p class="n">Monatsrechnung</p><p class="s">Noch frei 592,70 € · Herleitung</p></div>[CHEV]</a>
       <div class="sep"></div>
       <a class="row" href="Kalender.dc.html"><span class="c" style="background: #637894"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div class="mid"><p class="n">Kalender</p><p class="s">Fälligkeiten und Termine im Monatsblick</p></div>[CHEV]</a>
       <div class="sep"></div>
@@ -398,7 +402,7 @@ def build():
       <div class="sep"></div>
       <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € (45 %)</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Sparpotenzial</p><p class="v">6.930,00 € · Ø 577,50</p></div>
+      <div class="f"><p class="l">Gespart</p><p class="v">10.843,20 € · 24 %</p></div>
     </div>
   </div>
 ''') + '''<sc-if value="{{exportSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Export</h3><p>Zahlen dieser Auswertung als Datei – lokal erstellt, dann Teilen-Menü.</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Format</p><div class="seg"><sc-for list="{{exFmt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Zeitraum</p><div class="seg"><sc-for list="{{exRange}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeExport}}">Abbrechen</button><button class="btn pri" onClick="{{doExport}}">Erstellen</button></div></div></div></sc-if>'''
@@ -509,7 +513,7 @@ def build():
     return {
       toast: s.toast,
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),
-      monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Sparpotenzial rechnet ab ' + monat[s.monat] + '.',
+      monatNote: 'Übersicht zeigt „Fällig“ für Überfälliges und die nächsten ' + win[s.win] + '; Spielraum rechnet ab ' + monat[s.monat] + '.',
       kdCls: this.tog('kd'), flipKd: this.flip('kd'), ksCls: this.tog('ks'), flipKs: this.flip('ks'),
       calText: ['aus', 'Termine mit Erinnerung', 'alle Fälligkeiten (Rechnungen, Abbuchungen, Termine)'][s.cal], cycleCal: this.cyc('cal', 3),
       calNote: s.cal === 0 ? 'Kalender: nichts wird gespiegelt.' : (s.cal === 1 ? 'Kalender: HU, Wartung, Zählerstände erscheinen als Termine im iOS-Kalender „Mnemor“ – nur lesend gespiegelt, Daten bleiben in der App.' : 'Kalender: auch jede Rechnung und Abbuchung als ganztägiger Eintrag – gut für Familienkalender, aber voll.'),

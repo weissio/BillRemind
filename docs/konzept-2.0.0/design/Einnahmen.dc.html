@@ -154,7 +154,7 @@ a{color:#2A5480}
         <div class="sep"></div>
       </sc-for>
     </div>
-    <p class="note">Wiederkehrende Einnahmen werden je Monat geplant und zählen ab dem Eingangstag in die Liquidität. Das Sparpotenzial rechnet immer mit dem vollen Monat: {{sparNote}}</p>
+    <p class="note">Wiederkehrende Einnahmen werden je Monat geplant und zählen ab dem Eingangstag in die Liquidität. Spielraum und Noch frei rechnen immer mit dem vollen Monat: {{sparNote}}</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -230,7 +230,7 @@ class Component extends DCLogic {
       toast: s.toast,
       total: eur(total), received: eur(rec), expected: eur(exp),
       items: s.items.map(function (i) { return { name: i.name, sub: self.dayName(i.date) + ' · ' + recLabel[i.rec], amt: eur(i.amt), state: i.st === 'in' ? 'eingegangen' : 'erwartet', open: openEdit(i) }; }),
-      sparNote: total === 3650 ? 'Einnahmen 3.650,00 € → Sparpotenzial 592,70 €.' : 'Einnahmen ' + eur(total) + ' € → Sparpotenzial ' + eur(592.70 + total - 3650) + ' €.',
+      sparNote: total === 3650 ? 'Einnahmen 3.650,00 € → Noch frei 592,70 €.' : 'Einnahmen ' + eur(total) + ' € → Noch frei ' + eur(592.70 + total - 3650) + ' €.',
       recurring: s.items.filter(function (i) { return i.rec !== 'einmal'; }).map(function (i) { return { name: i.name, amt: eur(i.amt), when: i.when || recLabel[i.rec], open: openEdit(i) }; }),
       openNew: function () { self.setState({ sheet: 'new', editId: 0, fName: '', fAmt: '', fDate: '25.10.2026', frec: 'einmal', fst: 'in' }); },
       sheet: !!s.sheet, canDelete: s.sheet === 'edit',

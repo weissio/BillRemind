@@ -174,12 +174,13 @@ def build():
   <div style="padding: 0 20px; margin-top: -40px">
     <a href="Monatsrechnung.dc.html" class="card" style="display: block; padding: 14px 16px 12px; text-decoration: none; color: inherit">
       <div class="mb"><p class="ml">Einnahmen</p><div class="mt"><i style="width: 100%; background: #2F8F5B"></i></div><p class="mv" style="color: #215F33">{{{{k.ein}}}}</p></div>
-      <div class="mb"><p class="ml">Ausgaben</p><div class="mt"><i style="{{{{bar.fix}}}}"></i><i style="{{{{bar.aus}}}}"></i><i style="{{{{bar.bud}}}}"></i><i style="{{{{bar.res}}}}"></i></div><p class="mv">{{{{k.out}}}}</p></div>
+      <div class="mb"><p class="ml">Verwendung</p><div class="mt"><i style="{{{{bar.fix}}}}"></i><i style="{{{{bar.res}}}}"></i><i style="{{{{bar.aus}}}}"></i><i style="{{{{bar.bud}}}}"></i></div><p class="mv">{{{{k.out}}}}</p></div>
       <div class="lg">
         <span><i style="background: #1C3250"></i>Fixkosten {{{{k.fix}}}}</span>
-        <span><i style="background: #3C8DBC"></i>Ausgaben {{{{k.aus}}}}</span>
-        <span><i style="background: #9CC3DC"></i>Budgets {{{{k.bud}}}}</span>
-        <span><i style="background: #E8A33D"></i>Rücklagen {{{{k.res}}}}</span>
+        <span><i style="background: #2F8F5B"></i>Sparen {{{{k.res}}}}</span>
+        <span><i style="background: #3C8DBC"></i>Ausgegeben {{{{k.aus}}}}</span>
+        <span><i style="background: #B9D3E6"></i>Reserviert {{{{k.bud}}}}</span>
+        <span><i style="background: #EEF1F5; border: 1px solid #C9D3DF; box-sizing: border-box"></i>Noch frei {{{{k.spar}}}}</span>
       </div>
     </a>
   </div>
@@ -235,10 +236,10 @@ def build():
       monthLabel: months[m],
       prevMonth: function () {{ if (m < months.length - 1) self.setState({{ m: m + 1 }}); else self.say('Ältere Monate: Mehr › Auswertung'); }},
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
-      spar: eur(spar), sparLabel: (m === 0 ? 'Sparpotenzial ' : 'Ergebnis ') + months[m].split(' ')[0],
-      sparSub: m === 0 ? 'bleibt von ' + eur(d.ein) + ' € Einnahmen · ' + eur(d.off) + ' € noch offen' : 'Monat abgeschlossen · von ' + eur(d.ein) + ' € Einnahmen',
-      k: {{ ein: eur(d.ein), out: eur(out), fix: eur(d.fix, 0), aus: eur(aus, 0), bud: eur(d.bud, 0), res: eur(d.res, 0), offen: eur(d.off) }},
-      bar: {{ fix: 'width: ' + pct(d.fix) + '%; background: #1C3250', aus: 'width: ' + pct(aus) + '%; background: #3C8DBC', bud: 'width: ' + pct(d.bud) + '%; background: #9CC3DC', res: 'width: ' + pct(d.res) + '%; background: #E8A33D' }},
+      spar: eur(spar), sparLabel: (m === 0 ? 'Noch frei im ' : 'Überschuss im ') + months[m].split(' ')[0],
+      sparSub: m === 0 ? 'von ' + eur(d.ein - d.fix - d.res) + ' € Spielraum · ' + eur(d.off) + ' € davon noch offen' : 'Monat abgeschlossen · Gespart ' + eur(d.res + spar) + ' € inkl. Rücklagen',
+      k: {{ ein: eur(d.ein), out: eur(out), fix: eur(d.fix, 0), aus: eur(aus, 0), bud: eur(d.bud, 0), res: eur(d.res, 0), spar: eur(spar, 0), offen: eur(d.off) }},
+      bar: {{ fix: 'width: ' + pct(d.fix) + '%; background: #1C3250', aus: 'width: ' + pct(aus) + '%; background: #3C8DBC', bud: 'width: ' + pct(d.bud) + '%; background: #B9D3E6', res: 'width: ' + pct(d.res) + '%; background: #2F8F5B' }},
       a: {{ ws: warn(d.ws), ms: warn(d.ms), hs: warn(d.hs), w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0), wb: share(d.w, '{W}'), mb: share(d.mo, '{M}'), hb: share(d.h, '{H}') }},
       sumAreas: eur(d.w + d.mo + d.h),
       due: due, noDue: due.length === 0,

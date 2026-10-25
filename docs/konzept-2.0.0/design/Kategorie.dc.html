@@ -259,7 +259,7 @@ class Component extends DCLogic {
       nameDraft: s.nameDraft, setNameDraft: this.set('nameDraft'),
       kostenart: this.segItems('kostenart', [['var', 'Variabel'], ['fix', 'Fix'], ['kredit', 'Kredit']]),
       budgetDraft: s.budgetDraft, setBudgetDraft: this.set('budgetDraft'),
-      budgetNote: s.kostenart === 'fix' ? 'Fixkosten brauchen kein Budget – der Vertrag legt den Betrag fest. Ein Budget wirkt nur bei variabler Kostenart.' : (num(s.budgetDraft) > 0 ? 'Budget ' + eur(num(s.budgetDraft)) + ' € · Rest fließt in „Budgets noch offen“ und mindert das Sparpotenzial.' : 'Ohne Budget zählen nur die tatsächlichen Buchungen.'),
+      budgetNote: s.kostenart === 'fix' ? 'Fixkosten brauchen kein Budget – der Vertrag legt den Betrag fest. Ein Budget wirkt nur bei variabler Kostenart.' : (num(s.budgetDraft) > 0 ? 'Budget ' + eur(num(s.budgetDraft)) + ' € · Rest fließt in „Budgets noch offen“ und mindert Noch frei.' : 'Ohne Budget zählen nur die tatsächlichen Buchungen.'),
       saveEdit: function () { if (!s.nameDraft.trim()) { self.say('Name darf nicht leer sein'); return; } self.setState({ name: s.nameDraft.trim(), budget: s.kostenart === 'fix' ? '' : s.budgetDraft, edit: false }); self.say('Gespeichert'); },
       askHide: this.go('confirmHide', true), cancelHide: this.go('confirmHide', false), confirmHide: s.confirmHide,
       monthName: mi === 5 ? 'Oktober' : ({ Mai: 'Mai', Jun: 'Juni', Jul: 'Juli', Aug: 'August', Sep: 'September' })[mo[0]],

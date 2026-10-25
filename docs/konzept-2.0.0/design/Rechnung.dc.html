@@ -232,7 +232,7 @@ class Component extends DCLogic {
       capst: paid ? 'background: #D6EDDB; color: #215F33' : 'background: #F7D4D1; color: #943333',
       payCls: paid ? 'ok' : 'pri',
       payLabel: paid ? 'Bezahlt · rückgängig' : 'Als bezahlt markieren',
-      togglePaid: function () { self.setState({ paid: !paid }); self.say(paid ? 'Wieder offen – 142,00 € zählen zu „davon offen“' : 'Bezahlt – Sparpotenzial unverändert, Liquidität −142,00 €'); },
+      togglePaid: function () { self.setState({ paid: !paid }); self.say(paid ? 'Wieder offen – 142,00 € zählen zu „davon offen“' : 'Bezahlt – Noch frei unverändert, Liquidität −142,00 €'); },
       copyIban: function () { self.say('IBAN DE12 5001 0517 5407 3249 31 kopiert'); },
       dueText: paid ? '21. Okt. 2026 · bezahlt 24. Okt.' : '21. Okt. 2026 · überfällig',
       dueSt: paid ? 'color: #215F33' : 'color: #943333',

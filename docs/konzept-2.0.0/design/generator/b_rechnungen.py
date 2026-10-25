@@ -154,7 +154,7 @@ def build():
       capst: paid ? 'background: #D6EDDB; color: #215F33' : 'background: #F7D4D1; color: #943333',
       payCls: paid ? 'ok' : 'pri',
       payLabel: paid ? 'Bezahlt · rückgängig' : 'Als bezahlt markieren',
-      togglePaid: function () {{ self.setState({{ paid: !paid }}); self.say(paid ? 'Wieder offen – 142,00 € zählen zu „davon offen“' : 'Bezahlt – Sparpotenzial unverändert, Liquidität −142,00 €'); }},
+      togglePaid: function () {{ self.setState({{ paid: !paid }}); self.say(paid ? 'Wieder offen – 142,00 € zählen zu „davon offen“' : 'Bezahlt – Noch frei unverändert, Liquidität −142,00 €'); }},
       copyIban: function () {{ self.say('IBAN DE12 5001 0517 5407 3249 31 kopiert'); }},
       dueText: paid ? '21. Okt. 2026 · bezahlt 24. Okt.' : '21. Okt. 2026 · überfällig',
       dueSt: paid ? 'color: #215F33' : 'color: #943333',
@@ -251,7 +251,7 @@ def build():
     var ok = 5 + (amountOk ? 1 : 0) + (ibanOk ? 1 : 0) + (payeeOk ? 1 : 0);
     var ka = s.kostenart;
     var effect = s.status === 'paid'
-      ? 'Bezahlt: ' + eur(amt) + ' € zählen zu den Ausgaben des Monats (bezahlt). Sparpotenzial unverändert, Liquidität −' + eur(amt) + ' €.'
+      ? 'Bezahlt: ' + eur(amt) + ' € zählen zu den Ausgaben des Monats (bezahlt). Noch frei unverändert, Liquidität −' + eur(amt) + ' €.'
       : (ka === 'fix' ? 'Fix: ' + eur(amt) + ' € ersetzen im Oktober den Planbetrag des gewählten Vertrags (Plan-zu-Ist).' : 'Offen bis ' + s.due + ': ' + eur(amt) + ' € zählen zu „davon offen“ und erscheinen in der Liquidität am Fälligkeitstag.');
     if (ka === 'kredit') effect = 'Kredit: ' + eur(amt) + ' € laufen als Rate in Fixkosten & Kredite; Restschuld wird im Tilgungsplan geführt.';
     return {{
@@ -361,7 +361,7 @@ def build():
       vendor: s.vendor, setVendor: this.set('vendor'), amount: s.amount, setAmount: this.set('amount'),
       cat: s.cat, setCat: this.set('cat'), due: s.due, setDue: this.set('due'), date: s.date, setDate: this.set('date'),
       payKind: this.segItems('payKind', [['karte', 'Karte'], ['bar', 'Bar'], ['kasse', 'Haushaltskasse']]),
-      formEffect: amt > 0 ? (manual && s.due ? eur(amt) + ' € offen bis ' + s.due + ' → „davon offen“ und Liquidität' : eur(amt) + ' € bezahlt → Ausgaben des Monats, Budget ' + s.cat.split(' › ')[1] + ' sinkt um ' + eur(amt) + ' €' + (s.payKind === 'kasse' ? ', Haushaltskasse −' + eur(amt) + ' €' : '')) : 'Betrag eingeben – die Wirkung auf Budget und Sparpotenzial erscheint hier.',
+      formEffect: amt > 0 ? (manual && s.due ? eur(amt) + ' € offen bis ' + s.due + ' → „davon offen“ und Liquidität' : eur(amt) + ' € bezahlt → Ausgaben des Monats, Budget ' + s.cat.split(' › ')[1] + ' sinkt um ' + eur(amt) + ' €' + (s.payKind === 'kasse' ? ', Haushaltskasse −' + eur(amt) + ' €' : '')) : 'Betrag eingeben – die Wirkung auf Budget und Noch frei erscheint hier.',
       saveLabel: manual ? 'Rechnung speichern' : 'Bon speichern',
       saveForm: function () {{
         if (!(amt > 0)) {{ self.say('Bitte einen Betrag eingeben'); return; }}

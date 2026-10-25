@@ -235,8 +235,8 @@ class Component extends DCLogic {
     var res = s.resTouched ? s.res : cyc >= 6;
     var isFix = cyc <= 3 || !res;
     var effect = amt > 0
-      ? (isFix ? 'Fixkosten +' + eur(share) + ' €/Monat' : 'Rücklage-Rate +' + eur(share) + ' €/Monat, Abbuchung ' + eur(amt) + ' € am ' + s.due + ' aus der Rücklage') + ' → Sparpotenzial ' + eur(592.70 - share) + ' € statt 592,70 €. Bereich ' + s.area + ': ' + eur({ 'Wohnen': 1368.18, 'Mobilität': 746.19, 'Haushalt': 881.53 }[s.area] + share) + ' €.'
-      : 'Betrag eingeben – die Wirkung auf Fixkosten, Rücklage und Sparpotenzial erscheint hier.';
+      ? (isFix ? 'Fixkosten +' + eur(share) + ' €/Monat' : 'Rücklage-Rate +' + eur(share) + ' €/Monat, Abbuchung ' + eur(amt) + ' € am ' + s.due + ' aus der Rücklage') + ' → Noch frei ' + eur(592.70 - share) + ' € statt 592,70 €. Bereich ' + s.area + ': ' + eur({ 'Wohnen': 1368.18, 'Mobilität': 746.19, 'Haushalt': 881.53 }[s.area] + share) + ' €.'
+      : 'Betrag eingeben – die Wirkung auf Fixkosten, Rücklage und Noch frei erscheint hier.';
     return {
       toast: s.toast,
       name: s.name, setName: this.set('name'), vendor: s.vendor, setVendor: this.set('vendor'),

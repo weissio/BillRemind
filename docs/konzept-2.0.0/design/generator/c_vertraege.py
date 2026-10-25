@@ -166,7 +166,7 @@ def build():
       toggleEdit: function () {{ if (s.edit) {{ self.setState({{ edit: false, abschlag: newA }}); if (newA !== a) self.say('Abschlag ' + eur(newA) + ' € · Fixkosten Wohnen ' + (newA > a ? '+' : '−') + eur(Math.abs(newA - a)) + ' €/Monat'); }} else self.setState({{ edit: true, abschlagIn: eur(a) }}); }},
       abschlagIn: s.abschlagIn, setAbschlag: this.set('abschlagIn'),
       payday: s.payday, setPayday: this.set('payday'), notice: s.notice, setNotice: this.set('notice'),
-      editEffect: 'Neuer Abschlag ' + eur(newA) + ' € ab ' + s.payday + '. Nov. → Fixkosten Wohnen ' + eur(1218.35 - a + newA) + ' €, Sparpotenzial ' + eur(592.70 + a - newA) + ' €.',
+      editEffect: 'Neuer Abschlag ' + eur(newA) + ' € ab ' + s.payday + '. Nov. → Fixkosten Wohnen ' + eur(1218.35 - a + newA) + ' €, Noch frei ' + eur(592.70 + a - newA) + ' €.',
       stateLine: s.ended ? 'beendet zum 31. Dez. 2026' : 'aktiv',
       abschlag: eur(a), jahr: eur(a * 12),
       nextDebit: s.ended ? '1. Nov. 2026 · letzte: 1. Dez. 2026' : s.payday + '. Nov. 2026 · Lastschrift',
@@ -257,8 +257,8 @@ def build():
     var res = s.resTouched ? s.res : cyc >= 6;
     var isFix = cyc <= 3 || !res;
     var effect = amt > 0
-      ? (isFix ? 'Fixkosten +' + eur(share) + ' €/Monat' : 'Rücklage-Rate +' + eur(share) + ' €/Monat, Abbuchung ' + eur(amt) + ' € am ' + s.due + ' aus der Rücklage') + ' → Sparpotenzial ' + eur(592.70 - share) + ' € statt 592,70 €. Bereich ' + s.area + ': ' + eur({{ 'Wohnen': 1368.18, 'Mobilität': 746.19, 'Haushalt': 881.53 }}[s.area] + share) + ' €.'
-      : 'Betrag eingeben – die Wirkung auf Fixkosten, Rücklage und Sparpotenzial erscheint hier.';
+      ? (isFix ? 'Fixkosten +' + eur(share) + ' €/Monat' : 'Rücklage-Rate +' + eur(share) + ' €/Monat, Abbuchung ' + eur(amt) + ' € am ' + s.due + ' aus der Rücklage') + ' → Noch frei ' + eur(592.70 - share) + ' € statt 592,70 €. Bereich ' + s.area + ': ' + eur({{ 'Wohnen': 1368.18, 'Mobilität': 746.19, 'Haushalt': 881.53 }}[s.area] + share) + ' €.'
+      : 'Betrag eingeben – die Wirkung auf Fixkosten, Rücklage und Noch frei erscheint hier.';
     return {{
       toast: s.toast,
       name: s.name, setName: this.set('name'), vendor: s.vendor, setVendor: this.set('vendor'),

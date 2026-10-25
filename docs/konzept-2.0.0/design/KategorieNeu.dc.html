@@ -259,7 +259,7 @@ class Component extends DCLogic {
         if (!s.name.trim()) { self.setState({ blocked: true, blockMsg: 'Bitte einen Namen eingeben oder einen Vorschlag antippen.' }); return; }
         if (s.res && !(rate > 0)) { self.setState({ blocked: true, blockMsg: 'Für die Rücklage fehlt der Jahresbetrag.' }); return; }
         var msg = '„' + s.name.trim() + '“ liegt jetzt in ' + labels[area] + ' (' + ({ var: 'variabel', fix: 'fix', kredit: 'Kredit' })[s.kostenart] + ')';
-        if (s.res) msg += ' · Rücklage ' + eur(rate) + ' €/Monat angelegt – mindert das Sparpotenzial ab November';
+        if (s.res) msg += ' · Rücklage ' + eur(rate) + ' €/Monat angelegt – mindert den Spielraum ab November';
         if (s.termin) msg += ' · Termin jährlich angelegt';
         if (num(s.budget) > 0 && s.kostenart === 'var') msg += ' · Budget ' + eur(num(s.budget)) + ' €';
         self.setState({ done: true, doneMsg: msg + '.' });

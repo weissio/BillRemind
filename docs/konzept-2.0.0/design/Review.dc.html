@@ -241,7 +241,7 @@ class Component extends DCLogic {
     var ok = 5 + (amountOk ? 1 : 0) + (ibanOk ? 1 : 0) + (payeeOk ? 1 : 0);
     var ka = s.kostenart;
     var effect = s.status === 'paid'
-      ? 'Bezahlt: ' + eur(amt) + ' € zählen zu den Ausgaben des Monats (bezahlt). Sparpotenzial unverändert, Liquidität −' + eur(amt) + ' €.'
+      ? 'Bezahlt: ' + eur(amt) + ' € zählen zu den Ausgaben des Monats (bezahlt). Noch frei unverändert, Liquidität −' + eur(amt) + ' €.'
       : (ka === 'fix' ? 'Fix: ' + eur(amt) + ' € ersetzen im Oktober den Planbetrag des gewählten Vertrags (Plan-zu-Ist).' : 'Offen bis ' + s.due + ': ' + eur(amt) + ' € zählen zu „davon offen“ und erscheinen in der Liquidität am Fälligkeitstag.');
     if (ka === 'kredit') effect = 'Kredit: ' + eur(amt) + ' € laufen als Rate in Fixkosten & Kredite; Restschuld wird im Tilgungsplan geführt.';
     return {

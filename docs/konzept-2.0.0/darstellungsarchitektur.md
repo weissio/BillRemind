@@ -7,7 +7,7 @@ Stand 25.10.2026. Die Funktionen stehen (siehe `funktionsmodell.md`). Dieses Dok
 | Muster | Wofür | Vorbild |
 | --- | --- | --- |
 | **Kopfzahl** – eine Zahl, ein Label, eine Kontextzeile | Status des Monats | Finanzguru „Verfügbar bis Monatsende", YNAB „Ready to Assign" |
-| **Balkenpaar** – Einnahmen voll, Ausgaben segmentiert (Fixkosten / Ausgaben / Budgets / Rücklagen), Lücke = Sparpotenzial | Zusammensetzung ohne Formel | Finanzguru „Dein Monat", Monarch Cash Flow |
+| **Balkenpaar** – Einnahmen voll; Verwendung segmentiert (Fixkosten · Sparen · Ausgegeben · Reserviert), Lücke = Noch frei | Zusammensetzung ohne Formel | Finanzguru „Dein Monat", Monarch Cash Flow |
 | **Anteilszeile** – Icon, Name, dünner Anteilsbalken, Betrag rechts, Hinweis nur bei Abweichung | 3–6 Summen nebeneinander | Copilot Categories, Monarch Budget |
 | **Datumszeile** – Tag/Monat als Block links, Name + Kategorie, Betrag + Status rechts | alles mit Fälligkeit | Rocket Money Upcoming, Bobby, Money Manager |
 | **Fortschrittsbalken** – Soll/Ist, „noch x €" | Budgets, Rücklagen | YNAB, Buddy, Spendee |
@@ -22,8 +22,8 @@ Stand 25.10.2026. Die Funktionen stehen (siehe `funktionsmodell.md`). Dieses Dok
 
 | Funktion | Frage des Nutzers | Datenform | Muster | Screen |
 | --- | --- | --- | --- | --- |
-| Sparpotenzial | Wie stehe ich diesen Monat? | 1 Zahl | Kopfzahl, Kontext „bleibt von 3.650 € · 354,40 € noch offen" | Übersicht (Kopf) |
-| Monatsrechnung | Wo bleibt das Geld? | 5 Posten, Summe | Balkenpaar mit Legende; Einzelposten einen Tap tiefer | Übersicht → Monatsrechnung |
+| Noch frei | Wie stehe ich diesen Monat? | 1 Zahl | Kopfzahl, Kontext „von 1.664,70 € Spielraum · 354,40 € davon noch offen" | Übersicht (Kopf) |
+| Monatsrechnung | Wo bleibt das Geld? | 3 Stufen: Plan → im Monat → Monatsende | Balkenpaar mit Legende; drei Blöcke mit Zwischensummen einen Tap tiefer | Übersicht → Monatsrechnung |
 | Bereiche | Welcher Lebensbereich kostet wie viel? | 3 Summen | Anteilszeilen, Hinweis nur bei Abweichung | Übersicht → Bereich |
 | Fällig | Was muss ich jetzt tun? | 0–n Posten mit Datum | Datumszeilen (max. 4), Rest in Rechnungen | Übersicht → Rechnungen |
 | Rechnungen & Bons | Was ist offen, was bezahlt? | n Belege mit Datum/Status | Datumszeilen, gruppiert Überfällig / Diese Woche / Später / Bezahlt | Rechnungen |

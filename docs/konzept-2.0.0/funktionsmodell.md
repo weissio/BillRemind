@@ -2,7 +2,7 @@
 
 24.10.2026 · @Arjen
 
-Die Marktführer teilen nach **Lebensbereich** ein (Wohnen, Mobilität, Kommunikation …), zweistufig als Gruppe → Unterkategorie, und behandeln „Abo“ oder „Vertrag“ nicht als Kategorie, sondern als Eigenschaft bzw. eigenes Objekt neben der Kategorie. Mnemor 2.0 übernimmt das: Jede Buchung – ob OCR-Rechnung, Bon, Vertrag oder Fixkostenposition – hängt an genau einer Unterkategorie eines Lebensbereichs und trägt zusätzlich eine **Kostenart** (fix, variabel, Kredit). Ein Vertrag ist ein eigenes Objekt mit Laufzeit und Kündigungsfrist; eine per OCR erfasste Rechnung kann an ihn andocken und ersetzt dann im Monat den geplanten Betrag. So werden Rechnungen, Fixkosten und Budgets in einer Zahl „Sparpotenzial“ zusammengeführt, ohne Doppelzählung.
+Die Marktführer teilen nach **Lebensbereich** ein (Wohnen, Mobilität, Kommunikation …), zweistufig als Gruppe → Unterkategorie, und behandeln „Abo“ oder „Vertrag“ nicht als Kategorie, sondern als Eigenschaft bzw. eigenes Objekt neben der Kategorie. Mnemor 2.0 übernimmt das: Jede Buchung – ob OCR-Rechnung, Bon, Vertrag oder Fixkostenposition – hängt an genau einer Unterkategorie eines Lebensbereichs und trägt zusätzlich eine **Kostenart** (fix, variabel, Kredit). Ein Vertrag ist ein eigenes Objekt mit Laufzeit und Kündigungsfrist; eine per OCR erfasste Rechnung kann an ihn andocken und ersetzt dann im Monat den geplanten Betrag. So werden Rechnungen, Fixkosten und Budgets in einer Zahl „Noch frei“ zusammengeführt, ohne Doppelzählung (seit 25.10.: Spielraum → Noch frei, siehe Monatsrechnung).
 
 ## Wie die Marktführer einteilen
 
@@ -165,7 +165,7 @@ Stand: eingefroren am 24.10.2026. Muss = ohne das kein 2.0.0; Soll = im Release,
 * **Dokumente (Muss, ergänzt 24.10.):** (1) Original behalten – importierte PDFs werden als Datei gespeichert (heute wird nur der Text extrahiert und die PDF verworfen), Fotos bleiben JPG; `imageFileName` wird zu `documentFileName` + Typ, additiv. (2) Kamera-Scan mit Zuschnitt und Entzerrung (VisionKit `VNDocumentCameraViewController`) statt Rohfoto. (3) Backup als ZIP mit JSON und allen Dokumenten, Wiederherstellung inklusive – heute sichert die JSON nur Dateinamen, Bilder gehen beim Gerätewechsel verloren. Dokumente ohne Betrag (Police, Fahrzeugschein, Leasingvertrag) sind dasselbe Objekt mit Typ „Dokument“ und optionalem Ablaufdatum (= Termin); bewusst ohne Ordnerhierarchie, Volltextsuche und Teilen.
 * **OCR 2.0 (Muss vor Launch):** Umbau auf Vision-Dokumentenerkennung + Foundation Models auf dem Gerät, Heuristik als Prüfer und Fallback – ersetzt die Zeilen „OCR Phase 2/3“ in der Tabelle; Details im Abschnitt OCR 2.0.
 
-- **Rücklagen (Muss, ergänzt 24.10.; liegen im jeweiligen Bereich Wohnen / Mobilität / Haushalt, nicht auf der Übersicht):** `Objekt Ruecklage mit zwei Arten` – *Rücklage* (Pflicht: entsteht automatisch aus Jahres- und Quartalsverträgen, Rate = Betrag / Monate bis Fälligkeit) und *Sparziel* (Wunsch: Zielbetrag + Zieldatum → Monatsrate, z. B. Urlaub 1.800 € bis 15.07. → 200 €/Monat). Felder: Name, Art, Zielbetrag, Zieldatum, Monatsrate, Stand, optional Vertrag und Ordner. Monatsraten mindern das Sparpotenzial („− Rücklagen & Sparziele“); in der Liquidität erscheinen sie als „davon reserviert“, nicht als Abfluss. Vertragsabrechnung einer Jahresrechnung entnimmt aus der Rücklage statt den Monat zu belasten. Vorbild: YNAB Targets, Goodbudget, MoneyStats Sparziele – virtuell, ohne Konto.
+- **Rücklagen (Muss, ergänzt 24.10.; liegen im jeweiligen Bereich Wohnen / Mobilität / Haushalt, nicht auf der Übersicht):** `Objekt Ruecklage mit zwei Arten` – *Rücklage* (Pflicht: entsteht automatisch aus Jahres- und Quartalsverträgen, Rate = Betrag / Monate bis Fälligkeit) und *Sparziel* (Wunsch: Zielbetrag + Zieldatum → Monatsrate, z. B. Urlaub 1.800 € bis 15.07. → 200 €/Monat). Felder: Name, Art, Zielbetrag, Zieldatum, Monatsrate, Stand, optional Vertrag und Ordner. Monatsraten mindern den Spielraum (Stufe „Monatsanfang · Plan“, Zeile „Rücklagen-Raten“) und zählen zum Gesparten; in der Liquidität erscheinen sie als „davon reserviert“, nicht als Abfluss. Vertragsabrechnung einer Jahresrechnung entnimmt aus der Rücklage statt den Monat zu belasten. Vorbild: YNAB Targets, Goodbudget, MoneyStats Sparziele – virtuell, ohne Konto.
 - **Haushaltskasse (Soll, Ein-Geräte-Variante):** *Rücklagen-Art Kasse* mit Einzahlungen je Person (Objekte im Ordner Haushalt), Entnahmen, Saldo je Person; Bons können „aus der Kasse“ gebucht werden; PDF-Export der Abrechnung. Vorbild Tricount/Splid, nur auf einem Gerät. Eintragen durch mehrere Personen auf eigenen Telefonen erst mit dem Teilen in 2.1.
 
 ## Von Marktführern übernommene Erweiterungen
@@ -190,15 +190,21 @@ Jede Übernahme wird lokal umgesetzt – das Vorbild braucht dafür Kontodaten o
 
 Wo Akten (Gebäude, KFZ, Haushalt), Fälligkeiten und Liquidität in der Navigation sitzen: Navigation & Fälligkeiten
 
-## Glossar (Stand 24.10.2026)
+## Glossar (Stand 25.10.2026)
 
 Ein Wort je Begriff – in Code (Enum-Namen, Strings), Store-Text, Hilfe und Benachrichtigungen identisch. Änderungen nur hier.
 
 | Begriff in der App | Bedeutung | Nicht mehr verwenden |
 | --- | --- | --- |
 | Übersicht | Startseite (Tab 1) | Start, Haushalt, Dashboard |
-| Sparpotenzial im ‹Monat› | Einnahmen − Fixkosten & Kredite − Ausgaben des Monats (bezahlte Bons und Rechnungen sowie offene Rechnungen) − noch offene Budgets (Soll − Ist je Budget, nie negativ) − Monatsraten der Rücklagen; Monatsrechnung ohne Kontobezug | Frei verfügbar, Verfügbar bis Monatsende |
-| Fällig | Block auf der Übersicht: überfällige und in 7 Tagen fällige Posten als blätterbare Karten; Unterzeile „1 überfällig · 3 in 7 Tagen“ | Als Nächstes, Jetzt handeln |
+| Spielraum | Plan am Monatsanfang: Einnahmen − Fixkosten & Kredite − Rücklagen-Raten; steht fest, sobald die Verträge stehen | Budget (als Gesamtzahl), Verfügbares Einkommen |
+| Noch frei im ‹Monat› | Kopfzahl der Übersicht: Spielraum − Ausgegeben (bezahlte Bons und Rechnungen sowie offene Rechnungen ab Fälligkeit) − in Budgets reserviert; Monatsrechnung ohne Kontobezug | Sparpotenzial, Frei verfügbar, Verfügbar bis Monatsende |
+| Ausgegeben | variable Ausgaben des Monats, bezahlt + offen | Ausgaben des Monats, variabel |
+| Reserviert | je Budget: Budget − Ausgegeben, nie unter 0; Summe mindert Noch frei, bis das Geld ausgegeben ist oder der Monat endet | Budgets offen, Rest |
+| Sparen / Rücklagen-Raten | zweite Verwendung des Einkommens neben Ausgeben; mindert den Spielraum, zählt zum Gesparten | Ausgabe, Kosten |
+| Überschuss | Noch frei am Monatsende; kann in eine Rücklage übertragen werden | Sparpotenzial, Ergebnis |
+| Gespart | Rücklagen-Raten + Überschuss; Sparquote = Gespart ÷ Einnahmen | Sparrate |
+| Fällig | Block auf der Übersicht: überfällige und in 7 Tagen fällige Posten als Datumszeilen (max. 4); Kopfzeile „1 überfällig · 3 in 7 Tagen“ | Als Nächstes, Jetzt handeln |
 | Ordner | veraltet – siehe Ergänzung unter der Tabelle: ohne Überschrift, Tab-Name offen | Akten, Akte, Bereiche (als UI-Wort) |
 | Wohnen | Ordner und Bereich für Wohnung, Haus, Garage, eigene Objekte | Gebäude |
 | Mobilität | Ordner und Bereich für KFZ, ÖPNV, eigene Objekte | KFZ (nur noch als Objekttyp) |
@@ -208,12 +214,39 @@ Ein Wort je Begriff – in Code (Enum-Namen, Strings), Store-Text, Hilfe und Ben
 | Verträge | Tab 5: alle Verträge und Abos | Verträge & Abos (nur in Überschriften) |
 | Liquidität | eigener Screen mit Bank-Icon: Termine und Verlauf; nur dort erscheint der Kontostand | Bank, Kontoblick, Liquiditätsplanung |
 | Termin | Objekt für HU, Wartung, Zählerstand u. ä. | Erinnerung, Aufgabe |
-| Statuszeilen | Fakten, nicht Urteile: „Nachzahlung Strom überfällig“, „Budget Freizeit überschritten“, „HU am 12. Nov.“ | „30 € über Budget“, Bewertungen |
+| Statuszeilen | Fakten, nicht Urteile: „Nachzahlung Strom überfällig“, „Budget Freizeit überschritten“, „HU am 12. Nov.“; im Budget selbst steht der Betrag „30,00 € über Budget“ | Bewertungen |
 | Mehr | Zahnrad/… oben rechts: Einnahmen, Budgets, Auswertung, Einstellungen | Einstellungen als Tab |
 
 **Ergänzt 24.10.: Rücklage = virtueller Geldtopf mit den Arten Vertrag (aus Jahresverträgen), Sparziel (z. B. Urlaubskasse) und Kasse (Haushaltskasse); liegt im jeweiligen Bereich, nicht auf der Übersicht. Nicht verwenden: Topf, Space, Pot, Umschlag. Die drei Bereiche stehen auf der Übersicht ohne Überschrift; „Ordner“ und „Akte“ entfallen als UI-Wörter, die Tab-Bezeichnung ist offen (vorläufig „Bereiche“).**
 
 Im Reiter Navigation & Fälligkeiten stehen „Akte“ und „Gebäude“ noch in der Konzeptsprache; die Begriffe dort gelten als Ordner bzw. Wohnen.
+
+## Monatsrechnung: drei Stufen, Regeln für Budgets und Rücklagen (ergänzt 25.10.)
+
+Abgeleitet aus Finanzguru („frei verfügbares Einkommen“, Sparen als eigene Position), Monarch (Einkommen wird auf Spending und Saving verteilt; Töpfe Fixed / Non-monthly / Flexible), YNAB (Budgets als Umschläge, Überschreitung rot, nie negativ) und Emma („Left to spend = Budget − Committed − Past Spending“).
+
+```
+MONATSANFANG · Plan (steht fest)
+  Einnahmen                         3.650,00
+  − Fixkosten & Kredite            −1.659,20
+  − Rücklagen-Raten (Sparen)         −326,10
+  = Spielraum (variabel)            1.664,70
+
+IM MONAT · läuft
+  Spielraum                         1.664,70
+  − Ausgegeben (bezahlt + offen)   −1.010,60
+  − In Budgets reserviert              −61,40
+  = Noch frei                         592,70   ← Kopfzahl der Übersicht
+
+MONATSENDE · voraussichtlich
+  Gespart = Rücklagen 326,10 + Überschuss 592,70 = 918,80 · Sparquote 25 %
+```
+
+**Budgets** sind Umschläge innerhalb des Spielraums, kein Abzug von den Einnahmen. *Reserviert* = Budget − Ausgegeben, nie unter 0; es wird abgezogen, weil das Geld bis Monatsende noch rausgeht, und ist am Monatsende automatisch 0. **Überschreitung** (Freizeit 180/150): die 30 € stehen bereits unter *Ausgegeben*, reserviert wird 0, die Kategorie zeigt rot „30,00 € über Budget“; der Spielraum ändert sich nicht, nur *Noch frei* sinkt über die echten Ausgaben. Angeboten werden „Budget anheben“ und „aus ‹anderem Budget› decken“ (verschiebt Budget, Gesamtsumme bleibt). Fixkosten haben kein Budget.
+
+**Rücklagen-Raten** sind Sparen mit Zweck – die zweite Verwendung des Einkommens, keine Ausgabe. Sie mindern den Spielraum und zählen zum Gesparten. Die Verwendung einer Rücklage (HUK 487,20 am 27.10.) belastet den Monat nicht, nur den Kontostand in der Liquidität. Was am Monatsende frei bleibt, ist der *Überschuss* und kann in eine Rücklage übertragen werden.
+
+**Anzeige:** Übersicht = Kopfzahl *Noch frei* + Balkenpaar (Einnahmen voll; Verwendung: Fixkosten dunkel · Sparen grün · Ausgegeben blau · Reserviert hell · Lücke = Noch frei) + Legende mit genau diesen fünf Wörtern. Die drei Stufen stehen in der Monatsrechnung; die Regeln für Budgets im Budgets-Screen.
 
 ## Design-Stand und Beispielmonat
 
@@ -224,9 +257,11 @@ Alle Module sind als klickbare Screens in [Mnemor 2.0 – App-Screens](https://c
 | Einnahmen | 3.650,00 | Gehalt 3.400 (30.) + Kindergeld 250 (5.) |
 | Fixkosten & Kredite | 1.659,20 | Wohnen 1.218,35 + Mobilität 356,99 + Haushalt 83,86 |
 | Ausgaben des Monats | 1.010,60 | bezahlt 656,20 + offen 354,40 (Stadtwerke 142 überfällig, Inspektion 212,40) |
-| Budgets noch offen | 61,40 | Lebensmittel 38,00 + Mobilität variabel 23,40; Freizeit überschritten → 0 |
+| In Budgets reserviert | 61,40 | Lebensmittel 38,00 + Mobilität variabel 23,40; Freizeit überschritten → 0 |
 | Rücklagen-Raten | 326,10 | Urlaub 200 + HU/Reifen 60 + Kfz-Vers. 40,60 + Kfz-Steuer 12 + Hausrat 7,83 + Haftpflicht 5,67 |
-| Sparpotenzial | 592,70 | 3.650,00 − 1.659,20 − 1.010,60 − 61,40 − 326,10 |
+| Spielraum | 1.664,70 | 3.650,00 − 1.659,20 − 326,10 |
+| Noch frei | 592,70 | 1.664,70 − 1.010,60 − 61,40 |
+| Gespart | 918,80 | 326,10 + 592,70 · Sparquote 25 % |
 | Summe der Bereiche | 2.995,90 | Wohnen 1.368,18 + Mobilität 746,19 + Haushalt 881,53 = Fixkosten + Ausgaben + Rücklagen |
 | Verträge | 1.713,30 / Monat | 16 Verträge = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 |
 | Liquidität | 1.767,81 tiefster Stand | Kontostand 2.410 − 142 − 487,20 (27.) − 12,99 (29.); Gehalt am 30. |

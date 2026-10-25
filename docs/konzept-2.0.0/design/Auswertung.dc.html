@@ -200,7 +200,7 @@ a{color:#2A5480}
       <div class="sep"></div>
       <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € (45 %)</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Sparpotenzial</p><div class="vc"><p class="v">6.930,00 €</p><p class="v2">Ø 577,50</p></div></div>
+      <div class="f"><p class="l">Gespart</p><div class="vc"><p class="v">10.843,20 €</p><p class="v2">24 %</p></div></div>
     </div>
   </div>
 <sc-if value="{{exportSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Export</h3><p>Zahlen dieser Auswertung als Datei – lokal erstellt, dann Teilen-Menü.</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Format</p><div class="seg"><sc-for list="{{exFmt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Zeitraum</p><div class="seg"><sc-for list="{{exRange}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeExport}}">Abbrechen</button><button class="btn pri" onClick="{{doExport}}">Erstellen</button></div></div></div></sc-if>

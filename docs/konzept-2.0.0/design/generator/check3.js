@@ -7,7 +7,7 @@ function load(f){const html=fs.readFileSync(path.join("project",f+".dc.html"),"u
 let fails=0;const nrm=x=>typeof x==="string"?x.replace(/\u00A0/g," "):x;const eq=(name,a,b)=>{a=nrm(a);b=nrm(b);const ok=a===b;if(!ok)fails++;console.log((ok?"  ok  ":"  FAIL")+" "+name+(ok?"":"  → got "+JSON.stringify(a)+" expected "+JSON.stringify(b)));};
 const ev=v=>({target:{value:v}});
 let c,v;
-console.log("Main");c=load("Main");v=c.renderVals();eq("Sparpotenzial",v.spar,"592,70");eq("Bereiche",v.sumAreas,"2.995,90");eq("sum==fix+aus+res",v.sumAreas,(()=>{return "2.995,90"})());
+console.log("Main");c=load("Main");v=c.renderVals();eq("Noch frei",v.spar,"592,70");eq("Bereiche",v.sumAreas,"2.995,90");eq("sum==fix+aus+res",v.sumAreas,(()=>{return "2.995,90"})());
 v.prevMonth();v=c.renderVals();eq("Sept Ergebnis",v.spar,"840,00");eq("Sept Bereiche = fix+aus+res",v.sumAreas,"2.810,00");v.prevMonth();v=c.renderVals();eq("Aug Bereiche konsistent",v.sumAreas,"2.740,00");eq("Aug fix+aus+res",(1659.20+754.70+326.10).toFixed(2),"2740.00");
 console.log("Wohnen");c=load("Wohnen");v=c.renderVals();eq("total",v.total,"1.368,18");eq("rows",v.rows.length,8);
 console.log("Akte (Mobilität)");c=load("Akte");v=c.renderVals();eq("total",v.total,"746,19");v.objChips[1].pick();v=c.renderVals();eq("VW ID.3 total",v.total,"688,19");v.objChips[2].pick();v=c.renderVals();eq("Ticket total",v.total,"58,00");eq("Ticket rows",v.rows.length,1);
@@ -17,7 +17,7 @@ console.log("Rechnung");c=load("Rechnung");v=c.renderVals();eq("cap",v.cap,"Übe
 console.log("Review");c=load("Review");v=c.renderVals();eq("7 von 8",v.okCount,7);v.setPayee(ev("Autohaus Keller GmbH"));v=c.renderVals();eq("8 von 8",v.okCount,8);v.setAmount(ev("212,50"));v=c.renderVals();eq("abweichend",v.amountCap,"abweichend");v.setIban(ev("DE12 5001 0517 5407 3249 32"));v=c.renderVals();eq("iban falsch",v.ibanCap,"Prüfen");
 console.log("Vertraege");c=load("Vertraege");v=c.renderVals();eq("summary",v.summary.indexOf("16 Verträge · 1.713,30 € im Monat")>=0,true);
 console.log("VertragNeu");c=load("VertragNeu");v=c.renderVals();console.log("   keys:",Object.keys(v).filter(k=>/month|monat|rate/i.test(k)).join(","));
-console.log("Budgets");c=load("Budgets");v=c.renderVals();eq("offen",v.offen,"61,40");eq("verbraucht",v.verbraucht,"868,60");v.applySug();v=c.renderVals();eq("offen nach 200",v.offen,"81,40");eq("spar note",v.sparNote,"Sparpotenzial Oktober jetzt 572,70 € (Budgets offen 81,40 € statt 61,40 €).");
+console.log("Budgets");c=load("Budgets");v=c.renderVals();eq("offen",v.offen,"61,40");eq("verbraucht",v.verbraucht,"868,60");v.applySug();v=c.renderVals();eq("offen nach 200",v.offen,"81,40");eq("spar note",v.sparNote,"Noch frei im Oktober jetzt 572,70 € (reserviert 81,40 € statt 61,40 €).");
 console.log("Einnahmen");c=load("Einnahmen");v=c.renderVals();eq("total",v.total,"3.650,00");eq("erwartet",v.expected,"3.400,00");v.openNew();v.setFName(ev("Rückerstattung"));v.setFAmt(ev("51,30"));v.saveSheet();v=c.renderVals();eq("total+51,30",v.total,"3.701,30");
 console.log("Kasse");c=load("Kasse");v=c.renderVals();eq("saldo",v.saldo,"86,50");eq("bons",v.bonCount,5);
 console.log("Ruecklage");c=load("Ruecklage");v=c.renderVals();eq("pct",v.pct,36);eq("raten",v.ratenText,"6 Raten bis Juli");v.openIn();v.setMoveAmt(ev("100"));v.confirmMove();v=c.renderVals();eq("stand 740",v.standFmt,"740,00");v.openOut();v.setMoveAmt(ev("900"));v.confirmMove();v=c.renderVals();eq("entnahme zu hoch blockiert",v.standFmt,"740,00");

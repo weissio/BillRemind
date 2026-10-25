@@ -117,7 +117,7 @@ def build():
       nameDraft: s.nameDraft, setNameDraft: this.set('nameDraft'),
       kostenart: this.segItems('kostenart', [['var', 'Variabel'], ['fix', 'Fix'], ['kredit', 'Kredit']]),
       budgetDraft: s.budgetDraft, setBudgetDraft: this.set('budgetDraft'),
-      budgetNote: s.kostenart === 'fix' ? 'Fixkosten brauchen kein Budget – der Vertrag legt den Betrag fest. Ein Budget wirkt nur bei variabler Kostenart.' : (num(s.budgetDraft) > 0 ? 'Budget ' + eur(num(s.budgetDraft)) + ' € · Rest fließt in „Budgets noch offen“ und mindert das Sparpotenzial.' : 'Ohne Budget zählen nur die tatsächlichen Buchungen.'),
+      budgetNote: s.kostenart === 'fix' ? 'Fixkosten brauchen kein Budget – der Vertrag legt den Betrag fest. Ein Budget wirkt nur bei variabler Kostenart.' : (num(s.budgetDraft) > 0 ? 'Budget ' + eur(num(s.budgetDraft)) + ' € · Rest fließt in „Budgets noch offen“ und mindert Noch frei.' : 'Ohne Budget zählen nur die tatsächlichen Buchungen.'),
       saveEdit: function () { if (!s.nameDraft.trim()) { self.say('Name darf nicht leer sein'); return; } self.setState({ name: s.nameDraft.trim(), budget: s.kostenart === 'fix' ? '' : s.budgetDraft, edit: false }); self.say('Gespeichert'); },
       askHide: this.go('confirmHide', true), cancelHide: this.go('confirmHide', false), confirmHide: s.confirmHide,
       monthName: mi === 5 ? 'Oktober' : ({ Mai: 'Mai', Jun: 'Juni', Jul: 'Juli', Aug: 'August', Sep: 'September' })[mo[0]],
@@ -217,7 +217,7 @@ def build():
         if (!s.name.trim()) { self.setState({ blocked: true, blockMsg: 'Bitte einen Namen eingeben oder einen Vorschlag antippen.' }); return; }
         if (s.res && !(rate > 0)) { self.setState({ blocked: true, blockMsg: 'Für die Rücklage fehlt der Jahresbetrag.' }); return; }
         var msg = '„' + s.name.trim() + '“ liegt jetzt in ' + labels[area] + ' (' + ({ var: 'variabel', fix: 'fix', kredit: 'Kredit' })[s.kostenart] + ')';
-        if (s.res) msg += ' · Rücklage ' + eur(rate) + ' €/Monat angelegt – mindert das Sparpotenzial ab November';
+        if (s.res) msg += ' · Rücklage ' + eur(rate) + ' €/Monat angelegt – mindert den Spielraum ab November';
         if (s.termin) msg += ' · Termin jährlich angelegt';
         if (num(s.budget) > 0 && s.kostenart === 'var') msg += ' · Budget ' + eur(num(s.budget)) + ' €';
         self.setState({ done: true, doneMsg: msg + '.' });
@@ -340,7 +340,7 @@ def build():
       <div class="sep"></div>
       <div class="f"><p class="l">Nächste Rate</p><p class="v">1. Nov. 2026</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Wirkung</p><p class="v wrap">mindert das Sparpotenzial um {{rateFmt}} €/Monat; Kontostand unverändert</p></div>
+      <div class="f"><p class="l">Wirkung</p><p class="v">Sparen · Spielraum −{{rateFmt}} €/Monat</p></div>
       <div class="sep"></div>
       <button class="f" onClick="{{cycleReached}}"><p class="l">Wenn erreicht</p><p class="v">{{reachedText}}</p>[CHEV]</button>
     </div>
@@ -364,7 +364,7 @@ def build():
 ''') + '''<sc-if value="{{move}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{moveTitle}}</h3><p>{{moveText}}</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Betrag</p><input class="in num" value="{{moveAmt}}" onChange="{{setMoveAmt}}" inputmode="decimal" placeholder="0,00"><span style="font-size: 14px; color: #637894">€</span></div><div class="sep"></div><div class="f"><p class="l">Notiz</p><input class="in" value="{{moveNote}}" onChange="{{setMoveNote}}" placeholder="optional"></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeMove}}">Abbrechen</button><button class="btn pri" onClick="{{confirmMove}}">{{moveTitle}}</button></div></div></div></sc-if>''' \
       + sheet("confirmClose", "Rücklage auflösen?", "{{closeText}}", '<button class="btn sec2" onClick="{{cancelClose}}">Abbrechen</button><a class="btn danger" href="Haushalt.dc.html">Auflösen</a>')
     logic = r'''  constructor(p) { super(p); this.state = { name: 'Urlaub Juli', stand: 640, ziel: 1800, rate: 200, datum: '15. Juli 2027', edit: false, nameDraft: '', zielDraft: '', rateDraft: '', datumDraft: '', reached: 0, move: '', moveAmt: '', moveNote: '', confirmClose: false, toast: '',
-    hist: [ { name: 'Rate Oktober', sub: '1. Okt. · automatisch', val: '+200,00', st: 'color: #215F33' }, { name: 'Rate September', sub: '1. Sep. · automatisch', val: '+200,00', st: 'color: #215F33' }, { name: 'Sparpotenzial August', sub: '31. Aug. · manuell übertragen', val: '+240,00', st: 'color: #215F33' } ] }; }
+    hist: [ { name: 'Rate Oktober', sub: '1. Okt. · automatisch', val: '+200,00', st: 'color: #215F33' }, { name: 'Rate September', sub: '1. Sep. · automatisch', val: '+200,00', st: 'color: #215F33' }, { name: 'Überschuss August', sub: '31. Aug. · manuell übertragen', val: '+240,00', st: 'color: #215F33' } ] }; }
 ''' + JS_SEG + r'''
   renderVals() {
     var self = this, s = this.state, rest = Math.max(0, s.ziel - s.stand), pct = s.ziel > 0 ? Math.min(100, Math.round(s.stand / s.ziel * 100)) : 0;
@@ -380,15 +380,15 @@ def build():
       toggleEdit: function () { self.setState({ edit: !s.edit, nameDraft: s.name, zielDraft: eur(s.ziel), rateDraft: eur(s.rate), datumDraft: s.datum }); },
       nameDraft: s.nameDraft, setNameDraft: this.set('nameDraft'), zielDraft: s.zielDraft, setZielDraft: this.set('zielDraft'), rateDraft: s.rateDraft, setRateDraft: this.set('rateDraft'), datumDraft: s.datumDraft, setDatumDraft: this.set('datumDraft'),
       calcRate: function () { var r = Math.max(0, dZ - s.stand) / 9; self.setState({ rateDraft: eur(r) }); self.say('9 Raten bis ' + s.datumDraft + ': ' + eur(r) + ' €/Monat'); },
-      editNote: dZ > 0 ? 'Mit Ziel ' + eur(dZ) + ' € und Rate ' + eur(dR) + ' €: ' + (dR > 0 ? Math.ceil(Math.max(0, dZ - s.stand) / dR) + ' Raten' : 'keine Rate') + ' · Sparpotenzial sinkt um ' + eur(dR) + ' €/Monat.' : 'Zielbetrag eingeben.',
+      editNote: dZ > 0 ? 'Mit Ziel ' + eur(dZ) + ' € und Rate ' + eur(dR) + ' €: ' + (dR > 0 ? Math.ceil(Math.max(0, dZ - s.stand) / dR) + ' Raten' : 'keine Rate') + ' · Spielraum sinkt um ' + eur(dR) + ' €/Monat.' : 'Zielbetrag eingeben.',
       saveEdit: function () { if (!(dZ > 0)) { self.say('Zielbetrag fehlt'); return; } self.setState({ name: s.nameDraft.trim() || s.name, ziel: dZ, rate: dR, datum: s.datumDraft || s.datum, edit: false }); self.say('Gespeichert'); },
       askClose: this.go('confirmClose', true), cancelClose: this.go('confirmClose', false), confirmClose: s.confirmClose,
-      closeText: eur(s.stand) + ' € werden freigegeben und erscheinen im Oktober als Sparpotenzial. Der Verlauf bleibt in der Auswertung.',
+      closeText: eur(s.stand) + ' € werden freigegeben und erscheinen im Oktober unter Noch frei. Der Verlauf bleibt in der Auswertung.',
       rateFmt: eur(s.rate), ratenText: raten > 0 ? raten + ' Raten bis ' + s.datum.split(' ')[1] : 'Ziel erreicht – Rate läuft aus',
       reachedText: reachedOpts[s.reached], cycleReached: function () { self.setState({ reached: (s.reached + 1) % reachedOpts.length }); },
       hist: s.hist,
       move: !!s.move, moveTitle: s.move === 'in' ? 'Einzahlen' : 'Entnehmen',
-      moveText: s.move === 'in' ? 'Einmalig zusätzlich zurücklegen, z. B. Sparpotenzial des Monats. Der Kontostand ändert sich nicht.' : 'Aus der Rücklage bezahlen. Der Betrag belastet den Monat nicht – er war schon zurückgelegt.',
+      moveText: s.move === 'in' ? 'Einmalig zusätzlich zurücklegen, z. B. den Überschuss des Monats. Der Kontostand ändert sich nicht.' : 'Aus der Rücklage bezahlen. Der Betrag belastet den Monat nicht – er war schon zurückgelegt.',
       moveAmt: s.moveAmt, setMoveAmt: this.set('moveAmt'), moveNote: s.moveNote, setMoveNote: this.set('moveNote'),
       openIn: function () { self.setState({ move: 'in', moveAmt: '', moveNote: '' }); }, openOut: function () { self.setState({ move: 'out', moveAmt: '', moveNote: '' }); }, closeMove: this.go('move', ''),
       confirmMove: function () {
@@ -501,54 +501,74 @@ def build():
     # ================================================================ Monatsrechnung
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Main.dc.html">[BACK]Übersicht</a><p class="ttl">Oktober 2026</p><span style="width: 60px"></span></div>
-    <h1>Sparpotenzial {{spar}} €</h1>
-    <p class="sub">So setzt sich die Zahl zusammen – jede Zeile führt zur Quelle. Antippen der Pfeile zeigt die Einzelposten.</p>
+    <h1>Noch frei {{spar}} €</h1>
+    <p class="sub">Drei Schritte: Plan am Monatsanfang, Verlauf im Monat, Ergebnis am Monatsende. Pfeile zeigen die Einzelposten.</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Monatsanfang · Plan <span>steht fest</span></h2>
     <div class="card">
-      <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
-        <div class="row" style="padding-right: 8px"><a href="{{r.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{r.name}}</p><p class="s2">{{r.sub}}</p></a><p class="v" style="{{r.st}}">{{r.val}}</p><button class="chip lt" style="height: 30px; width: 30px; padding: 0; justify-content: center" aria-label="Einzelposten" onClick="{{r.toggle}}">{{r.arrow}}</button></div>
+      <sc-for list="{{plan}}" as="r" hint-placeholder-count="3">
+        <div class="row" style="padding-right: 8px"><a href="{{r.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{r.name}}</p><p class="s">{{r.sub}}</p></a><p class="v" style="{{r.st}}">{{r.val}}</p><button class="chip lt" style="height: 30px; width: 30px; padding: 0; justify-content: center" aria-label="Einzelposten" onClick="{{r.toggle}}">{{r.arrow}}</button></div>
         <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}"><div style="padding: 0 16px 10px 16px"><sc-for list="{{r.items}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #637894; padding: 3px 0"><span style="flex: 1; min-width: 0">{{i.n}}</span><span style="font-variant-numeric: tabular-nums; white-space: nowrap">{{i.v}}</span></div></sc-for></div></sc-if>
         <div class="sep"></div>
       </sc-for>
-      <div class="row" style="background: #F3F5F8; border-radius: 0 0 18px 18px"><div class="mid"><p class="n">Sparpotenzial</p><p class="s">kann am Monatsende in eine Rücklage</p></div><p class="v">{{spar}}</p></div>
+      <div class="row" style="background: #F3F5F8; border-radius: 0 0 18px 18px"><div class="mid"><p class="n">Spielraum (variabel)</p></div><p class="v" style="font-size: 17px">{{raum}}</p></div>
     </div>
   </div>
-
-  <div style="padding: 20px 20px 0 20px">
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Im Monat <span>läuft</span></h2>
     <div class="card">
-      <div class="row"><div class="mid"><p class="n">Bereiche</p><p class="s2">Wohnen 1.368,18 · Mobilität 746,19 · Haushalt 881,53</p></div><p class="v">{{areas}}</p></div>
-      <div class="sep"></div>
-      <div class="row"><div class="mid"><p class="n">Fixkosten + Ausgaben + Raten</p><p class="s">1.659,20 + 1.010,60 + 326,10</p></div><p class="v">{{areas2}}</p></div>
+      <sc-for list="{{run}}" as="r" hint-placeholder-count="3">
+        <div class="row" style="padding-right: 8px"><a href="{{r.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{r.name}}</p><p class="s">{{r.sub}}</p></a><p class="v" style="{{r.st}}">{{r.val}}</p><button class="chip lt" style="height: 30px; width: 30px; padding: 0; justify-content: center" aria-label="Einzelposten" onClick="{{r.toggle}}">{{r.arrow}}</button></div>
+        <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}"><div style="padding: 0 16px 10px 16px"><sc-for list="{{r.items}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #637894; padding: 3px 0"><span style="flex: 1; min-width: 0">{{i.n}}</span><span style="font-variant-numeric: tabular-nums; white-space: nowrap">{{i.v}}</span></div></sc-for></div></sc-if>
+        <div class="sep"></div>
+      </sc-for>
+      <div class="row" style="background: #F3F5F8; border-radius: 0 0 18px 18px"><div class="mid"><p class="n">Noch frei</p></div><p class="v" style="font-size: 17px; color: #215F33">{{spar}}</p></div>
     </div>
-    <p class="note">Nicht enthalten: der Kontostand. Den gibt es nur in der Liquidität.</p>
+  </div>
+  <div style="padding: 18px 20px 0 20px">
+    <h2 class="h2">Monatsende <span>voraussichtlich</span></h2>
+    <div class="card">
+      <div class="row"><div class="mid"><p class="n">Gespart</p><p class="s">Rücklagen {{resFmt}} + Überschuss {{spar}}</p></div><p class="v" style="color: #215F33">{{saved}}</p></div>
+      <div class="sep"></div>
+      <div class="row"><div class="mid"><p class="n">Sparquote</p><p class="s">Gespart ÷ Einnahmen</p></div><p class="v">{{quote}} %</p></div>
+      <div class="sep"></div>
+      <div class="row"><div class="mid"><p class="n">Bereiche zusammen</p><p class="s">Wohnen 1.368,18 · Mobilität 746,19 · Haushalt 881,53</p></div><p class="v">{{areas}}</p></div>
+    </div>
+    <p class="note">Bereiche = Fixkosten + Ausgaben + Rücklagen-Raten = {{areas2}} €. Der Kontostand kommt hier nicht vor – den gibt es nur in der Liquidität.</p>
   </div>
 
   <div style="padding: 16px 20px 0 20px; display: flex; gap: 10px">
-    <button class="btn pri" onClick="{{openTransfer}}">{{spar}} € in Rücklage übertragen</button>
+    <button class="btn pri" onClick="{{openTransfer}}">Überschuss in Rücklage übertragen</button>
   </div>
-''') + '''<sc-if value="{{transfer}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Wohin übertragen?</h3><p>Der Monat ist noch nicht abgeschlossen – offene Posten können das Sparpotenzial noch ändern. Übertragen wird am Monatsende mit dem dann gültigen Wert.</p><div class="card" style="margin-bottom: 12px"><sc-for list="{{targets}}" as="t" hint-placeholder-count="3"><button class="f" onClick="{{t.pick}}"><p class="v" style="font-weight: 500">{{t.name}}</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{t.sub}}</p><span class="{{t.cls}}" style="width: 20px; height: 20px; border-width: 2px"></span></button><div class="sep"></div></sc-for></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeTransfer}}">Abbrechen</button><button class="btn pri" onClick="{{confirmTransfer}}">Vormerken</button></div></div></div></sc-if>'''
+''') + '''<sc-if value="{{transfer}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Wohin übertragen?</h3><p>Der Monat ist noch nicht abgeschlossen – offene Posten können den Überschuss noch ändern. Übertragen wird am Monatsende mit dem dann gültigen Wert.</p><div class="card" style="margin-bottom: 12px"><sc-for list="{{targets}}" as="t" hint-placeholder-count="3"><button class="f" onClick="{{t.pick}}"><p class="v" style="font-weight: 500">{{t.name}}</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{t.sub}}</p><span class="{{t.cls}}" style="width: 20px; height: 20px; border-width: 2px"></span></button><div class="sep"></div></sc-for></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeTransfer}}">Abbrechen</button><button class="btn pri" onClick="{{confirmTransfer}}">Vormerken</button></div></div></div></sc-if>'''
     logic = r'''  constructor(p) { super(p); this.state = { open: {}, transfer: false, target: 0, planned: '', toast: '' };
-    this.ROWS = [
+    this.PLAN = [
       { name: 'Einnahmen', sub: 'Gehalt 3.400 · Kindergeld 250', val: 3650, sign: 1, href: 'Einnahmen.dc.html', items: [['Gehalt Muster AG (30. Okt.)', '3.400,00'], ['Kindergeld (5. Okt.)', '250,00']] },
       { name: 'Fixkosten & Kredite', sub: '16 Verträge · 3 Bereiche', val: 1659.20, sign: -1, href: 'Vertraege.dc.html', items: [['Wohnen · Miete, Strom, Gas, Internet, Rundfunk', '1.218,35'], ['Mobilität · Leasing, D-Ticket, Ladetarif', '356,99'], ['Haushalt · Mobilfunk, Streaming, Fitness', '83,86']] },
-      { name: 'Ausgaben des Monats', sub: 'bezahlt 656,20 · offen 354,40', val: 1010.60, sign: -1, href: 'Rechnungen.dc.html', items: [['Bons Lebensmittel, Freizeit · bezahlt', '592,00'], ['EnBW Laden · bezahlt 16. Okt.', '64,20'], ['Stadtwerke Nachzahlung · überfällig', '142,00'], ['Autohaus Keller · fällig 30. Okt.', '212,40']] },
-      { name: 'Budgets, noch offen', sub: 'Lebensmittel 38,00 · Mobilität 23,40', val: 61.40, sign: -1, href: 'Budgets.dc.html', items: [['Lebensmittel 450 − 412', '38,00'], ['Mobilität variabel 300 − 276,60', '23,40'], ['Freizeit 150 − 180 · überschritten', '0,00']] },
-      { name: 'Rücklagen-Raten', sub: '6 Raten · Urlaub, Kfz, Versicherungen', val: 326.10, sign: -1, href: 'Ruecklage.dc.html', items: [['Urlaub Juli (Sparziel)', '200,00'], ['HU und Reifen (Termin)', '60,00'], ['Kfz-Versicherung 487,20 ÷ 12', '40,60'], ['Kfz-Steuer 144 ÷ 12', '12,00'], ['Hausrat 94 ÷ 12', '7,83'], ['Haftpflicht 68 ÷ 12', '5,67']] }
-    ]; }
+      { name: 'Rücklagen-Raten', sub: 'Sparen mit Zweck · 6 Raten', val: 326.10, sign: -1, href: 'Ruecklage.dc.html', items: [['Urlaub Juli (Sparziel)', '200,00'], ['HU und Reifen (Termin)', '60,00'], ['Kfz-Versicherung 487,20 ÷ 12', '40,60'], ['Kfz-Steuer 144 ÷ 12', '12,00'], ['Hausrat 94 ÷ 12', '7,83'], ['Haftpflicht 68 ÷ 12', '5,67']] }
+    ];
+    this.RUN = [
+      { name: 'Ausgegeben', sub: 'bezahlt 656,20 · offen 354,40', val: 1010.60, sign: -1, href: 'Rechnungen.dc.html', items: [['Bons Lebensmittel, Freizeit · bezahlt', '592,00'], ['EnBW Laden · bezahlt 16. Okt.', '64,20'], ['Stadtwerke Nachzahlung · überfällig', '142,00'], ['Autohaus Keller · fällig 30. Okt.', '212,40']] },
+      { name: 'In Budgets reserviert', sub: 'Budget − Ist, nie unter 0', val: 61.40, sign: -1, href: 'Budgets.dc.html', items: [['Lebensmittel 450 − 412', '38,00'], ['Mobilität variabel 300 − 276,60', '23,40'], ['Freizeit 150 − 180 · überschritten', '0,00']] }
+    ];
+    }
 ''' + JS_SEG + r'''
   renderVals() {
     var self = this, s = this.state;
-    var spar = this.ROWS.reduce(function (a, r) { return a + r.sign * r.val; }, 0);
+    var raum = this.PLAN.reduce(function (a, r) { return a + r.sign * r.val; }, 0);
+    var spar = raum + this.RUN.reduce(function (a, r) { return a + r.sign * r.val; }, 0);
+    var res = 326.10, saved = res + spar, quote = Math.round(saved / 3650 * 100);
+    var mkRows = function (list, key) { return list.map(function (r, i) { var id = key + i, open = !!s.open[id]; return { name: r.name, sub: r.sub, val: (r.sign > 0 ? '+' : '−') + eur(r.val), st: r.sign > 0 ? 'color: #215F33' : '', href: r.href, open: open, arrow: open ? '▾' : '▸', items: r.items.map(function (x) { return { n: x[0], v: x[1] }; }), toggle: function () { var o = Object.assign({}, s.open); o[id] = !open; self.setState({ open: o }); } }; }); };
     var targets = [['Urlaub Juli', 'Sparziel · 640 von 1.800 €'], ['HU und Reifen', 'Termin · 120 von 190 €'], ['Neue Rücklage anlegen', 'Name und Ziel im nächsten Schritt']];
     return {
       toast: s.toast,
-      spar: eur(spar), areas: eur(1368.18 + 746.19 + 881.53), areas2: eur(1659.20 + 1010.60 + 326.10),
-      rows: this.ROWS.map(function (r, i) { var open = !!s.open[i]; return { name: r.name, sub: r.sub, val: (r.sign > 0 ? '+' : '−') + eur(r.val), st: r.sign > 0 ? 'color: #215F33' : '', href: r.href, open: open, arrow: open ? '▾' : '▸', items: r.items.map(function (x) { return { n: x[0], v: x[1] }; }), toggle: function () { var o = Object.assign({}, s.open); o[i] = !open; self.setState({ open: o }); } }; }),
+      spar: eur(spar), raum: eur(raum), resFmt: eur(res), saved: eur(saved), quote: quote, areas: eur(1368.18 + 746.19 + 881.53), areas2: eur(1659.20 + 1010.60 + 326.10),
+      plan: mkRows(this.PLAN, 'p'), run: mkRows(this.RUN, 'r'),
       transfer: s.transfer, openTransfer: this.go('transfer', true), closeTransfer: this.go('transfer', false),
       targets: targets.map(function (t, i) { return { name: t[0], sub: t[1], cls: s.target === i ? 'chk on' : 'chk', pick: function () { self.setState({ target: i }); } }; }),
-      confirmTransfer: function () { self.setState({ transfer: false, planned: targets[s.target][0] }); self.say('Vorgemerkt: Sparpotenzial am 31. Okt. → ' + targets[s.target][0]); }
+      confirmTransfer: function () { self.setState({ transfer: false, planned: targets[s.target][0] }); self.say('Vorgemerkt: Überschuss am 31. Okt. → ' + targets[s.target][0]); }
     };
   }'''
     page("Monatsrechnung.dc.html", "Monatsrechnung", body, logic, 'u', EXTRA_CSS)

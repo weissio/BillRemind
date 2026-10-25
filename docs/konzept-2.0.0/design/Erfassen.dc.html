@@ -241,7 +241,7 @@ class Component extends DCLogic {
       vendor: s.vendor, setVendor: this.set('vendor'), amount: s.amount, setAmount: this.set('amount'),
       cat: s.cat, setCat: this.set('cat'), due: s.due, setDue: this.set('due'), date: s.date, setDate: this.set('date'),
       payKind: this.segItems('payKind', [['karte', 'Karte'], ['bar', 'Bar'], ['kasse', 'Haushaltskasse']]),
-      formEffect: amt > 0 ? (manual && s.due ? eur(amt) + ' € offen bis ' + s.due + ' → „davon offen“ und Liquidität' : eur(amt) + ' € bezahlt → Ausgaben des Monats, Budget ' + s.cat.split(' › ')[1] + ' sinkt um ' + eur(amt) + ' €' + (s.payKind === 'kasse' ? ', Haushaltskasse −' + eur(amt) + ' €' : '')) : 'Betrag eingeben – die Wirkung auf Budget und Sparpotenzial erscheint hier.',
+      formEffect: amt > 0 ? (manual && s.due ? eur(amt) + ' € offen bis ' + s.due + ' → „davon offen“ und Liquidität' : eur(amt) + ' € bezahlt → Ausgaben des Monats, Budget ' + s.cat.split(' › ')[1] + ' sinkt um ' + eur(amt) + ' €' + (s.payKind === 'kasse' ? ', Haushaltskasse −' + eur(amt) + ' €' : '')) : 'Betrag eingeben – die Wirkung auf Budget und Noch frei erscheint hier.',
       saveLabel: manual ? 'Rechnung speichern' : 'Bon speichern',
       saveForm: function () {
         if (!(amt > 0)) { self.say('Bitte einen Betrag eingeben'); return; }

@@ -30,9 +30,11 @@ Reihen in `canvas.json`:
 | Einnahmen | 3.650,00 | Gehalt 3.400 (30.) + Kindergeld 250 (5.) |
 | Fixkosten & Kredite | 1.659,20 | Wohnen 1.218,35 + Mobilität 356,99 + Haushalt 83,86 |
 | Ausgaben des Monats | 1.010,60 | bezahlt 656,20 + offen 354,40 (Stadtwerke 142 überfällig, Inspektion 212,40) |
-| Budgets noch offen | 61,40 | Lebensmittel 38,00 + Mobilität variabel 23,40; Freizeit überschritten → 0 |
+| In Budgets reserviert | 61,40 | Lebensmittel 38,00 + Mobilität variabel 23,40; Freizeit überschritten → 0 |
 | Rücklagen-Raten | 326,10 | Urlaub 200 + HU/Reifen 60 + Kfz-Vers. 40,60 + Kfz-Steuer 12 + Hausrat 7,83 + Haftpflicht 5,67 |
-| Sparpotenzial | 592,70 | 3.650,00 − 1.659,20 − 1.010,60 − 61,40 − 326,10 |
+| Spielraum | 1.664,70 | 3.650,00 − 1.659,20 − 326,10 (Plan am Monatsanfang) |
+| Noch frei | 592,70 | 1.664,70 − 1.010,60 − 61,40 (Kopfzahl der Übersicht) |
+| Gespart | 918,80 | Rücklagen 326,10 + Überschuss 592,70 · Sparquote 25 % |
 | Summe der Bereiche | 2.995,90 | Wohnen 1.368,18 + Mobilität 746,19 + Haushalt 881,53 = Fixkosten + Ausgaben + Rücklagen |
 | Verträge | 1.713,30 / Monat | 16 Verträge = Fixkosten 1.659,20 + Vertrags-Rücklagen 54,10 |
 | Liquidität | 1.767,81 tiefster Stand | 2.410 − 142 − 487,20 (27.) − 12,99 (29.); Gehalt 3.400 am 30. |

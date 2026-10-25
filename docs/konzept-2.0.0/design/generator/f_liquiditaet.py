@@ -308,7 +308,7 @@ def build():
       },
       diffSheet: s.diffSheet, closeDiff: this.go('diffSheet', false),
       diffTitle: (diff > 0 ? '+' : '−') + eur(abs) + ' € nicht erfasst',
-      diffBody: diff < 0 ? 'Vom Konto sind ' + eur(abs) + ' € mehr abgegangen als geplant. Als Buchung erfassen (Bon, Kartenzahlung, Abhebung) – dann stimmen Budget und Sparpotenzial wieder.' : 'Auf dem Konto sind ' + eur(abs) + ' € mehr als geplant – vermutlich eine Einnahme oder Rückerstattung. Als Einnahme erfassen oder trotzdem sichern.',
+      diffBody: diff < 0 ? 'Vom Konto sind ' + eur(abs) + ' € mehr abgegangen als geplant. Als Buchung erfassen (Bon, Kartenzahlung, Abhebung) – dann stimmen Budget und Noch frei wieder.' : 'Auf dem Konto sind ' + eur(abs) + ' € mehr als geplant – vermutlich eine Einnahme oder Rückerstattung. Als Einnahme erfassen oder trotzdem sichern.',
       okSheet: s.okSheet, okText: s.okText
     };
   }'''
