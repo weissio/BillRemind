@@ -38,7 +38,8 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Wohnen.dc.html">[BACK]Wohnen</a><p class="ttl">Oktober 2026</p><button class="act" onClick="{{toggleEdit}}">{{editLabel}}</button></div>
     <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px"><span class="dot" style="background: [W]; width: 12px; height: 12px"></span><h1 style="margin: 0">{{name}}</h1></div>
-    <p class="sub">{{sub}}</p>
+    <p class="sub" style="white-space: nowrap">{{sub}}</p>
+    <p class="sub" style="margin-top: 2px">{{sub2}}</p>
   </div>
 
   <sc-if value="{{edit}}" hint-placeholder-val="{{false}}">
@@ -69,7 +70,7 @@ def build():
   </div>
 
   <div style="padding: 20px 20px 0 20px">
-    <h2 class="h2">Letzte 6 Monate <span>Ø {{avg}} € · antippen zeigt den Monat</span></h2>
+    <h2 class="h2">Letzte 6 Monate <span>Ø {{avg}} € · antippbar</span></h2>
     <div class="card" style="padding: 14px 16px 10px">
       <div class="month">
         <sc-for list="{{months}}" as="m" hint-placeholder-count="6"><button onClick="{{m.pick}}" aria-label="{{m.label}}"><i class="{{m.cls}}" style="{{m.st}}"></i><span class="{{m.cls}}">{{m.label}}</span></button></sc-for>
@@ -80,7 +81,7 @@ def build():
   <div style="padding: 20px 20px 0 20px">
     <h2 class="h2">Zu dieser Kategorie</h2>
     <div class="card">
-      <a class="row" href="Vertrag.dc.html"><div class="mid"><p class="n">Vertrag Stadtwerke Strom</p><p class="s">Abschlag 98,00 · Kündigung 6 Wochen · seit 01/2024</p></div>[CHEV]</a>
+      <a class="row" href="Vertrag.dc.html"><div class="mid"><p class="n">Vertrag Stadtwerke Strom</p><p class="s">Abschlag 98,00 · seit 01/2024</p></div>[CHEV]</a>
       <div class="sep"></div>
       <a class="row" href="Budgets.dc.html"><div class="mid"><p class="n">Budget</p><p class="s">{{budgetLine}}</p></div>[CHEV]</a>
       <div class="sep"></div>
@@ -98,19 +99,19 @@ def build():
     logic = r'''  constructor(p) { super(p); this.state = { edit: false, name: 'Strom', nameDraft: 'Strom', kostenart: 'fix', budget: '', budgetDraft: '', month: 5, showDoc: false, confirmHide: false, toast: '' };
     this.MONTHS = [['Mai', 98, 1], ['Jun', 98, 1], ['Jul', 98, 1], ['Aug', 98, 1], ['Sep', 98, 1], ['Okt', 240, 2]];
     this.OKT = [
-      { name: 'Stadtwerke Mainstadt – Nachzahlung 2025', sub: 'Rechnung · fällig 21. Okt.', val: '142,00', vst: 'color: #943333', cap: 'überfällig', capst: 'background: #F7D4D1; color: #943333', href: 'Rechnung.dc.html' },
-      { name: 'Stadtwerke Mainstadt – Abschlag', sub: 'Vertrag · 1. Okt. · monatlich', val: '98,00', vst: '', cap: 'abgebucht', capst: 'background: #D6EDDB; color: #215F33', href: 'Vertrag.dc.html' } ]; }
+      { name: 'Nachzahlung Strom 2025', sub: 'Rechnung · fällig 21. Okt.', val: '142,00', vst: 'color: #943333', cap: 'überfällig', capst: 'background: #F7D4D1; color: #943333', href: 'Rechnung.dc.html' },
+      { name: 'Abschlag Oktober', sub: 'Vertrag · 1. Okt. · monatlich', val: '98,00', vst: '', cap: 'abgebucht', capst: 'background: #D6EDDB; color: #215F33', href: 'Vertrag.dc.html' } ]; }
 ''' + JS_SEG + r'''
   renderVals() {
     var self = this, s = this.state, mi = s.month, mo = this.MONTHS[mi];
-    var bookings = mi === 5 ? this.OKT : [{ name: 'Stadtwerke Mainstadt – Abschlag', sub: 'Vertrag · 1. ' + mo[0] + '. · monatlich', val: '98,00', vst: '', cap: 'abgebucht', capst: 'background: #D6EDDB; color: #215F33', href: 'Vertrag.dc.html' }];
+    var bookings = mi === 5 ? this.OKT : [{ name: 'Abschlag ' + mo[0], sub: 'Vertrag · 1. ' + mo[0] + '. · monatlich', val: '98,00', vst: '', cap: 'abgebucht', capst: 'background: #D6EDDB; color: #215F33', href: 'Vertrag.dc.html' }];
     var avg = this.MONTHS.reduce(function (a, m) { return a + m[1]; }, 0) / 6;
     var budget = num(s.budget);
     var fixNow = 98, varNow = mi === 5 ? 142 : 0;
     return {
       toast: s.toast,
       name: s.name,
-      sub: eur(fixNow + varNow) + ' € im ' + (mi === 5 ? 'Oktober' : mo[0] + '.') + ' · fix ' + eur(fixNow) + ' · variabel ' + eur(varNow) + ' · Objekt Wohnung Hauptstr. 12',
+      sub: eur(fixNow + varNow) + ' € im ' + (mi === 5 ? 'Oktober' : mo[0] + '.') + ' · fix ' + eur(fixNow) + ' · variabel ' + eur(varNow), sub2: 'Objekt Wohnung Hauptstr. 12',
       edit: s.edit, editLabel: s.edit ? 'Fertig' : 'Bearbeiten',
       toggleEdit: function () { self.setState({ edit: !s.edit, nameDraft: s.name, budgetDraft: s.budget }); },
       nameDraft: s.nameDraft, setNameDraft: this.set('nameDraft'),
@@ -290,7 +291,7 @@ def build():
       fields: fields,
       isKfz: type === 'kfz',
       scan: function () { self.setState({ scanned: true, name: s.name || 'BMW F 900 R', f1: s.f1 || 'KA-MN 77', f2: s.f2 || '12.480' }); self.say('Fahrzeugschein gelesen: Name, Kennzeichen, Erstzulassung 03/2022'); },
-      scanText: s.scanned ? 'Fahrzeugschein gespeichert (Dokument am Objekt)' : 'Fahrzeugschein scannen – füllt Name und Kennzeichen',
+      scanText: s.scanned ? 'Fahrzeugschein gespeichert (Dokument am Objekt)' : 'Fahrzeugschein scannen',
       typeNote: ({ kfz: 'Ein Fahrzeug bündelt Leasing, Versicherung, Steuer, Werkstatt, Laden und seine Termine. Kosten je km erscheinen, sobald ein Kilometerstand gepflegt ist.', oepnv: 'Ein Ticket ist ein Vertrag mit monatlicher Kündbarkeit; der Termin erinnert vor dem Stichtag.', wohnung: 'Wohnung bündelt Miete, Nebenkosten, Energie, Internet, Hausrat – alles Ortsgebundene.', haus: 'Haus bündelt Kredit, Grundsteuer, Gebäudeversicherung, Energie, Wartung.', person: 'Eine Person bündelt ihre Verträge (Mobilfunk, Fitness, Versicherung) und Termine; Lebensmittel bleiben gemeinsam.', tier: 'Ein Haustier bündelt Futter, Tierarzt, Versicherung, Steuer.', eigen: 'Eigene Objekte sind frei – z. B. Gartenparzelle, Boot, Wohnwagen.' })[type],
       templates: tpls.map(function (t, i) { var on = checked.indexOf(t) >= 0; return { name: t[0], sub: t[1], cls: on ? 'chk on' : 'chk', flip: function () { var c = Object.assign({}, s.checks); c[type + i] = !on; self.setState({ checks: c }); } }; }),
       noTemplates: tpls.length === 0,
@@ -310,7 +311,8 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Haushalt.dc.html">[BACK]Haushalt</a><p class="ttl">Rücklage</p><button class="act" onClick="{{toggleEdit}}">{{editLabel}}</button></div>
     <h1>{{name}}</h1>
-    <p class="sub">Sparziel · Haushalt › Urlaub &amp; Reisen · Ziel {{zielFmt}} € bis {{zieldatum}}</p>
+    <p class="sub" style="white-space: nowrap">Sparziel · Haushalt › Urlaub &amp; Reisen</p>
+    <p class="sub" style="margin-top: 2px">Ziel {{zielFmt}} € bis {{zieldatum}}</p>
     <div style="margin-top: 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 14px"><p class="big" style="margin: 0">{{standFmt}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">{{pct}} % · {{restText}}</p></div>
     <div style="height: 8px; border-radius: 4px; background: rgba(255,255,255,.18); margin-top: 10px; overflow: hidden"><div style="{{barSt}}"></div></div>
   </div>
@@ -367,7 +369,7 @@ def build():
   renderVals() {
     var self = this, s = this.state, rest = Math.max(0, s.ziel - s.stand), pct = s.ziel > 0 ? Math.min(100, Math.round(s.stand / s.ziel * 100)) : 0;
     var raten = s.rate > 0 ? Math.ceil(rest / s.rate) : 0;
-    var reachedOpts = ['Erinnerung am ' + s.datum + ', Rücklage schließen', 'Rate automatisch stoppen', 'weiter sparen (Ziel anheben)'];
+    var reachedOpts = ['Erinnerung ' + s.datum + ' · dann schließen', 'Rate automatisch stoppen', 'weiter sparen (Ziel anheben)'];
     var dZ = num(s.zielDraft), dR = num(s.rateDraft);
     return {
       toast: s.toast,
@@ -404,7 +406,8 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Akte.dc.html">[BACK]Mobilität</a><p class="ttl">Termin</p><button class="act" onClick="{{toggleEdit}}">{{editLabel}}</button></div>
     <h1>HU/AU · VW ID.3</h1>
-    <p class="sub">{{dateLine}}</p>
+    <p class="sub" style="white-space: nowrap">{{dateLine}}</p>
+    <p class="sub" style="margin-top: 2px">{{dateLine2}}</p>
   </div>
 
   <sc-if value="{{edit}}" hint-placeholder-val="{{false}}">
@@ -431,9 +434,9 @@ def build():
       <div class="sep"></div>
       <a class="f" href="Ruecklage.dc.html"><p class="l">Rücklage</p><p class="v">HU und Reifen · {{resLine}}</p>[CHEV]</a>
       <div class="sep"></div>
-      <div class="f"><p class="l">Erinnerung</p><p class="v wrap">{{remText}}</p></div>
+      <div class="f"><p class="l">Erinnerung</p><p class="v">{{remText}}</p></div>
       <div class="sep"></div>
-      <a class="f" href="Kategorie.dc.html"><p class="l">Kategorie</p><p class="v">Mobilität › Werkstatt &amp; Reifen</p>[CHEV]</a>
+      <a class="f" href="Kategorie.dc.html"><p class="l">Kategorie</p><p class="v">Werkstatt &amp; Reifen · Mobilität</p>[CHEV]</a>
       <div class="sep"></div>
       <div class="f"><p class="l">Kilometerstand</p><p class="v">{{kmFmt}} km <span style="color: #637894; font-weight: 400">· zuletzt 16. Okt.</span></p></div>
       <div class="sep"></div>
@@ -460,7 +463,7 @@ def build():
       + '''<sc-if value="{{doneSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>HU/AU erledigt?</h3><p>Mit Beleg: Werkstattrechnung scannen, Betrag ersetzt den Planbetrag {{planFmt}} € und wird aus der Rücklage entnommen. Ohne Beleg: Planbetrag wird gebucht.</p><div style="display: flex; gap: 10px"><a class="btn pri" href="Erfassen.dc.html">Beleg erfassen</a><button class="btn sec2" onClick="{{doneNoDoc}}">Ohne Beleg</button></div><button class="btn" style="margin-top: 10px; background: none; color: #637894" onClick="{{closeDone}}">Abbrechen</button></div></div></sc-if>''' \
       + sheet("confirmDelete", "Termin löschen?", "Die Wiederholung endet. Erledigte Termine bleiben in der Historie.", '<button class="btn sec2" onClick="{{cancelDelete}}">Abbrechen</button><a class="btn danger" href="Akte.dc.html">Löschen</a>')
     logic = r'''  constructor(p) { super(p); this.state = { date: new Date(2026, 10, 12), plan: 150, rec: '24', rem: '30', km: 61240, cal: true, edit: false, dateDraft: '', planDraft: '', kmDraft: '', shift: false, shiftDate: '', doneSheet: false, done: false, confirmDelete: false, toast: '',
-    hist: [ { name: 'HU/AU bestanden', sub: '14. Nov. 2024 · 139,90 € · Prüfstelle Süd', val: '139,90' }, { name: 'HU/AU bestanden', sub: '9. Nov. 2022 · 129,00 €', val: '129,00' } ] }; }
+    hist: [ { name: 'HU/AU bestanden', sub: '14. Nov. 2024 · Prüfstelle Süd', val: '139,90' }, { name: 'HU/AU bestanden', sub: '9. Nov. 2022', val: '129,00' } ] }; }
 ''' + JS_SEG + r'''
   fmtDate(d) { var days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'], mons = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember']; return days[d.getDay()] + ', ' + d.getDate() + '. ' + mons[d.getMonth()] + ' ' + d.getFullYear(); }
   shortDate(d) { return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear(); }
@@ -469,11 +472,11 @@ def build():
     var self = this, s = this.state, today = new Date(2026, 9, 25);
     var diff = Math.round((s.date - today) / 86400000);
     var recText = { '24': 'wiederholt sich alle 24 Monate', '12': 'jährlich', '6': 'halbjährlich', '0': 'einmalig' }[s.rec];
-    var remText = s.rem === '0' ? 'keine' : s.rem + ' Tage vorher' + (s.rem === '30' ? ' · war am 13. Okt. · nochmals 7 Tage vorher' : '');
+    var remText = s.rem === '0' ? 'keine' : s.rem + ' Tage vorher' + (s.rem === '30' ? ' + 7 Tage vorher · erste war 13. Okt.' : '');
     var shiftTo = function (days) { var d = new Date(s.date); d.setDate(d.getDate() + days); self.setState({ shiftDate: self.shortDate(d) }); };
     return {
       toast: s.toast,
-      dateLine: s.done ? 'Erledigt am 25. Okt. 2026 · nächster Termin ' + this.fmtDate(s.date) : this.fmtDate(s.date) + ' · ' + (diff >= 0 ? 'in ' + diff + ' Tagen' : 'seit ' + (-diff) + ' Tagen überfällig') + ' · ' + recText,
+      dateLine: s.done ? 'Erledigt am 25. Okt. 2026' : this.fmtDate(s.date) + ' · ' + (diff >= 0 ? 'in ' + diff + ' Tagen' : 'seit ' + (-diff) + ' Tagen überfällig'), dateLine2: s.done ? 'nächster Termin ' + this.fmtDate(s.date) : recText,
       dateFmt: this.fmtDate(s.date),
       edit: s.edit, editLabel: s.edit ? 'Fertig' : 'Bearbeiten',
       toggleEdit: function () { self.setState({ edit: !s.edit, dateDraft: self.shortDate(s.date), planDraft: eur(s.plan), kmDraft: String(s.km) }); },
@@ -505,8 +508,8 @@ def build():
   <div style="padding: 18px 20px 0 20px">
     <div class="card">
       <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
-        <div class="row" style="padding-right: 8px"><a href="{{r.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{r.name}}</p><p class="s">{{r.sub}}</p></a><p class="v" style="{{r.st}}">{{r.val}}</p><button class="chip lt" style="height: 30px; width: 30px; padding: 0; justify-content: center" aria-label="Einzelposten" onClick="{{r.toggle}}">{{r.arrow}}</button></div>
-        <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}"><div style="padding: 0 16px 10px 16px"><sc-for list="{{r.items}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; font-size: 13px; color: #637894; padding: 3px 0"><span>{{i.n}}</span><span style="font-variant-numeric: tabular-nums">{{i.v}}</span></div></sc-for></div></sc-if>
+        <div class="row" style="padding-right: 8px"><a href="{{r.href}}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit"><p class="n">{{r.name}}</p><p class="s2">{{r.sub}}</p></a><p class="v" style="{{r.st}}">{{r.val}}</p><button class="chip lt" style="height: 30px; width: 30px; padding: 0; justify-content: center" aria-label="Einzelposten" onClick="{{r.toggle}}">{{r.arrow}}</button></div>
+        <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}"><div style="padding: 0 16px 10px 16px"><sc-for list="{{r.items}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #637894; padding: 3px 0"><span style="flex: 1; min-width: 0">{{i.n}}</span><span style="font-variant-numeric: tabular-nums; white-space: nowrap">{{i.v}}</span></div></sc-for></div></sc-if>
         <div class="sep"></div>
       </sc-for>
       <div class="row" style="background: #F3F5F8; border-radius: 0 0 18px 18px"><div class="mid"><p class="n">Sparpotenzial</p><p class="s">kann am Monatsende in eine Rücklage</p></div><p class="v">{{spar}}</p></div>
@@ -515,9 +518,9 @@ def build():
 
   <div style="padding: 20px 20px 0 20px">
     <div class="card">
-      <div class="row"><div class="mid"><p class="n">Bereiche</p><p class="s">Wohnen 1.368,18 · Mobilität 746,19 · Haushalt 881,53</p></div><p class="v">{{areas}}</p></div>
+      <div class="row"><div class="mid"><p class="n">Bereiche</p><p class="s2">Wohnen 1.368,18 · Mobilität 746,19 · Haushalt 881,53</p></div><p class="v">{{areas}}</p></div>
       <div class="sep"></div>
-      <div class="row"><div class="mid"><p class="n">= Fixkosten + Ausgaben + Rücklagen</p><p class="s">1.659,20 + 1.010,60 + 326,10</p></div><p class="v">{{areas2}}</p></div>
+      <div class="row"><div class="mid"><p class="n">Fixkosten + Ausgaben + Raten</p><p class="s">1.659,20 + 1.010,60 + 326,10</p></div><p class="v">{{areas2}}</p></div>
     </div>
     <p class="note">Nicht enthalten: der Kontostand. Den gibt es nur in der Liquidität.</p>
   </div>
@@ -528,11 +531,11 @@ def build():
 ''') + '''<sc-if value="{{transfer}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Wohin übertragen?</h3><p>Der Monat ist noch nicht abgeschlossen – offene Posten können das Sparpotenzial noch ändern. Übertragen wird am Monatsende mit dem dann gültigen Wert.</p><div class="card" style="margin-bottom: 12px"><sc-for list="{{targets}}" as="t" hint-placeholder-count="3"><button class="f" onClick="{{t.pick}}"><p class="v" style="font-weight: 500">{{t.name}}</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{t.sub}}</p><span class="{{t.cls}}" style="width: 20px; height: 20px; border-width: 2px"></span></button><div class="sep"></div></sc-for></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeTransfer}}">Abbrechen</button><button class="btn pri" onClick="{{confirmTransfer}}">Vormerken</button></div></div></div></sc-if>'''
     logic = r'''  constructor(p) { super(p); this.state = { open: {}, transfer: false, target: 0, planned: '', toast: '' };
     this.ROWS = [
-      { name: 'Einnahmen', sub: 'Gehalt 3.400,00 am 30. · Kindergeld 250,00', val: 3650, sign: 1, href: 'Einnahmen.dc.html', items: [['Gehalt Muster AG (30. Okt.)', '3.400,00'], ['Kindergeld (5. Okt.)', '250,00']] },
-      { name: 'Fixkosten & Kredite', sub: 'Wohnen 1.218,35 · Mobilität 356,99 · Haushalt 83,86', val: 1659.20, sign: -1, href: 'Vertraege.dc.html', items: [['Miete 950 · Strom 98 · Gas 112 · Internet 39,99 · Rundfunk 18,36', '1.218,35'], ['Leasing 289 · Deutschlandticket 58 · Ladetarif 9,99', '356,99'], ['Mobilfunk 19,99 · Netflix 12,99 · Spotify 17,99 · iCloud 2,99 · Fitness 29,90', '83,86']] },
-      { name: 'Ausgaben des Monats', sub: 'bezahlt 656,20 · offen 354,40 (2 Rechnungen)', val: 1010.60, sign: -1, href: 'Rechnungen.dc.html', items: [['Bons Lebensmittel, Freizeit (bezahlt)', '592,00'], ['EnBW Laden (bezahlt 16. Okt.)', '64,20'], ['Stadtwerke Nachzahlung (überfällig 21. Okt.)', '142,00'], ['Autohaus Keller Inspektion (fällig 30. Okt.)', '212,40']] },
-      { name: 'Budgets, noch offen', sub: 'Lebensmittel 38,00 · Mobilität variabel 23,40 · Freizeit 0 (überschritten)', val: 61.40, sign: -1, href: 'Budgets.dc.html', items: [['Lebensmittel 450 − 412', '38,00'], ['Mobilität variabel 300 − 276,60', '23,40'], ['Freizeit 150 − 180 → nie negativ', '0,00']] },
-      { name: 'Rücklagen-Raten', sub: 'Urlaub 200 · HU/Reifen 60 · Kfz-Vers. 40,60 · Kfz-Steuer 12 · Hausrat 7,83 · Haftpflicht 5,67', val: 326.10, sign: -1, href: 'Ruecklage.dc.html', items: [['Urlaub Juli (Sparziel)', '200,00'], ['HU und Reifen (Termin)', '60,00'], ['Kfz-Versicherung 487,20 ÷ 12', '40,60'], ['Kfz-Steuer 144 ÷ 12', '12,00'], ['Hausrat 94 ÷ 12', '7,83'], ['Haftpflicht 68 ÷ 12', '5,67']] }
+      { name: 'Einnahmen', sub: 'Gehalt 3.400 · Kindergeld 250', val: 3650, sign: 1, href: 'Einnahmen.dc.html', items: [['Gehalt Muster AG (30. Okt.)', '3.400,00'], ['Kindergeld (5. Okt.)', '250,00']] },
+      { name: 'Fixkosten & Kredite', sub: '16 Verträge · 3 Bereiche', val: 1659.20, sign: -1, href: 'Vertraege.dc.html', items: [['Wohnen · Miete, Strom, Gas, Internet, Rundfunk', '1.218,35'], ['Mobilität · Leasing, D-Ticket, Ladetarif', '356,99'], ['Haushalt · Mobilfunk, Streaming, Fitness', '83,86']] },
+      { name: 'Ausgaben des Monats', sub: 'bezahlt 656,20 · offen 354,40', val: 1010.60, sign: -1, href: 'Rechnungen.dc.html', items: [['Bons Lebensmittel, Freizeit · bezahlt', '592,00'], ['EnBW Laden · bezahlt 16. Okt.', '64,20'], ['Stadtwerke Nachzahlung · überfällig', '142,00'], ['Autohaus Keller · fällig 30. Okt.', '212,40']] },
+      { name: 'Budgets, noch offen', sub: 'Lebensmittel 38,00 · Mobilität 23,40', val: 61.40, sign: -1, href: 'Budgets.dc.html', items: [['Lebensmittel 450 − 412', '38,00'], ['Mobilität variabel 300 − 276,60', '23,40'], ['Freizeit 150 − 180 · überschritten', '0,00']] },
+      { name: 'Rücklagen-Raten', sub: '6 Raten · Urlaub, Kfz, Versicherungen', val: 326.10, sign: -1, href: 'Ruecklage.dc.html', items: [['Urlaub Juli (Sparziel)', '200,00'], ['HU und Reifen (Termin)', '60,00'], ['Kfz-Versicherung 487,20 ÷ 12', '40,60'], ['Kfz-Steuer 144 ÷ 12', '12,00'], ['Hausrat 94 ÷ 12', '7,83'], ['Haftpflicht 68 ÷ 12', '5,67']] }
     ]; }
 ''' + JS_SEG + r'''
   renderVals() {

@@ -16,13 +16,13 @@ JS_PLAN = r'''
     var self = this, out = [], seen = {};
     var push = function (d, b) { if (d < 0 || d > days) return; var id = b.id + '@' + d; if (seen[id]) return; seen[id] = 1; out.push(Object.assign({ d: d, uid: id }, b)); };
     // feste Einzelposten
-    push(1, { id: 'sw', amt: -142, name: 'Stadtwerke – Nachzahlung', sub: 'Rechnung · überfällig seit 21. Okt.', area: 'w', kind: 'rechnung', href: 'Rechnung.dc.html', over: true });
-    push(6, { id: 'ak', amt: -212.40, name: 'Autohaus Keller – Inspektion', sub: 'Rechnung · fällig 30. Okt.', area: 'm', kind: 'rechnung', href: 'Review.dc.html' });
-    push(this.dayIdx(2026, 10, 2), { id: 'reifen', amt: -40, name: 'Reifenwechsel · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage HU/Reifen', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
-    push(this.dayIdx(2026, 10, 12), { id: 'hu', amt: -150, name: 'HU/AU · VW ID.3', sub: 'Termin · Planbetrag · aus Rücklage HU/Reifen', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
+    push(1, { id: 'sw', amt: -142, name: 'Stadtwerke – Nachzahlung', sub: 'überfällig seit 21. Okt.', area: 'w', kind: 'rechnung', href: 'Rechnung.dc.html', over: true });
+    push(6, { id: 'ak', amt: -212.40, name: 'Autohaus Keller', sub: 'Inspektion · fällig 30. Okt.', area: 'm', kind: 'rechnung', href: 'Review.dc.html' });
+    push(this.dayIdx(2026, 10, 2), { id: 'reifen', amt: -40, name: 'Reifenwechsel · VW ID.3', sub: 'Termin · Planbetrag · Rücklage', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
+    push(this.dayIdx(2026, 10, 12), { id: 'hu', amt: -150, name: 'HU/AU · VW ID.3', sub: 'Termin · Planbetrag · Rücklage', area: 'm', kind: 'termin', href: 'Termin.dc.html' });
     push(this.dayIdx(2026, 10, 20), { id: 'zahn', amt: 0, name: 'Zahnarzt Vorsorge · Ben', sub: 'Termin ohne Betrag', area: 'h', kind: 'termin', href: 'Termin.dc.html' });
     push(this.dayIdx(2026, 11, 15), { id: 'zs', amt: 0, name: 'Zählerstände Strom und Gas', sub: 'Termin · Wohnung', area: 'w', kind: 'termin', href: 'Termin.dc.html' });
-    push(this.dayIdx(2027, 6, 15), { id: 'urlaub', amt: -1800, name: 'Urlaub Juli', sub: 'Sparziel · aus Rücklage (1.800 € angespart)', area: 'h', kind: 'termin', href: 'Ruecklage.dc.html' });
+    push(this.dayIdx(2027, 6, 15), { id: 'urlaub', amt: -1800, name: 'Urlaub Juli', sub: 'Sparziel · aus Rücklage', area: 'h', kind: 'termin', href: 'Ruecklage.dc.html' });
     // Monatsverträge und Einnahmen
     var monthly = [
       ['miete', 1, -950, 'Miete Hauptstr. 12', 'w', 'Miete'], ['strom', 1, -98, 'Stadtwerke Strom', 'w', 'Strom'], ['gas', 1, -112, 'Stadtwerke Gas', 'w', 'Gas'], ['inet', 1, -39.99, 'Telekom Internet', 'w', 'Internet'],
@@ -31,17 +31,17 @@ JS_PLAN = r'''
       ['geh', 30, 3400, 'Gehalt', 'x', 'Gehalt'], ['kg', 5, 250, 'Kindergeld', 'x', 'Kindergeld']
     ];
     // Variable Ausgaben: Rest der Oktober-Budgets, danach die vollen Monatsbudgets (Lebensmittel 450 + Freizeit 150 + Mobilität variabel 300)
-    push(7, { id: 'var', amt: -61.40, name: 'Variable Ausgaben (Budgets, noch offen)', sub: 'Lebensmittel 38,00 · Mobilität variabel 23,40 · bis Monatsende', area: 'h', kind: 'var', href: 'Budgets.dc.html' });
+    push(7, { id: 'var', amt: -61.40, name: 'Budgets, noch offen', sub: 'Planwert bis Monatsende', area: 'h', kind: 'var', href: 'Budgets.dc.html' });
     for (var k = 0; k <= 13; k++) { var y = 2026 + Math.floor((9 + k) / 12), m = (9 + k) % 12; var dim = new Date(y, m + 1, 0).getDate();
       monthly.forEach(function (r) { var d = self.dayIdx(y, m, Math.min(r[1], dim)); push(d, { id: r[0], amt: r[2], name: r[3], short: r[5], sub: r[2] > 0 ? 'Einnahme · monatlich' : 'Vertrag · monatlich', area: r[4], kind: r[2] > 0 ? 'einnahme' : 'fix', href: r[2] > 0 ? 'Einnahmen.dc.html' : 'Vertrag.dc.html' }); });
-      if (k > 0) push(self.dayIdx(y, m, 15), { id: 'var', amt: -900, name: 'Variable Ausgaben (Budgets)', sub: 'Lebensmittel 450 · Freizeit 150 · Mobilität variabel 300 · Planwert zur Monatsmitte', area: 'h', kind: 'var', href: 'Budgets.dc.html' }); }
+      if (k > 0) push(self.dayIdx(y, m, 15), { id: 'var', amt: -900, name: 'Variable Ausgaben (Budgets)', sub: 'Planwert · Monatsmitte', area: 'h', kind: 'var', href: 'Budgets.dc.html' }); }
     // Quartal und Jahr
-    [[2027, 0, 15], [2027, 3, 15], [2027, 6, 15], [2027, 9, 15]].forEach(function (q) { push(self.dayIdx(q[0], q[1], q[2]), { id: 'rf', amt: -55.08, name: 'Rundfunkbeitrag', sub: 'Vertrag · vierteljährlich · Monatsanteil 18,36 in den Fixkosten', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' }); });
-    push(3, { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage gedeckt', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
-    push(this.dayIdx(2027, 9, 27), { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · aus Rücklage', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
-    push(this.dayIdx(2027, 2, 1), { id: 'hausrat', amt: -94, name: 'Hausrat Allianz', sub: 'Jahresbeitrag · aus Rücklage', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' });
-    push(this.dayIdx(2027, 2, 1), { id: 'haft', amt: -68, name: 'Privathaftpflicht', sub: 'Jahresbeitrag · aus Rücklage', area: 'h', kind: 'jahr', href: 'Vertrag.dc.html' });
-    push(this.dayIdx(2027, 4, 15), { id: 'kfzst', amt: -144, name: 'Kfz-Steuer', sub: 'jährlich · aus Rücklage', area: 'm', kind: 'jahr', href: 'Termin.dc.html' });
+    [[2027, 0, 15], [2027, 3, 15], [2027, 6, 15], [2027, 9, 15]].forEach(function (q) { push(self.dayIdx(q[0], q[1], q[2]), { id: 'rf', amt: -55.08, name: 'Rundfunkbeitrag', sub: 'je Quartal · Anteil 18,36/Monat', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' }); });
+    push(3, { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · Rücklage', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 9, 27), { id: 'huk', amt: -487.20, name: 'Kfz-Versicherung HUK24', sub: 'Jahresbeitrag · Rücklage', area: 'm', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 2, 1), { id: 'hausrat', amt: -94, name: 'Hausrat Allianz', sub: 'Jahresbeitrag · Rücklage', area: 'w', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 2, 1), { id: 'haft', amt: -68, name: 'Privathaftpflicht', sub: 'Jahresbeitrag · Rücklage', area: 'h', kind: 'jahr', href: 'Vertrag.dc.html' });
+    push(this.dayIdx(2027, 4, 15), { id: 'kfzst', amt: -144, name: 'Kfz-Steuer', sub: 'jährlich · Rücklage', area: 'm', kind: 'jahr', href: 'Termin.dc.html' });
     out.sort(function (a, b) { return a.d - b.d || b.amt - a.amt; });
     return out;
   }
@@ -75,7 +75,8 @@ def build():
       <div><p style="margin: 0; font-size: 13px; opacity: .8">Kontostand heute</p><p class="big" style="margin: 2px 0 0; font-size: 36px">{{balFmt}} €</p></div>
       <a href="Kontostand.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; background: #FFFFFF; color: #1C3250; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; text-decoration: none; flex: none">Aktualisieren</a>
     </div>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .85">{{outlook}}</p>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .85; white-space: nowrap">{{outlook}}</p>
+    <p style="margin: 2px 0 0; font-size: 13px; opacity: .85; white-space: nowrap">{{outlook2}}</p>
     <sc-if value="{{warn}}" hint-placeholder-val="{{false}}"><p style="margin: 6px 0 0; font-size: 13px; color: #FFD7A8">{{warn}}</p></sc-if>
     <div class="seg dark" style="margin-top: 14px"><button class="on">Termine</button><a href="Verlauf.dc.html" style="flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.8); padding: 6px 0; text-decoration: none">Verlauf</a></div>
   </div>
@@ -114,7 +115,7 @@ def build():
     var fmtItem = function (b) { return { name: b.name, sub: b.sub, dotst: 'background: ' + (b.over ? '#E03C31' : col[b.area]), nst: b.over ? 'color: #943333' : '', vst: b.amt > 0 ? 'color: #215F33' : '', val: b.amt === 0 ? '–' : (b.amt > 0 ? '+' : '') + eur(b.amt), open: function () { self.setState({ sel: b.uid }); } }; };
     // Tagesgruppen: Fixkosten eines Tages und Bereichs zu einer Zeile zusammenfassen
     var bundle = function (items) { var out = [], fixBy = {}; items.forEach(function (b) { if (b.kind === 'fix') { (fixBy[b.area] = fixBy[b.area] || []).push(b); } else out.push(b); });
-      Object.keys(fixBy).forEach(function (a) { var l = fixBy[a].slice().sort(function (p, q) { return p.amt - q.amt; }); if (l.length === 1) out.push(l[0]); else out.push({ uid: 'bundle:' + l.map(function (b) { return b.uid; }).join(','), d: l[0].d, amt: l.reduce(function (x, b) { return x + b.amt; }, 0), name: l.map(function (b) { return b.short || b.name; }).join(', '), sub: l.length + ' Fixkosten · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[a], area: a, kind: 'fix', href: 'Vertraege.dc.html', parts: l }); });
+      Object.keys(fixBy).forEach(function (a) { var l = fixBy[a].slice().sort(function (p, q) { return p.amt - q.amt; }); if (l.length === 1) out.push(l[0]); else out.push({ uid: 'bundle:' + l.map(function (b) { return b.uid; }).join(','), d: l[0].d, amt: l.reduce(function (x, b) { return x + b.amt; }, 0), name: 'Fixkosten ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[a] + ' (' + l.length + ')', sub: l.map(function (b) { return b.short || b.name; }).join(', '), area: a, kind: 'fix', href: 'Vertraege.dc.html', parts: l }); });
       return out.sort(function (a, b) { return b.amt - a.amt; }); };
     var groups = [];
     if (s.h <= 30) {
@@ -140,7 +141,7 @@ def build():
     return {
       toast: s.toast,
       balFmt: eur(bal),
-      outlook: s.area === 'all' ? hLabel + ': Zuflüsse +' + eur(inflow) + ' · Abflüsse ' + eur(outflow) + ' → ' + eur(endBal) + ' € am ' + this.dayLabel(s.h) : hLabel + ' · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[s.area] + ': Abflüsse ' + eur(outflow) + ' €',
+      outlook: s.area === 'all' ? hLabel + ': Zuflüsse +' + eur(inflow) + ' · Abflüsse ' + eur(outflow) : hLabel + ' · ' + ({ w: 'Wohnen', m: 'Mobilität', h: 'Haushalt' })[s.area] + ': Abflüsse ' + eur(outflow) + ' €', outlook2: s.area === 'all' ? '→ ' + eur(endBal) + ' € am ' + this.dayLabel(s.h) : '',
       warn: s.area === 'all' && run.min.bal < this.PUFFER ? 'Unter dem Mindestpuffer (' + eur(this.PUFFER, 0) + ' €) am ' + this.dayLabel(run.min.d) + ': ' + eur(run.min.bal) + ' €' : '',
       hchips: (''' + HORIZONS + r''').map(function (x) { return { label: x[1], cls: s.h === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0] }); } }; }),
       chips: this.chipItems('area', [['all', 'Alle'], ['w', 'Wohnen'], ['m', 'Mobilität'], ['h', 'Haushalt']], true),
@@ -159,7 +160,7 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Liquiditaet.dc.html">[BACK]Liquidität</a><p class="ttl">Verlauf</p><a class="act" href="Kontostand.dc.html">Aktualisieren</a></div>
     <p class="sub" style="margin-top: 14px">Kontostand · zuletzt heute 09:12</p>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px"><p class="big" style="margin: 4px 0 0">2.410,00 €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">{{endLine}}</p></div>
+    <p class="big" style="margin: 4px 0 0">2.410,00 €</p><p style="margin: 8px 0 0; font-size: 13px; opacity: .85; white-space: nowrap">{{endLine}}</p><p style="margin: 2px 0 0; font-size: 13px; opacity: .85; white-space: nowrap">{{endLine2}}</p>
     <div class="seg dark" style="margin-top: 14px"><a href="Liquiditaet.dc.html" style="flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.8); padding: 6px 0; text-decoration: none">Termine</a><button class="on">Verlauf</button></div>
   </div>
 
@@ -190,7 +191,7 @@ def build():
   </div>
 
   <div style="padding: 18px 20px 0 20px">
-    <h2 class="h2">Größte Einzelposten <span>ohne Monatsfixkosten und Budgets</span></h2>
+    <h2 class="h2">Größte Einzelposten <span>ohne Fixkosten, Budgets</span></h2>
     <div class="card">
       <sc-for list="{{big}}" as="b" hint-placeholder-count="4">
         <a class="row" href="{{b.href}}"><span class="dot" style="{{b.dotst}}"></span><div class="mid"><p class="n" style="font-weight: 500">{{b.name}}</p><p class="s">{{b.sub}}</p></div><p class="v" style="{{b.vst}}">{{b.val}}</p>[CHEV]</a>
@@ -202,9 +203,9 @@ def build():
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Kontostand-Historie</h2>
     <div class="card">
-      <div class="row"><div class="mid"><p class="n">Sa 24. Okt. · 09:12</p><p class="s">manuell · Abweichung zur Planung 0,00 €</p></div><p class="v">2.410,00</p></div>
+      <div class="row"><div class="mid"><p class="n">Sa 24. Okt. · 09:12</p><p class="s">manuell · Abweichung 0,00 €</p></div><p class="v">2.410,00</p></div>
       <div class="sep"></div>
-      <div class="row"><div class="mid"><p class="n">Di 20. Okt.</p><p class="s">nach Bons REWE, dm · Abweichung −4,10 € (Bargeld)</p></div><p class="v">2.532,57</p></div>
+      <div class="row"><div class="mid"><p class="n">Di 20. Okt.</p><p class="s">Bons REWE, dm · Abweichung −4,10 €</p></div><p class="v">2.532,57</p></div>
       <div class="sep"></div>
       <div class="row"><div class="mid"><p class="n">Do 1. Okt.</p><p class="s">nach Miete, Leasing, Abschlägen</p></div><p class="v">2.964,65</p></div>
     </div>
@@ -231,7 +232,7 @@ def build():
       toast: s.toast,
       hchips: (''' + HORIZONS + r''').map(function (x) { return { label: x[1], cls: R === x[0] ? 'chip lt on' : 'chip lt', pick: function () { self.setState({ h: x[0] }); } }; }),
       title: 'Saldo · ' + hLabel, meta: 'Ende ' + eur(run.end) + ' € am ' + this.shortLabel(R),
-      endLine: hLabel + ': +' + eur(inflow) + ' / ' + eur(outflow) + ' → ' + eur(run.end) + ' €',
+      endLine: hLabel + ': Zuflüsse +' + eur(inflow) + ' · Abflüsse ' + eur(outflow), endLine2: '→ ' + eur(run.end) + ' € am ' + this.dayLabel(s.h),
       yPuffer: Y(puffer).toFixed(1), yPufferT: (Y(puffer) - 4).toFixed(1), pufferFmt: eur(puffer, 0),
       path: dpath, area: area,
       minX: X(run.min.d).toFixed(1), minY: Y(run.min.bal).toFixed(1), minLabelY: (Y(run.min.bal) + 13).toFixed(1), minFmt: eur(run.min.bal, 0), minAnchor: run.min.d < R * 0.15 ? 'start' : (run.min.d > R * 0.85 ? 'end' : 'middle'),
@@ -240,7 +241,7 @@ def build():
       puffer: s.puffer, setPuffer: this.set('puffer'),
       pufferSt: below.length ? 'color: #943333' : 'color: #215F33',
       pufferNote: below.length ? 'An ' + below.length + ' Tagen unter dem Puffer, erstmals am ' + this.dayLabel(below[0].d) + ' (' + eur(below[0].bal) + ' €). Vorschlag: Inspektion nach dem Gehalt am 30. zahlen.' : 'Alle Tage über dem Puffer.',
-      big: big.map(function (b) { return { name: b.name, sub: self.dayLabel(b.d) + ' · ' + b.sub, href: b.href, dotst: 'background: ' + col[b.area], vst: b.amt > 0 ? 'color: #215F33' : '', val: (b.amt > 0 ? '+' : '') + eur(b.amt) }; })
+      big: big.map(function (b) { return { name: b.name, sub: self.dayLabel(b.d) + ' · ' + b.sub.split(' · ')[0], href: b.href, dotst: 'background: ' + col[b.area], vst: b.amt > 0 ? 'color: #215F33' : '', val: (b.amt > 0 ? '+' : '') + eur(b.amt) }; })
     };
   }'''
     page("Verlauf.dc.html", "Liquidität – Verlauf", body, logic, 'l', EXTRA_CSS + CAL_CSS)
@@ -257,7 +258,7 @@ def build():
   </div>
 
   <div style="padding: 16px 20px 0 20px">
-    <h2 class="h2">Abgleich seit Sa 24. Okt. (2.410,00 €) <span>bis {{dateLabel}}</span></h2>
+    <h2 class="h2">Abgleich ab 24. Okt. <span>bis {{dateLabel}}</span></h2>
     <div class="card">
       <sc-for list="{{items}}" as="b" hint-placeholder-count="2">
         <button class="row" onClick="{{b.flip}}"><span class="c" style="{{b.cst}}">{{b.mark}}</span><div class="mid"><p class="n">{{b.name}}</p><p class="s">{{b.sub}}</p></div><p class="v" style="{{b.vst}}">{{b.val}}</p></button>
@@ -293,7 +294,7 @@ def build():
       toast: s.toast,
       amt: s.amt, setAmt: this.set('amt'),
       dateLabel: s.day === 1 ? 'So 25. Okt.' : 'Mo 27. Okt.', d1cls: s.day === 1 ? 'chip lt on' : 'chip lt', d3cls: s.day === 3 ? 'chip lt on' : 'chip lt', dateToday: function () { self.setState({ day: 1 }); }, dateMo: function () { self.setState({ day: 3 }); },
-      items: due.map(function (b) { var on = isOn(b); return { name: b.name, sub: self.dayLabel(b.d) + ' · ' + b.sub, val: (b.amt > 0 ? '+' : '') + eur(b.amt), vst: on ? (b.amt > 0 ? 'color: #215F33' : '') : 'color: #943333; text-decoration: line-through', cst: on ? 'background: #D6EDDB; color: #215F33' : 'background: #FBE9E7; color: #943333', mark: on ? '✓' : '✕', flip: function () { var c = Object.assign({}, s.checks); c[b.uid] = !on; self.setState({ checks: c }); } }; }),
+      items: due.map(function (b) { var on = isOn(b); return { name: b.name, sub: self.dayLabel(b.d) + ' · ' + b.sub.split(' · ')[0], val: (b.amt > 0 ? '+' : '') + eur(b.amt), vst: on ? (b.amt > 0 ? 'color: #215F33' : '') : 'color: #943333; text-decoration: line-through', cst: on ? 'background: #D6EDDB; color: #215F33' : 'background: #FBE9E7; color: #943333', mark: on ? '✓' : '✕', flip: function () { var c = Object.assign({}, s.checks); c[b.uid] = !on; self.setState({ checks: c }); } }; }),
       noItems: due.length === 0,
       expected: eur(expected),
       diffText: !(entered > 0) ? 'Kontostand eingeben' : (ok ? '0,00 € · passt zur Planung' : (diff > 0 ? '+' : '−') + eur(abs) + ' € ' + (diff > 0 ? 'mehr' : 'weniger') + ' als geplant'),

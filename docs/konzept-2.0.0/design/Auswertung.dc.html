@@ -32,6 +32,9 @@ body{margin:0}
 .f .l{margin:0;font-size:14px;color:#637894;width:104px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .f .v.ph{color:#9AA5B4;font-weight:400}
+.f .vc{flex:1;min-width:0}
+.f .vc .v{flex:none;-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+.f .v2{margin:2px 0 0;font-size:13px;font-weight:400;color:#637894;line-height:1.3;white-space:normal}
 .f .v.wrap{font-size:14px;font-weight:400;-webkit-line-clamp:4}
 .in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
 .in:focus{border-bottom-color:#2A5480}
@@ -40,10 +43,11 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
-.row .n{font-size:15px;font-weight:600;line-height:1.2}
-.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .n{font-size:15px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:12px;color:#637894;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s2{font-size:12px;color:#637894;margin-top:2px;white-space:normal;line-height:1.35}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
-.row .vcol{text-align:right;flex:none;max-width:140px}
+.row .vcol{text-align:right;flex:none;max-width:118px}
 .row .vcol .s{white-space:nowrap}
 .row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
@@ -52,7 +56,8 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .chev{width:8px;height:13px;flex:none}
 .cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
-.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.f .seg{flex:1;min-width:0}
+.seg button{flex:1;min-width:0;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
 .seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .seg.dark{background:rgba(255,255,255,.14)}
 .seg.dark button{color:rgba(255,255,255,.8)}
@@ -81,9 +86,10 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .sheet p{margin:0 0 12px;font-size:14px;color:#637894}
 .grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
 .inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
-.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
-.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .d+.d{margin-top:2px}
 .urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
 .urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
@@ -129,7 +135,7 @@ a{color:#2A5480}
     <h2 class="h2">Bereiche im Oktober <span>Anteil an 2.995,90 €</span></h2>
     <div class="card">
       <sc-for list="{{areaRows}}" as="a" hint-placeholder-count="3">
-        <a class="row" href="{{a.href}}" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px"><div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{a.dotst}}"></span><p class="n" style="flex: 1">{{a.name}}</p><p class="v">{{a.val}} · {{a.pct}} %</p></div><div class="bar2"><i style="{{a.barst}}"></i></div><p class="s">{{a.sub}}</p></a>
+        <a class="row" href="{{a.href}}" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px"><div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{a.dotst}}"></span><p class="n" style="flex: 1">{{a.name}}</p><p class="v">{{a.val}} · {{a.pct}} %</p></div><div class="bar2"><i style="{{a.barst}}"></i></div><p class="s2">{{a.sub}}</p></a>
         <div class="sep"></div>
       </sc-for>
     </div>
@@ -161,11 +167,11 @@ a{color:#2A5480}
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Jahresblick 2026 <span>hochgerechnet</span></h2>
     <div class="card">
-      <div class="f"><p class="l">Einnahmen</p><p class="v">44.451,30 € · inkl. Urlaubsgeld</p></div>
+      <div class="f"><p class="l">Einnahmen</p><p class="v">44.451,30 €</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € · 45 % der Einnahmen</p></div>
+      <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € (45 %)</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Sparpotenzial</p><p class="v">6.930,00 € · Ø 577,50 €/Monat</p></div>
+      <div class="f"><p class="l">Sparpotenzial</p><div class="vc"><p class="v">6.930,00 €</p><p class="v2">Ø 577,50</p></div></div>
     </div>
   </div>
 <sc-if value="{{exportSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Export</h3><p>Zahlen dieser Auswertung als Datei – lokal erstellt, dann Teilen-Menü.</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Format</p><div class="seg"><sc-for list="{{exFmt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Zeitraum</p><div class="seg"><sc-for list="{{exRange}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeExport}}">Abbrechen</button><button class="btn pri" onClick="{{doExport}}">Erstellen</button></div></div></div></sc-if>
@@ -187,11 +193,11 @@ function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; v
 function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
 function ev(e) { return e && e.target ? e.target.value : e; }
 // Zusammengehöriges nicht trennen: innerhalb eines Segments (zwischen " · ") werden Leerzeichen geschützt – „1. Nov.“, „696,00 €/Jahr“, „15. Dez. 2026“ bleiben auf einer Zeile; umgebrochen wird nur am „·“.
-function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' · '); }
-var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Text|Note|Msg|Line|Hint|Body|Head|Sub2|Cls|St|Href)$/;
+function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' ·\u00A0'); }
+var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Note|Msg|Body|Head|Cls|St|Href)$/;
 function nbDeep(v, key, depth) {
   if (depth > 3 || v == null) return v;
-  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.length > 64 || v.indexOf(': ') >= 0 && v.length > 40) return v; return nb(v); }
+  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.indexOf(' · ') < 0) return v; if (v.split(' · ').some(function (p) { return p.length > 26; })) return v; return nb(v); }
   if (Array.isArray(v)) return v.map(function (x) { return nbDeep(x, key, depth + 1); });
   if (typeof v === 'object' && typeof v !== 'function') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = nbDeep(v[k], k, depth + 1); }); return o; }
   return v;
@@ -227,8 +233,8 @@ class Component extends DCLogic {
         return { label: m[0], total: year ? '' : eur(t, 0), pick: function () { self.setState({ sel: i }); }, colst: 'width: ' + (year ? 18 : 26) + 'px; height: ' + hh + 'px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden' + (on ? '; outline: 2px solid #2A5480; outline-offset: 2px' : ''), h: seg(m[3], '#4CAF7A'), m: seg(m[2], '#3C8DBC'), w: seg(m[1], '#E8A33D'), lst: 'margin: 0; font-size: 11px; font-weight: ' + (on ? 700 : 500) + '; color: ' + (on ? '#16243A' : '#637894') }; }),
       selNote: (year ? 'Monat ' + (sel + 1) : names[d[0]]) + ': ' + eur(d[1] + d[2] + d[3]) + ' € = Wohnen ' + eur(d[1]) + ' + Mobilität ' + eur(d[2]) + ' + Haushalt ' + eur(d[3]) + (sel === 5 && !year ? ' – wie auf der Übersicht (Fixkosten + Ausgaben + Rücklagen).' : (d[2] > 1000 ? ' – Juli: Urlaub und Reifen.' : '.')),
       areaRows: [['Wohnen', 1368.18, 'Wohnen.dc.html', '#E8A33D', 'fix 1.218,35 · variabel 142,00 · Rücklagen 7,83'], ['Mobilität', 746.19, 'Akte.dc.html', '#3C8DBC', 'fix 356,99 · variabel 276,60 · Rücklagen 112,60'], ['Haushalt', 881.53, 'Haushalt.dc.html', '#4CAF7A', 'fix 83,86 · variabel 592,00 · Rücklagen 205,67']].map(function (a) { var p = Math.round(a[1] / areasTot * 100); return { name: a[0], val: eur(a[1]), pct: p, href: a[2], dotst: 'background: ' + a[3], barst: 'width: ' + p + '%; background: ' + a[3], sub: a[4] }; }),
-      cats: [['Miete / Hausgeld', 950, 'w', 'Wohnen · fix'], ['Lebensmittel & Haushalt', 412, 'h', 'Haushalt · variabel · Budget 450'], ['Kfz-Rate / Leasing', 289, 'm', 'Mobilität · Kredit'], ['Werkstatt & Reifen', 272.40, 'm', 'Mobilität · 212,40 offen + 60 Rücklage'], ['Strom', 240, 'w', 'Wohnen · 98 Abschlag + 142 Nachzahlung'], ['Freizeit & Kultur', 209.90, 'h', 'Haushalt · Budget 150 überschritten'], ['Urlaub & Reisen', 200, 'h', 'Haushalt · Rücklage-Rate'], ['Gas / Heizung', 112, 'w', 'Wohnen · fix']].map(function (c) { return { name: c[0], val: eur(c[1]), sub: c[3] + ' · ' + Math.round(c[1] / areasTot * 100) + ' %', href: c[2] === 'w' ? 'Wohnen.dc.html' : (c[2] === 'm' ? 'Akte.dc.html' : 'Haushalt.dc.html'), dotst: 'background: ' + ({ w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' })[c[2]] }; }),
-      cmp: [cmpRow('Wohnen', 1, 'Wohnen.dc.html', '#E8A33D', 'Nachzahlung Strom 142 € einmalig'), cmpRow('Mobilität', 2, 'Akte.dc.html', '#3C8DBC', 'Inspektion 212,40 €'), cmpRow('Haushalt', 3, 'Haushalt.dc.html', '#4CAF7A', 'Freizeit über Budget, Lebensmittel im Plan')],
+      cats: [['Miete / Hausgeld', 950, 'w', 'Wohnen · fix'], ['Lebensmittel & Haushalt', 412, 'h', 'Budget 450'], ['Kfz-Rate / Leasing', 289, 'm', 'Mobilität · Kredit'], ['Werkstatt & Reifen', 272.40, 'm', '212,40 offen + 60 Rücklage'], ['Strom', 240, 'w', 'Abschlag 98 + Nachzahlung 142'], ['Freizeit & Kultur', 209.90, 'h', 'Budget 150 überschritten'], ['Urlaub & Reisen', 200, 'h', 'Haushalt · Rücklage-Rate'], ['Gas / Heizung', 112, 'w', 'Wohnen · fix']].map(function (c) { return { name: c[0], val: eur(c[1]), sub: c[3] + ' · ' + Math.round(c[1] / areasTot * 100) + ' %', href: c[2] === 'w' ? 'Wohnen.dc.html' : (c[2] === 'm' ? 'Akte.dc.html' : 'Haushalt.dc.html'), dotst: 'background: ' + ({ w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' })[c[2]] }; }),
+      cmp: [cmpRow('Wohnen', 1, 'Wohnen.dc.html', '#E8A33D', 'Nachzahlung Strom 142 einmalig'), cmpRow('Mobilität', 2, 'Akte.dc.html', '#3C8DBC', 'Inspektion 212,40 €'), cmpRow('Haushalt', 3, 'Haushalt.dc.html', '#4CAF7A', 'Freizeit über Budget')],
       exportSheet: s.exportSheet, openExport: this.go('exportSheet', true), closeExport: this.go('exportSheet', false),
       exFmt: this.segItems('exFmt', [['csv', 'CSV'], ['pdf', 'PDF']]), exRange: this.segItems('exRange', [['monat', 'Oktober'], ['6m', '6 Monate'], ['jahr', '2026']]),
       doExport: function () { self.setState({ exportSheet: false }); self.say('mnemor-auswertung-' + s.exRange + '.' + s.exFmt + ' erstellt · Teilen-Menü'); }

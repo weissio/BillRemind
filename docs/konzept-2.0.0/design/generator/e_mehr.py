@@ -12,8 +12,8 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Mehr.dc.html">[BACK]Mehr</a><p class="ttl">Budgets</p><button class="act" onClick="{{openNew}}">Neu</button></div>
     <h1>Budgets im Oktober</h1>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{offen}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">noch offen · {{count}} Budgets · {{geplant}} € geplant</p></div>
-    <p class="sub">{{verbraucht}} € verbraucht · Überschreitungen werden nicht gegengerechnet</p>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{offen}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right; white-space: nowrap">noch offen · {{count}} Budgets</p></div>
+    <p class="sub">{{verbraucht}} € verbraucht von {{geplant}} € geplant · Überschreitungen werden nicht gegengerechnet</p>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -50,7 +50,7 @@ def build():
     <p class="note">{{sparNote}}</p>
   </div>
 ''') + '''<sc-if value="{{sheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{sheetTitle}}</h3><p>{{sheetText}}</p><div class="card" style="margin-bottom: 12px"><sc-if value="{{isNew}}" hint-placeholder-val="{{false}}"><div class="f" style="align-items: flex-start; padding-top: 10px"><p class="l" style="padding-top: 6px">Kategorie</p><div style="display: flex; gap: 8px; flex-wrap: wrap"><sc-for list="{{catOptions}}" as="o" hint-placeholder-count="3"><button class="{{o.cls}}" onClick="{{o.pick}}">{{o.t}}</button></sc-for></div></div><div class="sep"></div></sc-if><div class="f"><p class="l">Monatsbudget</p><input class="in num" value="{{amt}}" onChange="{{setAmt}}" inputmode="decimal" placeholder="0,00"><span style="font-size: 14px; color: #637894">€</span></div><div class="sep"></div><div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Rest in den Folgemonat übertragen</p><button class="{{rollCls}}" aria-label="Rollover" onClick="{{flipRoll}}"></button></div></div><p>{{sheetHint}}</p><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeSheet}}">Abbrechen</button><sc-if value="{{canRemove}}" hint-placeholder-val="{{false}}"><button class="btn danger" style="flex: 0 0 auto; padding: 0 14px" onClick="{{removeBudget}}">Entfernen</button></sc-if><button class="btn pri" onClick="{{saveSheet}}">Sichern</button></div></div></div></sc-if>'''
-    logic = r'''  constructor(p) { super(p); this.state = { budgets: [ { id: 'lm', name: 'Lebensmittel', area: 'h', spent: 412, budget: 450, href: 'Kategorie.dc.html' }, { id: 'fz', name: 'Freizeit (ohne Fitness-Vertrag)', area: 'h', spent: 180, budget: 150, href: 'Kategorie.dc.html' }, { id: 'mv', name: 'Mobilität variabel (Laden, Werkstatt)', area: 'm', spent: 276.60, budget: 300, href: 'Akte.dc.html' } ],
+    logic = r'''  constructor(p) { super(p); this.state = { budgets: [ { id: 'lm', name: 'Lebensmittel', area: 'h', spent: 412, budget: 450, href: 'Kategorie.dc.html' }, { id: 'fz', name: 'Freizeit', area: 'h', spent: 180, budget: 150, href: 'Kategorie.dc.html' }, { id: 'mv', name: 'Mobilität variabel', area: 'm', spent: 276.60, budget: 300, href: 'Akte.dc.html' } ],
     pool: [ { id: 'kl', name: 'Kleidung & Pflege', area: 'h', spent: 0 }, { id: 'ge', name: 'Gesundheit', area: 'h', spent: 0 }, { id: 'ga', name: 'Gastronomie', area: 'h', spent: 0 }, { id: 'ht', name: 'Haustier', area: 'h', spent: 0 }, { id: 'in', name: 'Instandhaltung & Reparatur', area: 'w', spent: 0 }, { id: 'gs', name: 'Geschenke & Spenden', area: 'h', spent: 0 } ],
     sheet: '', editId: '', newCat: 'kl', amt: '', roll: false, showSug: true, toast: '' }; }
 ''' + JS_SEG + r'''
@@ -94,7 +94,7 @@ def build():
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Monatsrechnung.dc.html">[BACK]Monatsrechnung</a><p class="ttl">Einnahmen</p><button class="act" onClick="{{openNew}}">Neu</button></div>
     <h1>Einnahmen im Oktober</h1>
-    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{total}} €</p><p style="margin: 0; font-size: 13px; opacity: .85; text-align: right">{{received}} € eingegangen · {{expected}} € erwartet</p></div>
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-top: 12px"><p class="big" style="margin: 0">{{total}} €</p><div style="text-align: right; font-size: 13px; opacity: .85; white-space: nowrap"><p style="margin: 0">{{received}} € eingegangen</p><p style="margin: 2px 0 0">{{expected}} € erwartet</p></div></div>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
@@ -130,7 +130,7 @@ def build():
     </div>
   </div>
 ''') + '''<sc-if value="{{sheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>{{sheetTitle}}</h3><p>{{sheetText}}</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Bezeichnung</p><input class="in" value="{{fName}}" onChange="{{setFName}}" placeholder="z. B. Rückerstattung"></div><div class="sep"></div><div class="f"><p class="l">Betrag</p><input class="in num" value="{{fAmt}}" onChange="{{setFAmt}}" inputmode="decimal" placeholder="0,00"><span style="font-size: 14px; color: #637894">€</span></div><div class="sep"></div><div class="f"><p class="l">Datum</p><input class="in" value="{{fDate}}" onChange="{{setFDate}}" placeholder="TT.MM.JJJJ"></div><div class="sep"></div><div class="f"><p class="l">Rhythmus</p><div class="seg"><sc-for list="{{fRec}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Status</p><div class="seg"><sc-for list="{{fSt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeSheet}}">Abbrechen</button><sc-if value="{{canDelete}}" hint-placeholder-val="{{false}}"><button class="btn danger" style="flex: 0 0 auto; padding: 0 14px" onClick="{{deleteItem}}">Löschen</button></sc-if><button class="btn pri" onClick="{{saveSheet}}">Sichern</button></div></div></div></sc-if>'''
-    logic = r'''  constructor(p) { super(p); this.state = { items: [ { id: 1, name: 'Gehalt', amt: 3400, date: '30.10.2026', rec: 'monat', st: 'exp', src: 'Muster AG', when: 'zum Monatsende' }, { id: 2, name: 'Kindergeld', amt: 250, date: '05.10.2026', rec: 'monat', st: 'in', src: 'Familienkasse', when: 'am 5.' } ],
+    logic = r'''  constructor(p) { super(p); this.state = { items: [ { id: 1, name: 'Gehalt', amt: 3400, date: '30.10.2026', rec: 'monat', st: 'exp', src: 'Muster AG', when: 'am 30.' }, { id: 2, name: 'Kindergeld', amt: 250, date: '05.10.2026', rec: 'monat', st: 'in', src: 'Familienkasse', when: 'am 5.' } ],
     sheet: '', editId: 0, fName: '', fAmt: '', fDate: '', frec: 'einmal', fst: 'exp', toast: '', nextId: 3 }; }
 ''' + JS_SEG + r'''
   dayName(d) { var m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(d); if (!m) return d; var dt = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])); return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][dt.getDay()] + ' ' + Number(m[1]) + '. ' + ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.'][Number(m[2]) - 1]; }
@@ -143,7 +143,7 @@ def build():
     return {
       toast: s.toast,
       total: eur(total), received: eur(rec), expected: eur(exp),
-      items: s.items.map(function (i) { return { name: i.name, sub: self.dayName(i.date) + ' · ' + recLabel[i.rec] + (i.src ? ' · ' + i.src : ''), amt: eur(i.amt), state: i.st === 'in' ? 'eingegangen' : 'erwartet', open: openEdit(i) }; }),
+      items: s.items.map(function (i) { return { name: i.name, sub: self.dayName(i.date) + ' · ' + recLabel[i.rec], amt: eur(i.amt), state: i.st === 'in' ? 'eingegangen' : 'erwartet', open: openEdit(i) }; }),
       sparNote: total === 3650 ? 'Einnahmen 3.650,00 € → Sparpotenzial 592,70 €.' : 'Einnahmen ' + eur(total) + ' € → Sparpotenzial ' + eur(592.70 + total - 3650) + ' €.',
       recurring: s.items.filter(function (i) { return i.rec !== 'einmal'; }).map(function (i) { return { name: i.name, amt: eur(i.amt), when: i.when || recLabel[i.rec], open: openEdit(i) }; }),
       openNew: function () { self.setState({ sheet: 'new', editId: 0, fName: '', fAmt: '', fDate: '25.10.2026', frec: 'einmal', fst: 'in' }); },
@@ -277,7 +277,7 @@ def build():
     return {
       toast: s.toast,
       saldo: eur(saldo), bonCount: s.bons.length, inSum: eur(inSum), out: eur(out),
-      persons: [{ k: 'anna', name: 'Anna', ini: 'A' }, { k: 'ben', name: 'Ben', ini: 'B' }].map(function (p) { return { name: p.name, ini: p.ini, sub: s.dep[p.k] > 0 ? 'eingezahlt · antippen für weitere Einzahlung' : 'noch nichts eingezahlt', sum: eur(s.dep[p.k]), add: openFor(p.k) }; }),
+      persons: [{ k: 'anna', name: 'Anna', ini: 'A' }, { k: 'ben', name: 'Ben', ini: 'B' }].map(function (p) { return { name: p.name, ini: p.ini, sub: s.dep[p.k] > 0 ? 'antippen: weitere Einzahlung' : 'noch nichts eingezahlt', sum: eur(s.dep[p.k]), add: openFor(p.k) }; }),
       bons: s.bons.map(function (b) { return { name: b.name, sub: b.sub, val: eur(b.val) }; }),
       sheet: s.sheet, openIn: openFor(s.who), closeSheet: this.go('sheet', false),
       who: this.segItems('who', [['anna', 'Anna'], ['ben', 'Ben']]), amt: s.amt, setAmt: this.set('amt'),
@@ -309,15 +309,15 @@ def build():
 ''') + DOC_OVERLAY_D
     logic = r'''  constructor(p) { super(p); this.state = { area: 'all', search: false, q: '', showDoc: false, cur: 0, toast: '' };
     this.DOCS = [
-      { name: 'Jahresabrechnung 2025.pdf', sub: 'Stadtwerke · Rechnung 4. Okt. · Wohnung', area: 'w', size: '0,4 MB', head: 'Stadtwerke Mainstadt GmbH', s2: 'Jahresabrechnung Strom 2025', l1: 'Verbrauch 2.980 kWh', l2: 'Abschläge 1.008,00 €', l3: 'Nachzahlung 142,00 €' },
-      { name: 'Mietvertrag.pdf', sub: 'Vertrag Miete · seit 2021 · Wohnung', area: 'w', size: '2,1 MB', head: 'Mietvertrag Hauptstr. 12', s2: 'Vermieter Hausverwaltung Rhein', l1: 'Kaltmiete 720 € · Nebenkosten 230 €', l2: 'Kündigungsfrist 3 Monate', l3: 'Kaution 2.160 €' },
-      { name: 'Telekom Auftragsbestätigung.pdf', sub: 'Vertrag Internet · Mai 2025 · Wohnung', area: 'w', size: '0,3 MB', head: 'Telekom Deutschland', s2: 'MagentaZuhause M', l1: '39,99 €/Monat', l2: 'Laufzeit 24 Monate bis 31.05.2027', l3: 'Kündigungsfrist 1 Monat' },
+      { name: 'Jahresabrechnung 2025.pdf', sub: 'Rechnung 4. Okt. · Wohnung', area: 'w', size: '0,4 MB', head: 'Stadtwerke Mainstadt GmbH', s2: 'Jahresabrechnung Strom 2025', l1: 'Verbrauch 2.980 kWh', l2: 'Abschläge 1.008,00 €', l3: 'Nachzahlung 142,00 €' },
+      { name: 'Mietvertrag.pdf', sub: 'Vertrag · seit 2021 · Wohnung', area: 'w', size: '2,1 MB', head: 'Mietvertrag Hauptstr. 12', s2: 'Vermieter Hausverwaltung Rhein', l1: 'Kaltmiete 720 € · Nebenkosten 230 €', l2: 'Kündigungsfrist 3 Monate', l3: 'Kaution 2.160 €' },
+      { name: 'Telekom Auftragsbestätigung.pdf', sub: 'Vertrag · Mai 2025 · Wohnung', area: 'w', size: '0,3 MB', head: 'Telekom Deutschland', s2: 'MagentaZuhause M', l1: '39,99 €/Monat', l2: 'Laufzeit 24 Monate bis 31.05.2027', l3: 'Kündigungsfrist 1 Monat' },
       { name: 'Fahrzeugschein VW ID.3.jpg', sub: 'Objekt VW ID.3 · Scan', area: 'm', size: '1,8 MB', head: 'Zulassungsbescheinigung Teil I', s2: 'KA-MN 2024 · VW ID.3 Pro', l1: 'Erstzulassung 03/2022', l2: 'HU fällig 11/2026', l3: 'Halter: Anna Muster' },
-      { name: 'Leasingvertrag VW.pdf', sub: 'Vertrag Leasing · bis 08/2028 · VW ID.3', area: 'm', size: '1,1 MB', head: 'VW Financial Services', s2: 'Privatleasing ID.3', l1: '289 €/Monat · 36 Monate', l2: '10.000 km/Jahr', l3: 'Restlaufzeit 22 Monate' },
-      { name: 'HUK24 Police 2026.pdf', sub: 'Vertrag Kfz-Versicherung · VW ID.3', area: 'm', size: '0,6 MB', head: 'HUK24', s2: 'Kfz-Haftpflicht + Vollkasko', l1: 'Jahresbeitrag 487,20 €', l2: 'Hauptfälligkeit 1. Jan.', l3: 'SF-Klasse 12' },
-      { name: 'Inspektion Autohaus Keller.jpg', sub: 'Rechnung · Scan 24. Okt. · VW ID.3', area: 'm', size: '1,2 MB', head: 'Autohaus Keller GmbH', s2: 'Rechnung RE-2026-4471', l1: 'Inspektion 60.000 km', l2: 'Gesamt 212,40 €', l3: 'zahlbar bis 30.10.2026' },
-      { name: 'Haftpflicht Police.pdf', sub: 'Vertrag Versicherung · Anna', area: 'h', size: '0,5 MB', head: 'Privathaftpflicht', s2: 'Familientarif', l1: 'Jahresbeitrag 68,00 €', l2: 'Fälligkeit 1. März', l3: 'Deckung 50 Mio. €' },
-      { name: 'FitnessFirst Vertrag.pdf', sub: 'Vertrag Mitgliedschaft · Ben', area: 'h', size: '0,2 MB', head: 'FitnessFirst', s2: 'Mitgliedschaft Premium', l1: '29,90 €/Monat', l2: 'Mindestlaufzeit bis 15.12.2026', l3: 'Kündigung 4 Wochen zum Laufzeitende' }
+      { name: 'Leasingvertrag VW.pdf', sub: 'Vertrag · bis 08/2028 · VW ID.3', area: 'm', size: '1,1 MB', head: 'VW Financial Services', s2: 'Privatleasing ID.3', l1: '289 €/Monat · 36 Monate', l2: '10.000 km/Jahr', l3: 'Restlaufzeit 22 Monate' },
+      { name: 'HUK24 Police 2026.pdf', sub: 'Vertrag · VW ID.3', area: 'm', size: '0,6 MB', head: 'HUK24', s2: 'Kfz-Haftpflicht + Vollkasko', l1: 'Jahresbeitrag 487,20 €', l2: 'Hauptfälligkeit 1. Jan.', l3: 'SF-Klasse 12' },
+      { name: 'Inspektion Autohaus Keller.jpg', sub: 'Scan 24. Okt. · VW ID.3', area: 'm', size: '1,2 MB', head: 'Autohaus Keller GmbH', s2: 'Rechnung RE-2026-4471', l1: 'Inspektion 60.000 km', l2: 'Gesamt 212,40 €', l3: 'zahlbar bis 30.10.2026' },
+      { name: 'Haftpflicht Police.pdf', sub: 'Vertrag · Anna', area: 'h', size: '0,5 MB', head: 'Privathaftpflicht', s2: 'Familientarif', l1: 'Jahresbeitrag 68,00 €', l2: 'Fälligkeit 1. März', l3: 'Deckung 50 Mio. €' },
+      { name: 'FitnessFirst Vertrag.pdf', sub: 'Vertrag · Ben', area: 'h', size: '0,2 MB', head: 'FitnessFirst', s2: 'Mitgliedschaft Premium', l1: '29,90 €/Monat', l2: 'Mindestlaufzeit bis 15.12.2026', l3: 'Kündigung 4 Wochen zum Laufzeitende' }
     ]; }
 ''' + JS_SEG + r'''
   renderVals() {
@@ -362,7 +362,7 @@ def build():
     <h2 class="h2">Bereiche im Oktober <span>Anteil an 2.995,90 €</span></h2>
     <div class="card">
       <sc-for list="{{areaRows}}" as="a" hint-placeholder-count="3">
-        <a class="row" href="{{a.href}}" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px"><div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{a.dotst}}"></span><p class="n" style="flex: 1">{{a.name}}</p><p class="v">{{a.val}} · {{a.pct}} %</p></div><div class="bar2"><i style="{{a.barst}}"></i></div><p class="s">{{a.sub}}</p></a>
+        <a class="row" href="{{a.href}}" style="align-items: stretch; flex-direction: column; gap: 0; padding-top: 10px; padding-bottom: 10px"><div style="display: flex; align-items: center; gap: 10px"><span class="dot" style="{{a.dotst}}"></span><p class="n" style="flex: 1">{{a.name}}</p><p class="v">{{a.val}} · {{a.pct}} %</p></div><div class="bar2"><i style="{{a.barst}}"></i></div><p class="s2">{{a.sub}}</p></a>
         <div class="sep"></div>
       </sc-for>
     </div>
@@ -394,11 +394,11 @@ def build():
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Jahresblick 2026 <span>hochgerechnet</span></h2>
     <div class="card">
-      <div class="f"><p class="l">Einnahmen</p><p class="v">44.451,30 € · inkl. Urlaubsgeld</p></div>
+      <div class="f"><p class="l">Einnahmen</p><p class="v">44.451,30 €</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € · 45 % der Einnahmen</p></div>
+      <div class="f"><p class="l">Fixkosten</p><p class="v">19.910,40 € (45 %)</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Sparpotenzial</p><p class="v">6.930,00 € · Ø 577,50 €/Monat</p></div>
+      <div class="f"><p class="l">Sparpotenzial</p><p class="v">6.930,00 € · Ø 577,50</p></div>
     </div>
   </div>
 ''') + '''<sc-if value="{{exportSheet}}" hint-placeholder-val="{{false}}"><div class="sheetbg"><div class="sheet"><div class="grab"></div><h3>Export</h3><p>Zahlen dieser Auswertung als Datei – lokal erstellt, dann Teilen-Menü.</p><div class="card" style="margin-bottom: 12px"><div class="f"><p class="l">Format</p><div class="seg"><sc-for list="{{exFmt}}" as="s" hint-placeholder-count="2"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div><div class="sep"></div><div class="f"><p class="l">Zeitraum</p><div class="seg"><sc-for list="{{exRange}}" as="s" hint-placeholder-count="3"><button class="{{s.cls}}" onClick="{{s.pick}}">{{s.label}}</button></sc-for></div></div></div><div style="display: flex; gap: 10px"><button class="btn sec2" onClick="{{closeExport}}">Abbrechen</button><button class="btn pri" onClick="{{doExport}}">Erstellen</button></div></div></div></sc-if>'''
@@ -423,8 +423,8 @@ def build():
         return { label: m[0], total: year ? '' : eur(t, 0), pick: function () { self.setState({ sel: i }); }, colst: 'width: ' + (year ? 18 : 26) + 'px; height: ' + hh + 'px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden' + (on ? '; outline: 2px solid #2A5480; outline-offset: 2px' : ''), h: seg(m[3], '#4CAF7A'), m: seg(m[2], '#3C8DBC'), w: seg(m[1], '#E8A33D'), lst: 'margin: 0; font-size: 11px; font-weight: ' + (on ? 700 : 500) + '; color: ' + (on ? '#16243A' : '#637894') }; }),
       selNote: (year ? 'Monat ' + (sel + 1) : names[d[0]]) + ': ' + eur(d[1] + d[2] + d[3]) + ' € = Wohnen ' + eur(d[1]) + ' + Mobilität ' + eur(d[2]) + ' + Haushalt ' + eur(d[3]) + (sel === 5 && !year ? ' – wie auf der Übersicht (Fixkosten + Ausgaben + Rücklagen).' : (d[2] > 1000 ? ' – Juli: Urlaub und Reifen.' : '.')),
       areaRows: [['Wohnen', 1368.18, 'Wohnen.dc.html', '#E8A33D', 'fix 1.218,35 · variabel 142,00 · Rücklagen 7,83'], ['Mobilität', 746.19, 'Akte.dc.html', '#3C8DBC', 'fix 356,99 · variabel 276,60 · Rücklagen 112,60'], ['Haushalt', 881.53, 'Haushalt.dc.html', '#4CAF7A', 'fix 83,86 · variabel 592,00 · Rücklagen 205,67']].map(function (a) { var p = Math.round(a[1] / areasTot * 100); return { name: a[0], val: eur(a[1]), pct: p, href: a[2], dotst: 'background: ' + a[3], barst: 'width: ' + p + '%; background: ' + a[3], sub: a[4] }; }),
-      cats: [['Miete / Hausgeld', 950, 'w', 'Wohnen · fix'], ['Lebensmittel & Haushalt', 412, 'h', 'Haushalt · variabel · Budget 450'], ['Kfz-Rate / Leasing', 289, 'm', 'Mobilität · Kredit'], ['Werkstatt & Reifen', 272.40, 'm', 'Mobilität · 212,40 offen + 60 Rücklage'], ['Strom', 240, 'w', 'Wohnen · 98 Abschlag + 142 Nachzahlung'], ['Freizeit & Kultur', 209.90, 'h', 'Haushalt · Budget 150 überschritten'], ['Urlaub & Reisen', 200, 'h', 'Haushalt · Rücklage-Rate'], ['Gas / Heizung', 112, 'w', 'Wohnen · fix']].map(function (c) { return { name: c[0], val: eur(c[1]), sub: c[3] + ' · ' + Math.round(c[1] / areasTot * 100) + ' %', href: c[2] === 'w' ? 'Wohnen.dc.html' : (c[2] === 'm' ? 'Akte.dc.html' : 'Haushalt.dc.html'), dotst: 'background: ' + ({ w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' })[c[2]] }; }),
-      cmp: [cmpRow('Wohnen', 1, 'Wohnen.dc.html', '#E8A33D', 'Nachzahlung Strom 142 € einmalig'), cmpRow('Mobilität', 2, 'Akte.dc.html', '#3C8DBC', 'Inspektion 212,40 €'), cmpRow('Haushalt', 3, 'Haushalt.dc.html', '#4CAF7A', 'Freizeit über Budget, Lebensmittel im Plan')],
+      cats: [['Miete / Hausgeld', 950, 'w', 'Wohnen · fix'], ['Lebensmittel & Haushalt', 412, 'h', 'Budget 450'], ['Kfz-Rate / Leasing', 289, 'm', 'Mobilität · Kredit'], ['Werkstatt & Reifen', 272.40, 'm', '212,40 offen + 60 Rücklage'], ['Strom', 240, 'w', 'Abschlag 98 + Nachzahlung 142'], ['Freizeit & Kultur', 209.90, 'h', 'Budget 150 überschritten'], ['Urlaub & Reisen', 200, 'h', 'Haushalt · Rücklage-Rate'], ['Gas / Heizung', 112, 'w', 'Wohnen · fix']].map(function (c) { return { name: c[0], val: eur(c[1]), sub: c[3] + ' · ' + Math.round(c[1] / areasTot * 100) + ' %', href: c[2] === 'w' ? 'Wohnen.dc.html' : (c[2] === 'm' ? 'Akte.dc.html' : 'Haushalt.dc.html'), dotst: 'background: ' + ({ w: '#E8A33D', m: '#3C8DBC', h: '#4CAF7A' })[c[2]] }; }),
+      cmp: [cmpRow('Wohnen', 1, 'Wohnen.dc.html', '#E8A33D', 'Nachzahlung Strom 142 einmalig'), cmpRow('Mobilität', 2, 'Akte.dc.html', '#3C8DBC', 'Inspektion 212,40 €'), cmpRow('Haushalt', 3, 'Haushalt.dc.html', '#4CAF7A', 'Freizeit über Budget')],
       exportSheet: s.exportSheet, openExport: this.go('exportSheet', true), closeExport: this.go('exportSheet', false),
       exFmt: this.segItems('exFmt', [['csv', 'CSV'], ['pdf', 'PDF']]), exRange: this.segItems('exRange', [['monat', 'Oktober'], ['6m', '6 Monate'], ['jahr', '2026']]),
       doExport: function () { self.setState({ exportSheet: false }); self.say('mnemor-auswertung-' + s.exRange + '.' + s.exFmt + ' erstellt · Teilen-Menü'); }
@@ -434,9 +434,9 @@ def build():
 
     # ================================================================ Einstellungen
     def srow(label, var, handler):
-        return f'<button class="f" onClick="{{{{{handler}}}}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">{label}</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{{{{var}}}}}</p>{CHEV}</button>'
+        return f'<button class="f" onClick="{{{{{handler}}}}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">{label}</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{{{{var}}}}}</p>{CHEV}</button>'
     def trow(label, sub, clsvar, handler):
-        return f'<div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">{label}</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">{sub}</p><button class="{{{{{clsvar}}}}}" aria-label="{label}" onClick="{{{{{handler}}}}}"></button></div>'
+        return f'<div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">{label}</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">{sub}</p><button class="{{{{{clsvar}}}}}" aria-label="{label}" onClick="{{{{{handler}}}}}"></button></div>'
     body = tpl('''  <div class="hdr">
     <div class="nav"><a class="back" href="Mehr.dc.html">[BACK]Mehr</a><p class="ttl">Einstellungen</p><span style="width: 60px"></span></div>
     <h1>Einstellungen</h1>
@@ -454,9 +454,9 @@ def build():
       <div class="sep"></div>
       ''' + trow("Kündigungsfristen", "4 Wochen vorher", "kdCls", "flipKd") + '''
       <div class="sep"></div>
-      ''' + trow("Kontostand-Erinnerung", "nach jeder Abbuchung", "ksCls", "flipKs") + '''
+      ''' + trow("Kontostand prüfen", "nach Abbuchung", "ksCls", "flipKs") + '''
       <div class="sep"></div>
-      ''' + srow("Systemkalender „Mnemor“", "calText", "cycleCal") + '''
+      ''' + srow("Systemkalender", "calText", "cycleCal") + '''
     </div>
     <p class="note">{{monatNote}} {{calNote}}</p>
   </div>
@@ -464,7 +464,7 @@ def build():
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Erfassen</h2>
     <div class="card">
-      ''' + srow("Erkennung auf dem Gerät", "ocrText", "cycleOcr") + '''
+      ''' + srow("Texterkennung", "ocrText", "cycleOcr") + '''
       <div class="sep"></div>
       ''' + trow("Originale behalten", "PDF und Scans", "keepCls", "flipKeep") + '''
       <div class="sep"></div>
@@ -484,7 +484,7 @@ def build():
       <div class="sep"></div>
       <a class="f" href="Haushalt.dc.html"><p class="v" style="font-weight: 500"><span class="dot" style="background: [H]; margin-right: 6px; vertical-align: middle"></span>Haushalt</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">10 Kategorien · 2 Personen</p>[CHEV]</a>
       <div class="sep"></div>
-      <button class="f" onClick="{{restore}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Standardkategorien wiederherstellen</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{restoreText}}</p>[CHEV]</button>
+      <button class="f" onClick="{{restore}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Standardkategorien</p><p class="v ph" style="flex: none; width: auto; font-size: 13px; white-space: nowrap">{{restoreText}}</p>[CHEV]</button>
     </div>
   </div>
 
@@ -493,7 +493,7 @@ def build():
     <div class="card">
       ''' + trow("App-Sperre", "Face ID", "lockCls", "flipLock") + '''
       <div class="sep"></div>
-      ''' + srow("Automatisches Backup", "backupText", "cycleBackup") + '''
+      ''' + srow("Backup", "backupText", "cycleBackup") + '''
       <div class="sep"></div>
       <button class="f" onClick="{{askWipe}}"><p class="v wrap" style="font-weight: 500; font-size: 15px; color: #943333">Alle Daten löschen</p>[CHEV]</button>
     </div>
@@ -505,7 +505,7 @@ def build():
   cyc(key, n) { var self = this; return function () { var s = {}; s[key] = (self.state[key] + 1) % n; self.setState(s); }; }
   renderVals() {
     var self = this, s = this.state;
-    var monat = ['1. des Monats', '15. des Monats', 'am Gehaltstag (30.)'], win = ['3 Tage', '7 Tage', '14 Tage'], rem = ['1 Tag · 9:00', '3 Tage · 9:00', '7 Tage · 9:00', 'aus'], ocr = ['Apple Intelligence · aktiv', 'nur Regelwerk (ohne KI)'], backup = ['aus', 'wöchentlich · in Dateien', 'täglich · in Dateien'];
+    var monat = ['1. des Monats', '15. des Monats', 'am Gehaltstag (30.)'], win = ['3 Tage', '7 Tage', '14 Tage'], rem = ['1 Tag · 9:00', '3 Tage · 9:00', '7 Tage · 9:00', 'aus'], ocr = ['auf dem Gerät · KI', 'nur Regelwerk'], backup = ['aus', 'wöchentlich · Dateien', 'täglich · Dateien'];
     return {
       toast: s.toast,
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),

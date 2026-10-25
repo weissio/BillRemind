@@ -4,22 +4,22 @@ from common import *
 
 CONTRACTS = [
     # name, sub, amount per cycle, cycle(months), area, type, nextKündigung text, days to deadline (None), rücklage?
-    dict(name="Miete Hauptstr. 12", sub="unbefristet · 3 Monate Kündigungsfrist", amt=950, cyc=1, area="Wohnen", typ="Wohnen & Leasing", kd=None),
-    dict(name="Stadtwerke – Strom", sub="Abschlag · nächste Abbuchung 1. Nov.", amt=98, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=26, kdsub="bis 19. Nov. zum Jahresende · 1.176,00 €/Jahr"),
-    dict(name="Stadtwerke – Gas", sub="Abschlag · nächste Abbuchung 1. Nov.", amt=112, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=None),
+    dict(name="Miete Hauptstr. 12", sub="unbefristet · Frist 3 Monate", amt=950, cyc=1, area="Wohnen", typ="Wohnen & Leasing", kd=None),
+    dict(name="Stadtwerke – Strom", sub="Abschlag · nächste 1. Nov.", amt=98, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=26, kdsub="bis 19. Nov. zum Jahresende", kdsub2="1.176,00 €/Jahr"),
+    dict(name="Stadtwerke – Gas", sub="Abschlag · nächste 1. Nov.", amt=112, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=None),
     dict(name="Telekom Internet & Festnetz", sub="Laufzeit bis 31. Mai 2027", amt=39.99, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=None),
-    dict(name="Rundfunkbeitrag", sub="vierteljährlich · nächste 15. Jan.", amt=55.08, cyc=3, area="Wohnen", typ="Versorger & Gebühren", kd=None),
-    dict(name="Hausrat Allianz", sub="Jahresbeitrag 1. März", amt=94, cyc=12, area="Wohnen", typ="Versicherung", kd=None),
-    dict(name="VW Leasing ID.3", sub="Kredit · bis Aug. 2028 · 22 Raten offen", amt=289, cyc=1, area="Mobilität", typ="Wohnen & Leasing", kd=None),
+    dict(name="Rundfunkbeitrag", sub="je Quartal · nächste 15. Jan.", amt=55.08, cyc=3, area="Wohnen", typ="Versorger & Gebühren", kd=None),
+    dict(name="Hausrat Allianz", sub="jährlich 1. März · Rücklage", amt=94, cyc=12, area="Wohnen", typ="Versicherung", kd=None),
+    dict(name="VW Leasing ID.3", sub="Kredit · 22 Raten bis Aug. 2028", amt=289, cyc=1, area="Mobilität", typ="Wohnen & Leasing", kd=None),
     dict(name="EnBW mobility+", sub="Ladetarif · monatlich kündbar", amt=9.99, cyc=1, area="Mobilität", typ="Versorger & Gebühren", kd=None),
-    dict(name="Deutschlandticket", sub="monatlich kündbar bis zum 10.", amt=58, cyc=1, area="Mobilität", typ="Abo & Mitgliedschaft", kd=17, kdsub="bis 10. Nov. zum Monatsende · 696,00 €/Jahr"),
-    dict(name="HUK24 Kfz-Versicherung", sub="Jahresbeitrag 27. Okt. · aus Rücklage", amt=487.20, cyc=12, area="Mobilität", typ="Versicherung", kd=37, kdsub="Wechsel bis 30. Nov. zum 1. Jan. · 487,20 €/Jahr"),
+    dict(name="Deutschlandticket", sub="monatlich kündbar bis zum 10.", amt=58, cyc=1, area="Mobilität", typ="Abo & Mitgliedschaft", kd=17, kdsub="bis 10. Nov. zum Monatsende", kdsub2="696,00 €/Jahr"),
+    dict(name="HUK24 Kfz-Versicherung", sub="jährlich 27. Okt. · Rücklage", amt=487.20, cyc=12, area="Mobilität", typ="Versicherung", kd=37, kdsub="Wechsel bis 30. Nov. zum 1. Jan.", kdsub2="487,20 €/Jahr"),
     dict(name="Telekom Mobilfunk", sub="Laufzeit bis 14. Feb. 2027", amt=19.99, cyc=1, area="Haushalt", typ="Versorger & Gebühren", kd=None),
     dict(name="Netflix", sub="nächste Abbuchung 29. Okt.", amt=12.99, cyc=1, area="Haushalt", typ="Abo & Mitgliedschaft", kd=None),
     dict(name="Spotify Family", sub="nächste Abbuchung 3. Nov.", amt=17.99, cyc=1, area="Haushalt", typ="Abo & Mitgliedschaft", kd=None),
     dict(name="iCloud+", sub="nächste Abbuchung 8. Nov.", amt=2.99, cyc=1, area="Haushalt", typ="Abo & Mitgliedschaft", kd=None),
-    dict(name="FitnessFirst", sub="bis 15. Nov. kündbar", amt=29.90, cyc=1, area="Haushalt", typ="Abo & Mitgliedschaft", kd=22, kdsub="bis 15. Nov. kündigen, sonst +12 Monate · 358,80 €/Jahr"),
-    dict(name="Privathaftpflicht", sub="Jahresbeitrag 1. März", amt=68, cyc=12, area="Haushalt", typ="Versicherung", kd=None),
+    dict(name="FitnessFirst", sub="bis 15. Nov. kündbar", amt=29.90, cyc=1, area="Haushalt", typ="Abo & Mitgliedschaft", kd=22, kdsub="bis 15. Nov., sonst +12 Monate", kdsub2="358,80 €/Jahr"),
+    dict(name="Privathaftpflicht", sub="jährlich 1. März · Rücklage", amt=68, cyc=12, area="Haushalt", typ="Versicherung", kd=None),
 ]
 
 
@@ -39,7 +39,7 @@ def build():
     <h2 class="h2">Kündigungsfristen <span>nächste 60 Tage</span></h2>
     <div class="card">
       <sc-for list="{{{{kd}}}}" as="k" hint-placeholder-count="2">
-        <a class="row" href="Vertrag.dc.html"><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{k.name}}}}</p><p class="s">{{{{k.kdsub}}}}</p></div><p class="v" style="{{{{k.vst}}}}">{{{{k.days}}}} Tage</p>{CHEV}</a>
+        <a class="row" href="Vertrag.dc.html"><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{k.name}}}}</p><p class="s">{{{{k.kdsub}}}}</p><p class="s">{{{{k.kdsub2}}}}</p></div><p class="v" style="{{{{k.vst}}}}">{{{{k.days}}}} Tage</p>{CHEV}</a>
         <div class="sep"></div>
       </sc-for>
     </div>
@@ -66,13 +66,13 @@ def build():
     var colors = {{ 'Wohnen': '{W}', 'Mobilität': '{M}', 'Haushalt': '{H}' }};
     var monthly = function (c) {{ return c.amt / c.cyc; }};
     var total = C.reduce(function (a, c) {{ return a + monthly(c); }}, 0);
-    var fmt = function (c) {{ return {{ name: c.name, sub: c.sub, amount: eur(c.amt), cyc: c.cyc === 1 ? 'monatlich' : (c.cyc === 3 ? 'je Quartal · ' + eur(monthly(c)) + '/Monat' : 'je Jahr · ' + eur(monthly(c)) + '/Monat'), dotst: 'background: ' + colors[c.area] }}; }};
+    var fmt = function (c) {{ return {{ name: c.name, sub: c.sub, amount: eur(c.amt), cyc: c.cyc === 1 ? 'monatlich' : eur(monthly(c)) + '/Monat', dotst: 'background: ' + colors[c.area] }}; }};
     var groupBy = function (key, order) {{ return order.map(function (k) {{ var items = C.filter(function (c) {{ return c[key] === k; }}); return {{ title: k, meta: items.length + ' · ' + eur(items.reduce(function (a, c) {{ return a + monthly(c); }}, 0)) + ' €/Monat', items: items.map(fmt) }}; }}).filter(function (g) {{ return g.items.length; }}); }};
     var groups;
     if (mode === 'typ') groups = groupBy('typ', ['Versorger & Gebühren', 'Versicherung', 'Abo & Mitgliedschaft', 'Wohnen & Leasing']);
     else if (mode === 'bereich') groups = groupBy('area', ['Wohnen', 'Mobilität', 'Haushalt']);
     else {{ var k = C.filter(function (c) {{ return c.kd !== null; }}).sort(function (a, b) {{ return a.kd - b.kd; }}); groups = [{{ title: 'Jetzt kündbar oder wechselbar', meta: k.length + ' · ' + eur(k.reduce(function (a, c) {{ return a + monthly(c); }}, 0)) + ' €/Monat', items: k.map(function (c) {{ var o = fmt(c); o.sub = c.kdsub; return o; }}) }}]; }}
-    var kd = C.filter(function (c) {{ return c.kd !== null && c.kd <= 60; }}).sort(function (a, b) {{ return a.kd - b.kd; }}).map(function (c) {{ return {{ name: c.name, kdsub: c.kdsub, days: c.kd, vst: c.kd <= 30 ? 'color: #2A5480' : 'color: #637894; font-weight: 500' }}; }});
+    var kd = C.filter(function (c) {{ return c.kd !== null && c.kd <= 60; }}).sort(function (a, b) {{ return a.kd - b.kd; }}).map(function (c) {{ return {{ name: c.name, kdsub: c.kdsub, kdsub2: c.kdsub2 || '', days: c.kd, vst: c.kd <= 30 ? 'color: #2A5480' : 'color: #637894; font-weight: 500' }}; }});
     var fix = C.filter(function (c) {{ return c.cyc <= 3; }}).reduce(function (a, c) {{ return a + monthly(c); }}, 0);
     return {{
       toast: this.state.toast,
@@ -122,7 +122,7 @@ def build():
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Laufzeit</h2>
     <div class="card">
-      <div class="f"><p class="l">Laufzeit</p><p class="v wrap">seit 1. Jan. 2024 · bis 31. Dez. 2026, dann +12 Monate</p></div>
+      <div class="f"><p class="l">Laufzeit</p><p class="v">1. Jan. 2024 – 31. Dez. 2026 · verlängert sich um 12 Monate</p></div>
       <div class="sep"></div>
       <div class="f"><p class="l">Kündigungsfrist</p><p class="v wrap">{{{{noticeText}}}}</p></div>
       <div class="sep"></div>
@@ -266,10 +266,10 @@ def build():
       cat: s.cat, setCat: function (e) {{ var v = ev(e); if (v === 'neu') self.say('Öffnet „Kategorie anlegen“ – hier als Vorschau'); else self.setState({{ cat: v }}); }},
       cycleObj: function () {{ self.setState({{ obj: (s.obj + 1) % objs.length }}); }}, objLabel: objs[s.obj % objs.length],
       amount: s.amount, setAmount: this.set('amount'),
-      cycSeg: this.segItems('cyc', [[1, 'monatlich'], [3, 'vierteljährlich'], [6, 'halbjährlich'], [12, 'jährlich']]),
+      cycSeg: this.segItems('cyc', [[1, 'Monat'], [3, 'Quartal'], [6, 'Halbjahr'], [12, 'Jahr']]),
       shareLabel: cyc === 1 ? 'Monatlich' : 'Monatsanteil', share: eur(share), shareNote: isFix ? 'geht in die Fixkosten' : 'geht als Rate in die Rücklage',
       due: s.due, setDue: this.set('due'),
-      resCls: res ? 'tog' : 'tog off', flipRes: function () {{ self.setState({{ res: !res, resTouched: true }}); }}, resSub: cyc <= 3 ? 'bei monatlich/vierteljährlich nicht nötig' : 'Monatsrate zurücklegen, Abbuchung belastet den Monat nicht',
+      resCls: res ? 'tog' : 'tog off', flipRes: function () {{ self.setState({{ res: !res, resTouched: true }}); }}, resSub: cyc <= 3 ? 'bei Monat/Quartal nicht nötig' : 'Rate zurücklegen',
       pay: s.pay, setPay: this.set('pay'), start: s.start, setStart: this.set('start'), term: s.term, setTerm: this.set('term'), notice: s.notice, setNotice: this.set('notice'), remind: s.remind, setRemind: this.set('remind'),
       effect: effect,
       done: s.done, doneText: s.name + ' · ' + eur(amt) + ' € ' + ({{1: 'monatlich', 3: 'vierteljährlich', 6: 'halbjährlich', 12: 'jährlich'}})[cyc] + ' · ' + s.area + ' › ' + s.cat + (isFix ? ' · Fixkosten +' + eur(share) : ' · Rücklage ' + eur(share) + '/Monat') + ' €',

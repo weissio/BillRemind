@@ -24,7 +24,7 @@ def build():
       <h2 class="h2" style="margin: 6px 0 0">{{{{g.title}}}} <span>{{{{g.meta}}}}</span></h2>
       <sc-for list="{{{{g.items}}}}" as="it" hint-placeholder-count="2">
         <a class="inv" href="{{{{it.href}}}}">
-          <div style="flex: 1; min-width: 0"><p class="n">{{{{it.name}}}}</p><p class="a">{{{{it.amount}}}} €</p><p class="d">{{{{it.sub}}}}</p></div>
+          <div style="flex: 1; min-width: 0"><p class="n">{{{{it.name}}}}</p><p class="a">{{{{it.amount}}}} €</p><p class="d">{{{{it.sub}}}}</p><p class="d">{{{{it.cat}}}}</p></div>
           <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{{{it.capst}}}}">{{{{it.cap}}}}</span><sc-if value="{{{{it.urg}}}}" hint-placeholder-val="{{{{false}}}}"><span class="urg" style="{{{{it.urgst}}}}"><i style="{{{{it.dotst}}}}"></i>{{{{it.urg}}}}</span></sc-if></div>
         </a>
       </sc-for>
@@ -58,10 +58,10 @@ def build():
     var open = all.filter(function (i) {{ return i.st !== 'paid'; }}), paid = all.filter(function (i) {{ return i.st === 'paid'; }});
     var sum = function (l) {{ return l.reduce(function (a, b) {{ return a + b.amount; }}, 0); }};
     var fmt = function (i) {{
-      var o = {{ name: i.name, amount: eur(i.amount), href: i.href }};
-      if (i.st === 'over') {{ o.sub = 'Fällig: ' + i.due + ' · ' + i.cat; o.cap = 'Offen'; o.capst = 'background: #F7D4D1; color: #943333'; o.urg = 'Überfällig'; o.urgst = 'color: #E03C31'; o.dotst = 'background: #E03C31'; }}
-      else if (i.st === 'soon') {{ o.sub = 'Fällig: ' + i.due + ' · ' + i.cat; o.cap = 'Offen'; o.capst = 'background: #EDE3C9; color: #704F2E'; o.urg = 'Bald fällig'; o.urgst = 'color: #E08A1E'; o.dotst = 'background: #E08A1E'; }}
-      else {{ o.sub = (i.kind === 'Bon' ? 'Bon: ' : 'Bezahlt: ') + i.due + ' · ' + i.cat; o.cap = 'Bezahlt'; o.capst = 'background: #D6EDDB; color: #215F33'; o.urg = ''; o.urgst = ''; o.dotst = ''; }}
+      var o = {{ name: i.name, amount: eur(i.amount), href: i.href, cat: i.cat }};
+      if (i.st === 'over') {{ o.sub = 'Fällig ' + i.due; o.cap = 'Offen'; o.capst = 'background: #F7D4D1; color: #943333'; o.urg = 'Überfällig'; o.urgst = 'color: #E03C31'; o.dotst = 'background: #E03C31'; }}
+      else if (i.st === 'soon') {{ o.sub = 'Fällig ' + i.due; o.cap = 'Offen'; o.capst = 'background: #EDE3C9; color: #704F2E'; o.urg = 'Bald fällig'; o.urgst = 'color: #E08A1E'; o.dotst = 'background: #E08A1E'; }}
+      else {{ o.sub = (i.kind === 'Bon' ? 'Bon ' : 'Bezahlt ') + i.due; o.cap = 'Bezahlt'; o.capst = 'background: #D6EDDB; color: #215F33'; o.urg = ''; o.urgst = ''; o.dotst = ''; }}
       return o;
     }};
     var groups = [];
@@ -76,7 +76,7 @@ def build():
     }}
     return {{
       toast: this.state.toast,
-      summary: 'Oktober · ' + open.length + ' offen ' + eur(sum(open)) + ' € · bezahlt ' + eur(sum(paid)) + ' € (' + paid.length + ' Rechnungen und Bons)',
+      summary: 'Oktober · ' + open.length + ' offen ' + eur(sum(open)) + ' € · ' + paid.length + ' bezahlt ' + eur(sum(paid)) + ' €',
       search: this.state.search, q: this.state.q, setQ: this.set('q'),
       toggleSearch: function () {{ self.setState({{ search: !self.state.search, q: '' }}); }},
       segs: this.segItems('tab', [['open', 'Offen'], ['paid', 'Bezahlt'], ['all', 'Alle']]),
@@ -109,7 +109,7 @@ def build():
     <div class="card">
       <div class="f"><p class="l">Fällig</p><p class="v" style="{{{{dueSt}}}}">{{{{dueText}}}}</p></div>
       <div class="sep"></div>
-      <div class="f"><p class="l">Rechnungsdatum</p><p class="v">3. Okt. 2026</p></div>
+      <div class="f"><p class="l">Datum</p><p class="v">3. Okt. 2026</p></div>
       <div class="sep"></div>
       <div class="f"><p class="l">Rechnungsnr.</p><p class="v">SW-2026-0217</p></div>
       <div class="sep"></div>
@@ -129,7 +129,7 @@ def build():
       <div class="sep"></div>
       <button class="f" onClick="{{{{cycleRemind}}}}"><p class="l">Erinnerung</p><p class="v">{{{{remind}}}}</p>{CHEV}</button>
       <div class="sep"></div>
-      <div class="f"><p class="l">Erfasst</p><p class="v" style="font-weight: 400">4. Okt. per PDF aus Mail · Original gespeichert</p></div>
+      <div class="f"><p class="l">Erfasst</p><p class="v" style="font-weight: 400">4. Okt. · PDF aus Mail</p></div>
     </div>
     <p class="note">Hinweis antippen übernimmt den neuen Abschlag in den Vertrag; Erinnerung antippen wechselt den Rhythmus.</p>
   </div>
@@ -155,7 +155,7 @@ def build():
       payLabel: paid ? 'Bezahlt · rückgängig' : 'Als bezahlt markieren',
       togglePaid: function () {{ self.setState({{ paid: !paid }}); self.say(paid ? 'Wieder offen – 142,00 € zählen zu „davon offen“' : 'Bezahlt – Sparpotenzial unverändert, Liquidität −142,00 €'); }},
       copyIban: function () {{ self.say('IBAN DE12 5001 0517 5407 3249 31 kopiert'); }},
-      dueText: paid ? '21. Okt. 2026 · bezahlt 24. Okt.' : '21. Okt. 2026 · 3 Tage überfällig',
+      dueText: paid ? '21. Okt. 2026 · bezahlt 24. Okt.' : '21. Okt. 2026 · überfällig',
       dueSt: paid ? 'color: #215F33' : 'color: #943333',
       abschlag: this.state.hint ? '110,00 ab Nov.' : '98,00',
       hintText: this.state.hint ? 'Abschlag ab 1. Nov. auf 110 € angehoben. Fixkosten Wohnen +12,00 €/Monat.' : 'Abschlag ab Nov. auf 110 € anheben? (Jahresverbrauch 2.980 kWh)',
@@ -206,7 +206,7 @@ def build():
       <div class="sep"></div>
       <div class="f"><p class="l">Betrag</p><input class="in num" value="{{{{amount}}}}" onChange="{{{{setAmount}}}}" inputmode="decimal"><span style="font-size: 14px; color: #637894">€</span><span class="cap" style="{{{{amountSt}}}}">{{{{amountCap}}}}</span></div>
       <div class="sep"></div>
-      {f_input("Rechnungsdatum", "invDate", "setInvDate")}
+      {f_input("Datum", "invDate", "setInvDate")}
       <div class="sep"></div>
       <div class="f"><p class="l">Fällig</p><input class="in" value="{{{{due}}}}" onChange="{{{{setDue}}}}"><span class="cap" style="background: #E6EEF6; color: #2A5480; font-weight: 600">{{{{dueHint}}}}</span></div>
       <div class="sep"></div>
@@ -223,7 +223,7 @@ def build():
     <div class="card">
       <div class="f"><p class="l">Status</p>{seg("status")}</div>
       <div class="sep"></div>
-      {f_toggle("Erinnerung 3 Tage vorher", "remindCls", "flipRemind", "Mo 27. Okt. 9:00")}
+      {f_toggle("Erinnerung", "remindCls", "flipRemind", "3 Tage vorher")}
       <div class="sep"></div>
       {f_toggle("Original behalten", "keepCls", "flipKeep", "Foto, 1,2 MB")}
     </div>
@@ -243,9 +243,9 @@ def build():
   ibanOk(s) {{ var t = String(s).replace(/\\s+/g, '').toUpperCase(); if (!/^DE\\d{{20}}$/.test(t)) return false; var r = t.slice(4) + '1314' + t.slice(2, 4); var m = 0; for (var i = 0; i < r.length; i++) m = (m * 10 + Number(r[i])) % 97; return m === 1; }}
   renderVals() {{
     var self = this, s = this.state;
-    var cats = [['Mobilität › Werkstatt & Reifen', '{M}'], ['Mobilität › Kraftstoff / Laden', '{M}'], ['Wohnen › Instandhaltung', '{W}'], ['Haushalt › Sonstiges', '{H}']];
+    var cats = [['Werkstatt & Reifen · Mobilität', '{M}'], ['Kraftstoff / Laden · Mobilität', '{M}'], ['Instandhaltung · Wohnen', '{W}'], ['Sonstiges · Haushalt', '{H}']];
     var objs = ['VW ID.3', 'Deutschlandticket', 'kein Objekt'];
-    var contracts = ['Keiner – einmalige Rechnung', 'VW Leasing ID.3 (Wartungsvertrag?)', 'Als neuen Vertrag anlegen'];
+    var contracts = ['keiner (einmalig)', 'VW Leasing ID.3 (Wartungsvertrag?)', 'Als neuen Vertrag anlegen'];
     var amt = num(s.amount), amountOk = amt > 0 && Math.abs(amt - 212.40) < 0.005, ibanOk = this.ibanOk(s.iban), payeeOk = s.payee.trim().length > 2;
     var ok = 5 + (amountOk ? 1 : 0) + (ibanOk ? 1 : 0) + (payeeOk ? 1 : 0);
     var ka = s.kostenart;
@@ -255,7 +255,7 @@ def build():
     if (ka === 'kredit') effect = 'Kredit: ' + eur(amt) + ' € laufen als Rate in Fixkosten & Kredite; Restschuld wird im Tilgungsplan geführt.';
     return {{
       toast: s.toast,
-      confLine: ok + ' von 8 Feldern sicher · ' + (s.keep ? 'Foto wird gespeichert' : 'Foto wird verworfen'),
+      confLine: ok + ' von 8 Feldern sicher · ' + (s.keep ? 'Foto bleibt' : 'ohne Foto'),
       openDoc: this.go('showDoc', true), closeDoc: this.go('showDoc', false), shareDoc: function () {{ self.say('Scan als PDF geteilt'); }}, showDoc: s.showDoc,
       docTitle: 'Scan 24.10.2026', docHead: 'Autohaus Keller GmbH', docSub: 'Rechnung RE-2026-4471 · 16.10.2026 · VW ID.3, KA-MN 2024',
       docLine1: 'Inspektion 60.000 km inkl. Bremsflüssigkeit 178,49 € netto', docLine2: 'zzgl. 19 % USt 33,91 €', docLine3: 'Gesamt 212,40 € · zahlbar innerhalb 14 Tagen · IBAN DE89 3704 0044 0532 0130 00',
@@ -348,7 +348,7 @@ def build():
   {sheet("pdf", "PDF importieren", "Aus Dateien, Mail oder dem Teilen-Menü einer anderen App. Mnemor liest den Text, behält das Original und öffnet die Prüfung.", '<button class="btn sec2" onClick="{{closePdf}}">Abbrechen</button><a class="btn pri" href="Review.dc.html">Dateien öffnen</a>')}
 '''
     logic = f'''  constructor(p) {{ super(p); this.state = {{ form: '', vendor: '', amount: '', cat: 'Haushalt › Lebensmittel', due: '', date: '24.10.2026', payKind: 'karte', pdf: false, toast: '',
-    recent: [ {{ name: 'Autohaus Keller · Inspektion', sub: 'Heute · Scan · Empfänger noch prüfen', cap: 'Entwurf', val: '', href: 'Review.dc.html' }}, {{ name: 'REWE', sub: 'Gestern · Bon · Haushalt › Lebensmittel', cap: '', val: '58,37 €', href: 'Rechnung.dc.html' }} ] }}; }}
+    recent: [ {{ name: 'Autohaus Keller · Inspektion', sub: 'Heute · Scan · Empfänger prüfen', cap: 'Entwurf', val: '', href: 'Review.dc.html' }}, {{ name: 'REWE', sub: 'Gestern · Bon · Lebensmittel', cap: '', val: '58,37 €', href: 'Rechnung.dc.html' }} ] }}; }}
 {JS_SEG}
   renderVals() {{
     var self = this, s = this.state, amt = num(s.amount), manual = s.form === 'manual';

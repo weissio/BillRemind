@@ -32,6 +32,9 @@ body{margin:0}
 .f .l{margin:0;font-size:14px;color:#637894;width:104px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .f .v.ph{color:#9AA5B4;font-weight:400}
+.f .vc{flex:1;min-width:0}
+.f .vc .v{flex:none;-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+.f .v2{margin:2px 0 0;font-size:13px;font-weight:400;color:#637894;line-height:1.3;white-space:normal}
 .f .v.wrap{font-size:14px;font-weight:400;-webkit-line-clamp:4}
 .in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
 .in:focus{border-bottom-color:#2A5480}
@@ -40,10 +43,11 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
-.row .n{font-size:15px;font-weight:600;line-height:1.2}
-.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .n{font-size:15px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:12px;color:#637894;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s2{font-size:12px;color:#637894;margin-top:2px;white-space:normal;line-height:1.35}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
-.row .vcol{text-align:right;flex:none;max-width:140px}
+.row .vcol{text-align:right;flex:none;max-width:118px}
 .row .vcol .s{white-space:nowrap}
 .row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
@@ -81,9 +85,10 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .sheet p{margin:0 0 12px;font-size:14px;color:#637894}
 .grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
 .inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
-.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
-.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .d+.d{margin-top:2px}
 .urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
 .urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
@@ -108,7 +113,9 @@ a{color:#2A5480}
     </div>
     <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{headline}}</p>
     <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">{{spar}} €</p>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">{{formula}}</p>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{formula}}</p>
+    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{formula2}}</p>
+    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{formula3}}</p>
   </div>
 
   <div style="padding: 0 20px; margin-top: -40px">
@@ -139,7 +146,7 @@ a{color:#2A5480}
     <div style="display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-right: 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch">
       <sc-for list="{{due}}" as="d" hint-placeholder-count="3">
         <a class="inv" href="{{d.href}}" style="flex: none; width: 272px; scroll-snap-align: start">
-          <div style="flex: 1; min-width: 0"><p class="n">{{d.name}}</p><p class="a">{{d.amount}} €</p><p class="d">{{d.sub}}</p></div>
+          <div style="flex: 1; min-width: 0"><p class="n">{{d.name}}</p><p class="a">{{d.amount}} €</p><p class="d">{{d.sub}}</p><p class="d">{{d.sub2}}</p></div>
           <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{d.capst}}">{{d.cap}}</span><span class="urg" style="{{d.urgst}}"><i style="{{d.dotst}}"></i>{{d.urg}}</span></div>
         </a>
       </sc-for>
@@ -165,11 +172,11 @@ function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; v
 function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
 function ev(e) { return e && e.target ? e.target.value : e; }
 // Zusammengehöriges nicht trennen: innerhalb eines Segments (zwischen " · ") werden Leerzeichen geschützt – „1. Nov.“, „696,00 €/Jahr“, „15. Dez. 2026“ bleiben auf einer Zeile; umgebrochen wird nur am „·“.
-function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' · '); }
-var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Text|Note|Msg|Line|Hint|Body|Head|Sub2|Cls|St|Href)$/;
+function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' ·\u00A0'); }
+var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Note|Msg|Body|Head|Cls|St|Href)$/;
 function nbDeep(v, key, depth) {
   if (depth > 3 || v == null) return v;
-  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.length > 64 || v.indexOf(': ') >= 0 && v.length > 40) return v; return nb(v); }
+  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.indexOf(' · ') < 0) return v; if (v.split(' · ').some(function (p) { return p.length > 26; })) return v; return nb(v); }
   if (Array.isArray(v)) return v.map(function (x) { return nbDeep(x, key, depth + 1); });
   if (typeof v === 'object' && typeof v !== 'function') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = nbDeep(v[k], k, depth + 1); }); return o; }
   return v;
@@ -191,16 +198,16 @@ class Component extends DCLogic {
     var months = ['Oktober 2026', 'September 2026', 'August 2026'];
     // Beispielmonat Oktober; Vormonate als Vergleich (abgeschlossen: keine offenen Posten)
     var D = [
-      { ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 € offen · HU 12. Nov.', hs: 'Budget Freizeit überschritten' },
+      { ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 offen', hs: 'Budget Freizeit überschritten' },
       { ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, ws: 'abgeschlossen', ms: 'abgeschlossen', hs: 'abgeschlossen' },
       { ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, ws: 'Rückerstattung Strom 51,30', ms: 'abgeschlossen', hs: 'abgeschlossen' }
     ];
     var d = D[m], aus = d.bez + d.off, spar = d.ein - d.fix - aus - d.bud - d.res;
     var dueAll = [
-      { name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig: 21. Okt. 2026 · Wohnen', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' },
-      { name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig: 27. Okt. 2026 · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
-      { name: 'Netflix', amount: eur(12.99), sub: 'Fällig: 29. Okt. 2026 · Haushalt', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
-      { name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig: 30. Okt. 2026 · Mobilität', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }
+      { name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig 21. Okt. 2026', sub2: 'Wohnen › Strom', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' },
+      { name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig 27. Okt. 2026', sub2: 'Mobilität · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
+      { name: 'Netflix', amount: eur(12.99), sub: 'Fällig 29. Okt. 2026', sub2: 'Haushalt › Streaming', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' },
+      { name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig 30. Okt. 2026', sub2: 'Mobilität › Werkstatt & Reifen', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }
     ];
     var due = m === 0 ? dueAll : [];
     return {
@@ -210,7 +217,7 @@ class Component extends DCLogic {
       nextMonth: function () { if (m > 0) self.setState({ m: m - 1 }); else self.say('Oktober ist der laufende Monat'); },
       headline: (m === 0 ? 'Sparpotenzial im ' : 'Ergebnis im ') + months[m].split(' ')[0],
       spar: eur(spar),
-      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten − ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen − ' + eur(d.res) + ' Rücklagen',
+      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten', formula2: '− ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen', formula3: '− ' + eur(d.res) + ' Rücklagen-Raten',
       k: { ein: eur(d.ein, 0), fix: eur(d.fix, 0), aus: eur(aus, 0), offen: eur(d.off), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) },
       a: { ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) },
       sumAreas: eur(d.w + d.mo + d.h),

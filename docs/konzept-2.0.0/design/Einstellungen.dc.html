@@ -32,6 +32,9 @@ body{margin:0}
 .f .l{margin:0;font-size:14px;color:#637894;width:104px;flex:none}
 .f .v{margin:0;font-size:15px;font-weight:500;flex:1;min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
 .f .v.ph{color:#9AA5B4;font-weight:400}
+.f .vc{flex:1;min-width:0}
+.f .vc .v{flex:none;-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+.f .v2{margin:2px 0 0;font-size:13px;font-weight:400;color:#637894;line-height:1.3;white-space:normal}
 .f .v.wrap{font-size:14px;font-weight:400;-webkit-line-clamp:4}
 .in{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:500;color:#16243A;border:0;border-bottom:1px solid #D1DBE8;background:transparent;padding:4px 0;outline:none;font-variant-numeric:tabular-nums}
 .in:focus{border-bottom-color:#2A5480}
@@ -40,10 +43,11 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .row{display:flex;align-items:center;gap:12px;min-height:50px;padding:4px 16px;text-decoration:none;color:inherit;width:100%;box-sizing:border-box;background:none;border:0;font:inherit;text-align:left;cursor:pointer}
 .row p{margin:0}
 .row .c{width:34px;height:34px;border-radius:17px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
-.row .n{font-size:15px;font-weight:600;line-height:1.2}
-.row .s{font-size:12px;color:#637894;margin-top:2px}
+.row .n{font-size:15px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s{font-size:12px;color:#637894;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .s2{font-size:12px;color:#637894;margin-top:2px;white-space:normal;line-height:1.35}
 .row .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
-.row .vcol{text-align:right;flex:none;max-width:140px}
+.row .vcol{text-align:right;flex:none;max-width:118px}
 .row .vcol .s{white-space:nowrap}
 .row .v.m{color:#637894;font-weight:500}
 .row .mid{flex:1;min-width:0}
@@ -52,7 +56,8 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .chev{width:8px;height:13px;flex:none}
 .cap{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:#EEF1F5;border-radius:9px;padding:2px}
-.seg button{flex:1;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 0;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
+.f .seg{flex:1;min-width:0}
+.seg button{flex:1;min-width:0;text-align:center;font-size:13px;font-weight:600;color:#637894;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:7px;border:0;background:none;font-family:inherit;cursor:pointer}
 .seg button.on{background:#FFFFFF;color:#16243A;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .seg.dark{background:rgba(255,255,255,.14)}
 .seg.dark button{color:rgba(255,255,255,.8)}
@@ -81,9 +86,10 @@ select.in{appearance:none;-webkit-appearance:none;padding-right:14px}
 .sheet p{margin:0 0 12px;font-size:14px;color:#637894}
 .grab{width:36px;height:5px;border-radius:3px;background:#C9D3DF;margin:0 auto 10px}
 .inv{display:flex;gap:10px;align-items:flex-start;background:#FFFFFF;border:1px solid #D1DBE8;border-radius:16px;padding:14px;box-sizing:border-box;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.03)}
-.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .n{margin:0;font-size:17px;font-weight:600;color:#263B54;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .inv .a{margin:7px 0 0;font-size:20px;font-weight:600;color:#17263B;font-variant-numeric:tabular-nums;letter-spacing:-0.3px}
-.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894}
+.inv .d{margin:7px 0 0;font-size:12px;font-weight:500;color:#637894;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv .d+.d{margin-top:2px}
 .urg{display:inline-flex;align-items:center;gap:5px;font-size:11px;margin-top:6px;white-space:nowrap}
 .urg i{width:7px;height:7px;border-radius:4px;display:inline-block}
 .tabbar{flex:none;display:flex;justify-content:space-around;padding:8px 8px 28px;background:#FFFFFF;border-top:1px solid #E3E8EF}
@@ -114,17 +120,17 @@ a{color:#2A5480}
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Monat &amp; Erinnerungen</h2>
     <div class="card">
-      <button class="f" onClick="{{cycleMonat}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Monatsbeginn</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{monatText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleMonat}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Monatsbeginn</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{monatText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
-      <button class="f" onClick="{{cycleWindow}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Fällig-Fenster auf der Übersicht</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{windowText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleWindow}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Fällig-Fenster auf der Übersicht</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{windowText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
-      <button class="f" onClick="{{cycleRemind}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Erinnerung vor Fälligkeit</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{remindText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleRemind}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Erinnerung vor Fälligkeit</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{remindText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
-      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Kündigungsfristen</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">4 Wochen vorher</p><button class="{{kdCls}}" aria-label="Kündigungsfristen" onClick="{{flipKd}}"></button></div>
+      <div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Kündigungsfristen</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">4 Wochen vorher</p><button class="{{kdCls}}" aria-label="Kündigungsfristen" onClick="{{flipKd}}"></button></div>
       <div class="sep"></div>
-      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Kontostand-Erinnerung</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">nach jeder Abbuchung</p><button class="{{ksCls}}" aria-label="Kontostand-Erinnerung" onClick="{{flipKs}}"></button></div>
+      <div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Kontostand prüfen</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">nach Abbuchung</p><button class="{{ksCls}}" aria-label="Kontostand prüfen" onClick="{{flipKs}}"></button></div>
       <div class="sep"></div>
-      <button class="f" onClick="{{cycleCal}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Systemkalender „Mnemor“</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{calText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleCal}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Systemkalender</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{calText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
     <p class="note">{{monatNote}} {{calNote}}</p>
   </div>
@@ -132,11 +138,11 @@ a{color:#2A5480}
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Erfassen</h2>
     <div class="card">
-      <button class="f" onClick="{{cycleOcr}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Erkennung auf dem Gerät</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{ocrText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleOcr}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Texterkennung</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{ocrText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
-      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Originale behalten</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">PDF und Scans</p><button class="{{keepCls}}" aria-label="Originale behalten" onClick="{{flipKeep}}"></button></div>
+      <div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Originale behalten</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">PDF und Scans</p><button class="{{keepCls}}" aria-label="Originale behalten" onClick="{{flipKeep}}"></button></div>
       <div class="sep"></div>
-      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">Bon-Schnellmodus</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">sofort als bezahlt</p><button class="{{bonCls}}" aria-label="Bon-Schnellmodus" onClick="{{flipBon}}"></button></div>
+      <div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Bon-Schnellmodus</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">sofort als bezahlt</p><button class="{{bonCls}}" aria-label="Bon-Schnellmodus" onClick="{{flipBon}}"></button></div>
       <div class="sep"></div>
       <button class="f" onClick="{{askReset}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Lernregeln</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{learnText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
@@ -152,16 +158,16 @@ a{color:#2A5480}
       <div class="sep"></div>
       <a class="f" href="Haushalt.dc.html"><p class="v" style="font-weight: 500"><span class="dot" style="background: #4CAF7A; margin-right: 6px; vertical-align: middle"></span>Haushalt</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">10 Kategorien · 2 Personen</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></a>
       <div class="sep"></div>
-      <button class="f" onClick="{{restore}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Standardkategorien wiederherstellen</p><p class="v ph" style="flex: none; width: auto; font-size: 13px">{{restoreText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{restore}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Standardkategorien</p><p class="v ph" style="flex: none; width: auto; font-size: 13px; white-space: nowrap">{{restoreText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
   </div>
 
   <div style="padding: 18px 20px 0 20px">
     <h2 class="h2">Sicherheit &amp; Daten</h2>
     <div class="card">
-      <div class="f"><p class="v wrap" style="font-weight: 500; font-size: 15px">App-Sperre</p><p class="v ph" style="flex: none; width: auto; max-width: 130px; white-space: normal; text-align: right; font-size: 13px">Face ID</p><button class="{{lockCls}}" aria-label="App-Sperre" onClick="{{flipLock}}"></button></div>
+      <div class="f"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">App-Sperre</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: nowrap; text-align: right; font-size: 13px">Face ID</p><button class="{{lockCls}}" aria-label="App-Sperre" onClick="{{flipLock}}"></button></div>
       <div class="sep"></div>
-      <button class="f" onClick="{{cycleBackup}}"><p class="v wrap" style="font-weight: 500; font-size: 15px">Automatisches Backup</p><p class="v ph" style="flex: none; width: auto; max-width: 150px; white-space: normal; text-align: right; font-size: 13px">{{backupText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
+      <button class="f" onClick="{{cycleBackup}}"><p class="v" style="font-weight: 500; font-size: 15px; white-space: nowrap">Backup</p><p class="v ph" style="flex: none; width: auto; max-width: 170px; white-space: nowrap; text-align: right; font-size: 13px">{{backupText}}</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
       <div class="sep"></div>
       <button class="f" onClick="{{askWipe}}"><p class="v wrap" style="font-weight: 500; font-size: 15px; color: #943333">Alle Daten löschen</p><svg class="chev" aria-hidden="true" viewBox="0 0 8 13" fill="none" stroke="#C4CCD6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5-5 5"/></svg></button>
     </div>
@@ -185,11 +191,11 @@ function eur(v, dec) { if (dec === undefined) dec = 2; var n = Number(v) || 0; v
 function num(s) { if (typeof s === 'number') return s; s = String(s == null ? '' : s).replace(/\./g, '').replace(',', '.').replace(/[^0-9.\-]/g, ''); var n = parseFloat(s); return isNaN(n) ? 0 : n; }
 function ev(e) { return e && e.target ? e.target.value : e; }
 // Zusammengehöriges nicht trennen: innerhalb eines Segments (zwischen " · ") werden Leerzeichen geschützt – „1. Nov.“, „696,00 €/Jahr“, „15. Dez. 2026“ bleiben auf einer Zeile; umgebrochen wird nur am „·“.
-function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' · '); }
-var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Text|Note|Msg|Line|Hint|Body|Head|Sub2|Cls|St|Href)$/;
+function nb(str) { return String(str).split(' · ').map(function (p) { return p.replace(/ /g, '\u00A0'); }).join(' ·\u00A0'); }
+var NB_SKIP = /^(name|n|title|label|head|text|note|msg|formula|pruef|effect|summary|outlook|calc|q|aria|st|cls|href|dotst|vst|nst|cst|capst|urgst|barst|colst|lst|stst|h|m|w)$|(Title|Name|Label|Note|Msg|Body|Head|Cls|St|Href)$/;
 function nbDeep(v, key, depth) {
   if (depth > 3 || v == null) return v;
-  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.length > 64 || v.indexOf(': ') >= 0 && v.length > 40) return v; return nb(v); }
+  if (typeof v === 'string') { if (NB_SKIP.test(key || '') || v.indexOf(' · ') < 0) return v; if (v.split(' · ').some(function (p) { return p.length > 26; })) return v; return nb(v); }
   if (Array.isArray(v)) return v.map(function (x) { return nbDeep(x, key, depth + 1); });
   if (typeof v === 'object' && typeof v !== 'function') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = nbDeep(v[k], k, depth + 1); }); return o; }
   return v;
@@ -209,7 +215,7 @@ class Component extends DCLogic {
   cyc(key, n) { var self = this; return function () { var s = {}; s[key] = (self.state[key] + 1) % n; self.setState(s); }; }
   renderVals() {
     var self = this, s = this.state;
-    var monat = ['1. des Monats', '15. des Monats', 'am Gehaltstag (30.)'], win = ['3 Tage', '7 Tage', '14 Tage'], rem = ['1 Tag · 9:00', '3 Tage · 9:00', '7 Tage · 9:00', 'aus'], ocr = ['Apple Intelligence · aktiv', 'nur Regelwerk (ohne KI)'], backup = ['aus', 'wöchentlich · in Dateien', 'täglich · in Dateien'];
+    var monat = ['1. des Monats', '15. des Monats', 'am Gehaltstag (30.)'], win = ['3 Tage', '7 Tage', '14 Tage'], rem = ['1 Tag · 9:00', '3 Tage · 9:00', '7 Tage · 9:00', 'aus'], ocr = ['auf dem Gerät · KI', 'nur Regelwerk'], backup = ['aus', 'wöchentlich · Dateien', 'täglich · Dateien'];
     return {
       toast: s.toast,
       monatText: monat[s.monat], cycleMonat: this.cyc('monat', 3), windowText: win[s.win], cycleWindow: this.cyc('win', 3), remindText: rem[s.rem], cycleRemind: this.cyc('rem', 4),

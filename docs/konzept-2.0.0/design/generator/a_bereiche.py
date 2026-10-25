@@ -19,6 +19,7 @@ def bereich(fname, title, color, icon, name, objects, rows, reserves, termine, n
       <div>
         <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1">{name}</h1>
         <p style="margin: 3px 0 0; font-size: 13px; opacity: .8">{{{{sub}}}}</p>
+        <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{sub2}}}}</p>
       </div>
     </div>
     {chips("objChips", '<a class="chip" href="ObjektNeu.dc.html" aria-label="Objekt hinzufügen">+</a>')}
@@ -28,7 +29,7 @@ def bereich(fname, title, color, icon, name, objects, rows, reserves, termine, n
     <h2 class="h2">Kategorien <span>{{{{objLabel}}}} · {{{{total}}}} €</span></h2>
     <div class="card">
       <sc-for list="{{{{rows}}}}" as="r" hint-placeholder-count="6">
-        <a class="row" href="{{{{r.href}}}}"><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{r.name}}}}</p><p class="s"><sc-if value="{{{{r.warn}}}}" hint-placeholder-val="{{{{false}}}}"><span style="color: #943333">{{{{r.warn}}}}</span> · </sc-if>{{{{r.sub}}}}</p></div><p class="{{{{r.vcls}}}}">{{{{r.val}}}}</p>{CHEV}</a>
+        <a class="row" href="{{{{r.href}}}}"><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{r.name}}}}</p><sc-if value="{{{{r.warn}}}}" hint-placeholder-val="{{{{false}}}}"><p class="s" style="color: #943333">{{{{r.warn}}}}</p></sc-if><p class="s">{{{{r.sub}}}}</p></div><p class="{{{{r.vcls}}}}">{{{{r.val}}}}</p>{CHEV}</a>
         <div class="sep"></div>
       </sc-for>
       <a class="row" href="KategorieNeu.dc.html"><div class="mid"><p class="n" style="color: #2A5480">+ Kategorie anlegen</p><p class="s">{neu_hint}</p></div>{CHEV}</a>
@@ -76,7 +77,7 @@ def bereich(fname, title, color, icon, name, objects, rows, reserves, termine, n
       toast: this.state.toast,
       objChips: this.chipItems('obj', this.OBJS),
       objLabel: objLabel,
-      sub: eur(total) + ' € im Oktober · fix ' + eur(fix) + ' · variabel ' + eur(vr) + ' · Rücklagen ' + eur(rs),
+      sub: eur(total) + ' € im Oktober', sub2: 'fix ' + eur(fix) + ' · variabel ' + eur(vr) + ' · Rücklagen ' + eur(rs),
       total: eur(total),
       empty: rows.length === 0,
       rows: rows.map(function (r) {{ var t = r.fix + r.var + r.res; return {{ name: r.name, sub: r.sub, warn: r.warn || '', href: r.href || 'Kategorie.dc.html', val: eur(t), vcls: (r.fix + r.var) > 0 ? 'v' : 'v m' }}; }}),
@@ -96,15 +97,15 @@ def build():
         [("whg", "Wohnung Hauptstr. 12")],
         [
             dict(name="Miete / Hausgeld", sub="fix · 1. Okt.", fix=950, var=0, res=0, obj="whg"),
-            dict(name="Strom", sub="98,00 Abschlag", warn="142,00 Nachzahlung überfällig", fix=98, var=142, res=0, obj="whg"),
+            dict(name="Strom", sub="Abschlag 98,00 · 1. Okt.", warn="Nachzahlung 142,00 überfällig", fix=98, var=142, res=0, obj="whg"),
             dict(name="Gas / Heizung", sub="Abschlag · 1. Okt.", fix=112, var=0, res=0, obj="whg"),
             dict(name="Internet & Festnetz", sub="fix · Telekom · 1. Okt.", fix=39.99, var=0, res=0, obj="whg"),
-            dict(name="Rundfunkbeitrag", sub="fix · 55,08 vierteljährlich · Monatsanteil", fix=18.36, var=0, res=0, obj="whg", href="Vertrag.dc.html"),
+            dict(name="Rundfunkbeitrag", sub="55,08 je Quartal · Anteil", fix=18.36, var=0, res=0, obj="whg", href="Vertrag.dc.html"),
             dict(name="Wasser / Abfall", sub="in den Nebenkosten enthalten", fix=0, var=0, res=0, obj="whg"),
             dict(name="Instandhaltung & Reparatur", sub="variabel · kein Budget", fix=0, var=0, res=0, obj="whg"),
-            dict(name="Hausratversicherung", sub="Rücklage-Rate · 94,00 jährlich", fix=0, var=0, res=7.83, obj="whg"),
+            dict(name="Hausratversicherung", sub="Rücklage-Rate · 94,00/Jahr", fix=0, var=0, res=7.83, obj="whg"),
         ],
-        [dict(name="Hausratversicherung", sub="94,00 bis 1. März · 7,83/Monat", val="62,64 / 94,00", obj="whg")],
+        [dict(name="Hausratversicherung", sub="7,83/Monat · fällig 1. März", val="62,64 / 94,00", obj="whg")],
         [dict(name="Zählerstände Strom und Gas", sub="Di 15. Dez. · jährlich", obj="whg")],
         "Grundsteuer, Gebäudeversicherung, Schornsteinfeger, Garten …")
 
@@ -113,21 +114,21 @@ def build():
         [("vw", "VW ID.3"), ("ticket", "Deutschlandticket")],
         [
             dict(name="Kfz-Rate / Leasing", sub="fix · 1. Okt.", fix=289, var=0, res=0, obj="vw"),
-            dict(name="Werkstatt & Reifen", sub="60,00 Rücklage HU/Reifen", warn="Inspektion 212,40 offen · fällig 30. Okt.", fix=0, var=212.40, res=60, obj="vw"),
-            dict(name="Kraftstoff / Laden", sub="9,99 Ladetarif fix · 64,20 geladen", fix=9.99, var=64.20, res=0, obj="vw"),
+            dict(name="Werkstatt & Reifen", sub="Rücklage HU/Reifen 60,00", warn="Inspektion 212,40 · fällig 30. Okt.", fix=0, var=212.40, res=60, obj="vw"),
+            dict(name="Kraftstoff / Laden", sub="Ladetarif 9,99 · geladen 64,20", fix=9.99, var=64.20, res=0, obj="vw"),
             dict(name="ÖPNV / Deutschlandticket", sub="fix · 3. Okt.", fix=58, var=0, res=0, obj="ticket"),
-            dict(name="Kfz-Versicherung", sub="Rücklage-Rate · 487,20 jährlich", fix=0, var=0, res=40.60, obj="vw"),
-            dict(name="Kfz-Steuer", sub="Rücklage-Rate · 144,00 jährlich", fix=0, var=0, res=12, obj="vw"),
+            dict(name="Kfz-Versicherung", sub="Rücklage-Rate · 487,20/Jahr", fix=0, var=0, res=40.60, obj="vw"),
+            dict(name="Kfz-Steuer", sub="Rücklage-Rate · 144,00/Jahr", fix=0, var=0, res=12, obj="vw"),
         ],
         [
-            dict(name="Kfz-Versicherung", sub="487,20 bis 27. Okt. · 40,60/Monat", val="487,20 gedeckt", ok=True, obj="vw"),
-            dict(name="HU und Reifen", sub="190 bis 12. Nov. · 60/Monat · Reifenwechsel 2. Nov.", val="120 / 190", obj="vw"),
-            dict(name="Kfz-Steuer", sub="144 bis 15. Mai · 12/Monat", val="60 / 144", obj="vw"),
+            dict(name="Kfz-Versicherung", sub="40,60/Monat · fällig 27. Okt.", val="487,20 gedeckt", ok=True, obj="vw"),
+            dict(name="HU und Reifen", sub="60/Monat · fällig 12. Nov.", val="120 / 190", obj="vw"),
+            dict(name="Kfz-Steuer", sub="12/Monat · fällig 15. Mai", val="60 / 144", obj="vw"),
         ],
         [
-            dict(name="HU/AU · VW ID.3", sub="Do 12. Nov. · alle 24 Monate · Planbetrag 150", val="150,00", obj="vw"),
+            dict(name="HU/AU · VW ID.3", sub="Do 12. Nov. · alle 24 Monate", val="150,00", obj="vw"),
             dict(name="Reifenwechsel", sub="Mo 2. Nov. · April / Oktober", obj="vw"),
-            dict(name="Deutschlandticket kündbar", sub="bis 10. Nov. zum Monatsende", obj="ticket"),
+            dict(name="Deutschlandticket kündbar", sub="bis 10. Nov. · zum Monatsende", obj="ticket"),
         ],
         "Parken &amp; Maut, Fahrrad &amp; E-Bike, Carsharing, Taxi …")
 
@@ -136,15 +137,15 @@ def build():
         [("anna", "Anna"), ("ben", "Ben")],
         [
             dict(name="Lebensmittel & Haushalt", sub="Budget 450 · noch 38,00 frei", fix=0, var=412, res=0, obj="all"),
-            dict(name="Freizeit & Kultur", sub="29,90 Fitness fix", warn="Budget 150 um 30,00 überschritten", fix=29.90, var=180, res=0, obj="ben"),
-            dict(name="Kommunikation & Medien", sub="Mobilfunk, Netflix, Spotify, iCloud · fix · Internet → Wohnen", fix=53.96, var=0, res=0, obj="anna"),
-            dict(name="Versicherung & Vorsorge", sub="Privathaftpflicht · Rücklage-Rate · 68,00 jährlich", fix=0, var=0, res=5.67, obj="anna"),
+            dict(name="Freizeit & Kultur", sub="Fitness 29,90 fix", warn="Budget 150 · 30,00 überschritten", fix=29.90, var=180, res=0, obj="ben"),
+            dict(name="Kommunikation & Medien", sub="Mobilfunk, Netflix, Spotify, iCloud", fix=53.96, var=0, res=0, obj="anna"),
+            dict(name="Versicherung & Vorsorge", sub="Haftpflicht · Rücklage-Rate", fix=0, var=0, res=5.67, obj="anna"),
             dict(name="Urlaub & Reisen", sub="Sparziel Urlaub · Rücklage-Rate", fix=0, var=0, res=200, obj="all", href="Ruecklage.dc.html"),
-            dict(name="Gastronomie, Kleidung, Gesundheit, Haustier", sub="keine Buchungen im Oktober", fix=0, var=0, res=0, obj="all"),
+            dict(name="Weitere Kategorien", sub="Gastro, Kleidung, Gesundheit, Haustier · 0", fix=0, var=0, res=0, obj="all"),
         ],
         [
-            dict(name="Urlaub Juli", sub="1.800 bis 15. Juli · 200/Monat", val="640 / 1.800", obj="all"),
-            dict(name="Privathaftpflicht", sub="68,00 bis 1. März · 5,67/Monat", val="45,36 / 68,00", obj="anna"),
+            dict(name="Urlaub Juli", sub="200/Monat · Ziel 15. Juli", val="640 / 1.800", obj="all"),
+            dict(name="Privathaftpflicht", sub="5,67/Monat · fällig 1. März", val="45,36 / 68,00", obj="anna"),
         ],
         [
             dict(name="Zahnarzt Vorsorge · Ben", sub="Fr 20. Nov. · halbjährlich", obj="ben"),
@@ -167,7 +168,9 @@ def build():
     </div>
     <p style="margin: 22px 0 0; font-size: 14px; opacity: .8">{{{{headline}}}}</p>
     <p style="margin: 4px 0 0; font-size: 44px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums">{{{{spar}}}} €</p>
-    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8">{{{{formula}}}}</p>
+    <p style="margin: 10px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula}}}}</p>
+    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula2}}}}</p>
+    <p style="margin: 2px 0 0; font-size: 13px; opacity: .8; white-space: nowrap">{{{{formula3}}}}</p>
   </div>
 
   <div style="padding: 0 20px; margin-top: -40px">
@@ -198,7 +201,7 @@ def build():
     <div style="display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-right: 20px; scrollbar-width: none; -webkit-overflow-scrolling: touch">
       <sc-for list="{{{{due}}}}" as="d" hint-placeholder-count="3">
         <a class="inv" href="{{{{d.href}}}}" style="flex: none; width: 272px; scroll-snap-align: start">
-          <div style="flex: 1; min-width: 0"><p class="n">{{{{d.name}}}}</p><p class="a">{{{{d.amount}}}} €</p><p class="d">{{{{d.sub}}}}</p></div>
+          <div style="flex: 1; min-width: 0"><p class="n">{{{{d.name}}}}</p><p class="a">{{{{d.amount}}}} €</p><p class="d">{{{{d.sub}}}}</p><p class="d">{{{{d.sub2}}}}</p></div>
           <div style="display: flex; flex-direction: column; align-items: flex-end"><span class="cap" style="{{{{d.capst}}}}">{{{{d.cap}}}}</span><span class="urg" style="{{{{d.urgst}}}}"><i style="{{{{d.dotst}}}}"></i>{{{{d.urg}}}}</span></div>
         </a>
       </sc-for>
@@ -213,16 +216,16 @@ def build():
     var months = ['Oktober 2026', 'September 2026', 'August 2026'];
     // Beispielmonat Oktober; Vormonate als Vergleich (abgeschlossen: keine offenen Posten)
     var D = [
-      {{ ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 € offen · HU 12. Nov.', hs: 'Budget Freizeit überschritten' }},
+      {{ ein: 3650, fix: 1659.20, bez: 656.20, off: 354.40, bud: 61.40, res: 326.10, w: 1368.18, mo: 746.19, h: 881.53, ws: 'Nachzahlung Strom überfällig', ms: 'Inspektion 212,40 offen', hs: 'Budget Freizeit überschritten' }},
       {{ ein: 3650, fix: 1659.20, bez: 824.70, off: 0, bud: 0, res: 326.10, w: 1300.00, mo: 640.00, h: 870.00, ws: 'abgeschlossen', ms: 'abgeschlossen', hs: 'abgeschlossen' }},
       {{ ein: 3701.30, fix: 1659.20, bez: 754.70, off: 0, bud: 0, res: 326.10, w: 1290.00, mo: 590.00, h: 860.00, ws: 'Rückerstattung Strom 51,30', ms: 'abgeschlossen', hs: 'abgeschlossen' }}
     ];
     var d = D[m], aus = d.bez + d.off, spar = d.ein - d.fix - aus - d.bud - d.res;
     var dueAll = [
-      {{ name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig: 21. Okt. 2026 · Wohnen', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' }},
-      {{ name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig: 27. Okt. 2026 · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
-      {{ name: 'Netflix', amount: eur(12.99), sub: 'Fällig: 29. Okt. 2026 · Haushalt', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
-      {{ name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig: 30. Okt. 2026 · Mobilität', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }}
+      {{ name: 'Stadtwerke Mainstadt', amount: eur(142), sub: 'Fällig 21. Okt. 2026', sub2: 'Wohnen › Strom', cap: 'Offen', capst: 'background: #F7D4D1; color: #943333', urg: 'Überfällig', urgst: 'color: #E03C31', dotst: 'background: #E03C31', href: 'Rechnung.dc.html' }},
+      {{ name: 'HUK24 Kfz-Versicherung', amount: eur(487.20), sub: 'Fällig 27. Okt. 2026', sub2: 'Mobilität · aus Rücklage', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
+      {{ name: 'Netflix', amount: eur(12.99), sub: 'Fällig 29. Okt. 2026', sub2: 'Haushalt › Streaming', cap: 'Abo', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Vertrag.dc.html' }},
+      {{ name: 'Autohaus Keller', amount: eur(212.40), sub: 'Fällig 30. Okt. 2026', sub2: 'Mobilität › Werkstatt & Reifen', cap: 'Offen', capst: 'background: #EDE3C9; color: #704F2E', urg: 'Bald fällig', urgst: 'color: #E08A1E', dotst: 'background: #E08A1E', href: 'Review.dc.html' }}
     ];
     var due = m === 0 ? dueAll : [];
     return {{
@@ -232,7 +235,7 @@ def build():
       nextMonth: function () {{ if (m > 0) self.setState({{ m: m - 1 }}); else self.say('Oktober ist der laufende Monat'); }},
       headline: (m === 0 ? 'Sparpotenzial im ' : 'Ergebnis im ') + months[m].split(' ')[0],
       spar: eur(spar),
-      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten − ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen − ' + eur(d.res) + ' Rücklagen',
+      formula: eur(d.ein) + ' Einnahmen − ' + eur(d.fix) + ' Fixkosten', formula2: '− ' + eur(aus) + ' Ausgaben − ' + eur(d.bud) + ' Budgets offen', formula3: '− ' + eur(d.res) + ' Rücklagen-Raten',
       k: {{ ein: eur(d.ein, 0), fix: eur(d.fix, 0), aus: eur(aus, 0), offen: eur(d.off), fix2: eur(d.fix), aus2: eur(aus), res: eur(d.res) }},
       a: {{ ws: d.ws, ms: d.ms, hs: d.hs, w: eur(d.w, 0), mo: eur(d.mo, 0), h: eur(d.h, 0) }},
       sumAreas: eur(d.w + d.mo + d.h),
