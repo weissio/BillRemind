@@ -125,7 +125,7 @@ def build():
     <div class="card">
       <a class="f" href="Vertrag.dc.html"><p class="l">Vertrag</p><p class="v">Stadtwerke Strom · Abschlag {{{{abschlag}}}}</p>{CHEV}</a>
       <div class="sep"></div>
-      <button class="f" onClick="{{{{toggleHint}}}}"><p class="l">Hinweis</p><p class="v wrap">{{{{hintText}}}}</p><span class="cap" style="{{{{hintCapSt}}}}">{{{{hintCap}}}}</span></button>
+      <button class="f" style="flex-wrap: wrap; row-gap: 4px; padding-top: 10px; padding-bottom: 12px" onClick="{{{{toggleHint}}}}"><p class="l" style="width: 100%; font-size: 12px; text-transform: uppercase; letter-spacing: .3px">Hinweis</p><p class="v wrap" style="font-size: 15px; font-weight: 500">{{{{hintText}}}}</p><span class="cap" style="{{{{hintCapSt}}}}">{{{{hintCap}}}}</span></button>
       <div class="sep"></div>
       <button class="f" onClick="{{{{cycleRemind}}}}"><p class="l">Erinnerung</p><p class="v">{{{{remind}}}}</p>{CHEV}</button>
       <div class="sep"></div>

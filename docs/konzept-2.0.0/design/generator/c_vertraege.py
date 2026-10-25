@@ -8,7 +8,7 @@ CONTRACTS = [
     dict(name="Stadtwerke – Strom", sub="Abschlag · nächste Abbuchung 1. Nov.", amt=98, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=26, kdsub="bis 19. Nov. zum Jahresende · 1.176,00 €/Jahr"),
     dict(name="Stadtwerke – Gas", sub="Abschlag · nächste Abbuchung 1. Nov.", amt=112, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=None),
     dict(name="Telekom Internet & Festnetz", sub="Laufzeit bis 31. Mai 2027", amt=39.99, cyc=1, area="Wohnen", typ="Versorger & Gebühren", kd=None),
-    dict(name="Rundfunkbeitrag", sub="55,08 € vierteljährlich · nächste 15. Jan.", amt=55.08, cyc=3, area="Wohnen", typ="Versorger & Gebühren", kd=None),
+    dict(name="Rundfunkbeitrag", sub="vierteljährlich · nächste 15. Jan.", amt=55.08, cyc=3, area="Wohnen", typ="Versorger & Gebühren", kd=None),
     dict(name="Hausrat Allianz", sub="Jahresbeitrag 1. März", amt=94, cyc=12, area="Wohnen", typ="Versicherung", kd=None),
     dict(name="VW Leasing ID.3", sub="Kredit · bis Aug. 2028 · 22 Raten offen", amt=289, cyc=1, area="Mobilität", typ="Wohnen & Leasing", kd=None),
     dict(name="EnBW mobility+", sub="Ladetarif · monatlich kündbar", amt=9.99, cyc=1, area="Mobilität", typ="Versorger & Gebühren", kd=None),
@@ -51,7 +51,7 @@ def build():
     <h2 class="h2">{{{{g.title}}}} <span>{{{{g.meta}}}}</span></h2>
     <div class="card">
       <sc-for list="{{{{g.items}}}}" as="c" hint-placeholder-count="3">
-        <a class="row" href="Vertrag.dc.html"><span class="dot" style="{{{{c.dotst}}}}"></span><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{c.name}}}}</p><p class="s">{{{{c.sub}}}}</p></div><div style="text-align: right"><p class="v">{{{{c.amount}}}} €</p><p class="s">{{{{c.cyc}}}}</p></div></a>
+        <a class="row" href="Vertrag.dc.html"><span class="dot" style="{{{{c.dotst}}}}"></span><div class="mid"><p class="n" style="font-weight: 500; font-size: 16px">{{{{c.name}}}}</p><p class="s">{{{{c.sub}}}}</p></div><div class="vcol"><p class="v">{{{{c.amount}}}} €</p><p class="s">{{{{c.cyc}}}}</p></div></a>
         <div class="sep"></div>
       </sc-for>
     </div>
@@ -66,7 +66,7 @@ def build():
     var colors = {{ 'Wohnen': '{W}', 'Mobilität': '{M}', 'Haushalt': '{H}' }};
     var monthly = function (c) {{ return c.amt / c.cyc; }};
     var total = C.reduce(function (a, c) {{ return a + monthly(c); }}, 0);
-    var fmt = function (c) {{ return {{ name: c.name, sub: c.sub, amount: eur(c.amt), cyc: c.cyc === 1 ? 'monatlich' : (c.cyc === 3 ? 'vierteljährlich · ' + eur(monthly(c)) + '/Monat' : 'jährlich · ' + eur(monthly(c)) + '/Monat'), dotst: 'background: ' + colors[c.area] }}; }};
+    var fmt = function (c) {{ return {{ name: c.name, sub: c.sub, amount: eur(c.amt), cyc: c.cyc === 1 ? 'monatlich' : (c.cyc === 3 ? 'je Quartal · ' + eur(monthly(c)) + '/Monat' : 'je Jahr · ' + eur(monthly(c)) + '/Monat'), dotst: 'background: ' + colors[c.area] }}; }};
     var groupBy = function (key, order) {{ return order.map(function (k) {{ var items = C.filter(function (c) {{ return c[key] === k; }}); return {{ title: k, meta: items.length + ' · ' + eur(items.reduce(function (a, c) {{ return a + monthly(c); }}, 0)) + ' €/Monat', items: items.map(fmt) }}; }}).filter(function (g) {{ return g.items.length; }}); }};
     var groups;
     if (mode === 'typ') groups = groupBy('typ', ['Versorger & Gebühren', 'Versicherung', 'Abo & Mitgliedschaft', 'Wohnen & Leasing']);
@@ -115,7 +115,7 @@ def build():
       <div class="sep"></div>
       <a class="f" href="Rechnung.dc.html"><p class="l">Jahresabrechnung</p><p class="v" style="color: #943333">Nachzahlung 142,00 € · überfällig</p>{CHEV}</a>
       <div class="sep"></div>
-      <button class="f" onClick="{{{{applyHint}}}}"><p class="l">Vorschlag</p><p class="v wrap">{{{{hintText}}}}</p><span class="cap" style="{{{{hintSt}}}}">{{{{hintCap}}}}</span></button>
+      <button class="f" style="flex-wrap: wrap; row-gap: 4px; padding-top: 10px; padding-bottom: 12px" onClick="{{{{applyHint}}}}"><p class="l" style="width: 100%; font-size: 12px; text-transform: uppercase; letter-spacing: .3px">Vorschlag</p><p class="v wrap" style="font-size: 15px; font-weight: 500">{{{{hintText}}}}</p><span class="cap" style="{{{{hintSt}}}}">{{{{hintCap}}}}</span></button>
     </div>
   </div>
 

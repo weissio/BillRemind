@@ -9,7 +9,7 @@ Die Dokumente leben weiterhin als bearbeitbare Claude-Docs; hier liegt der einge
 | `marktvergleich.md` | DE/US/UK-Haushaltsbuch-Apps, Muster & Lücken, sechs USPs | [Marktvergleich](https://claude.ai/artifact/14ebQFwB3GdiJ9q7B9MRuf) |
 | `funktionsmodell.md` | Taxonomie, Zuordnungsregel, Objektmodell, OCR-Symbiose, OCR 2.0, eingefrorene Funktionsliste, Glossar, Beispielmonat | [Funktionsmodell](https://claude.ai/artifact/WQdw2oxroqdp27fwcHr1WR) |
 | `navigation-und-faelligkeiten.md` | Zweiter Reiter des Funktionsmodells: Bereiche, Fälligkeiten, Liquidität, Termin-Objekt (Konzeptsprache, „Akte“ = Bereich, „Gebäude“ = Wohnen) | gleiches Dokument, Reiter 2 |
-| `design/` | 27 interaktive Screens als Artboards (`*.dc.html`), `canvas.json` (Anordnung), `generator/` (erzeugt alle Screens, `check2.js`/`check3.js` prüfen jede Taste und 41 Soll-Werte), `screenshots/` (statischer Stand 24.10.) | [App-Screens](https://claude.ai/artifact/ACDyBU4mp3qL8kMp6PbWxZ) |
+| `design/` | 27 interaktive Screens als Artboards (`*.dc.html`), `canvas.json` (Anordnung), `generator/` (erzeugt alle Screens, `check2.js`/`check3.js` prüfen jede Taste und 41 Soll-Werte), `screenshots/` (gerendert mit `generator/render.js`, ganze Seitenhöhe) | [App-Screens](https://claude.ai/artifact/ACDyBU4mp3qL8kMp6PbWxZ) |
 
 ## Screens ansehen
 
